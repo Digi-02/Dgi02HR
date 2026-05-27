@@ -4,7 +4,17 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.utils import timezone
 from datetime import timedelta
-from .models import Category, Department, Employee, AttendanceRecord, AttendanceSettings
+from .models import (
+    Category,
+    Department,
+    Employee,
+    AttendanceRecord,
+    AttendanceSettings,
+    EmployeeEducation,
+    EmployeeCertification,
+    EmployeeWorkExperience,
+    AttendanceException,
+)
 
 
 @admin.register(Category)
@@ -80,6 +90,36 @@ class EmployeeAdmin(admin.ModelAdmin):
             )
         return format_html('<span style="color: #6b7280;">Out</span>')
     attendance_status.short_description = 'Today'
+
+
+@admin.register(EmployeeEducation)
+class EmployeeEducationAdmin(admin.ModelAdmin):
+    list_display = ['employee', 'qualification_obtained', 'institution', 'year_of_graduation']
+    list_filter = ['year_of_graduation']
+    search_fields = ['employee__first_name', 'employee__last_name', 'qualification_obtained', 'institution']
+
+
+@admin.register(EmployeeCertification)
+class EmployeeCertificationAdmin(admin.ModelAdmin):
+    list_display = ['employee', 'certification_name', 'issuing_body', 'date_obtained', 'expiry_date']
+    search_fields = ['employee__first_name', 'employee__last_name', 'certification_name', 'issuing_body']
+
+
+@admin.register(EmployeeWorkExperience)
+class EmployeeWorkExperienceAdmin(admin.ModelAdmin):
+    list_display = ['employee', 'employer_name', 'job_title', 'start_date', 'end_date']
+    search_fields = ['employee__first_name', 'employee__last_name', 'employer_name', 'job_title']
+
+
+@admin.register(AttendanceException)
+class AttendanceExceptionAdmin(admin.ModelAdmin):
+    list_display = ['employee', 'exception_type', 'start_date', 'end_date', 'day_span']
+    list_filter = ['exception_type', 'start_date']
+    search_fields = ['employee__first_name', 'employee__last_name', 'employee__employee_id', 'notes']
+
+    def day_span(self, obj):
+        return obj.day_count
+    day_span.short_description = 'Days'
 
 
 class DateListFilter(admin.SimpleListFilter):

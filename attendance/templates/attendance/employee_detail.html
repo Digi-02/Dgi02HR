@@ -7,84 +7,36 @@
 
 {% block content %}
 <div class="container-fluid p-0">
-    
     <div class="row g-4">
-        <!-- Employee Info Card -->
-        <div class="col-lg-4">
-            <div class="card border-0">
-                <div class="card-body text-center p-4">
-                    <div class="bg-primary bg-opacity-10 p-4 rounded-circle d-inline-block mb-3">
-                        <i class="bi bi-person-circle fs-1 text-primary"></i>
-                    </div>
-                    <h4 class="mb-1">{{ employee.full_name }}</h4>
-                    <p class="text-muted mb-3">{{ employee.position }}</p>
-                    
-                    {% if employee.is_active %}
-                        <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 mb-3">
-                            <i class="bi bi-check-circle me-1"></i> Active Employee
-                        </span>
-                    {% else %}
-                        <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 mb-3">
-                            <i class="bi bi-dash-circle me-1"></i> Inactive
-                        </span>
-                    {% endif %}
-                    
-                    <hr>
-                    
-                    <div class="text-start">
-                        <div class="mb-3">
-                            <small class="text-muted text-uppercase fw-bold">Department</small>
-                            <p class="mb-0">
-                                <i class="bi bi-diagram-3 me-2"></i>{{ employee.department }}
-                            </p>
+        <div class="col-xl-4">
+            <div class="card border-0 h-100">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="employee-avatar mx-auto mb-3">
+                            <i class="bi bi-person-circle"></i>
                         </div>
-                        <div class="mb-3">
-                            <small class="text-muted text-uppercase fw-bold">Email</small>
-                            <p class="mb-0">
-                                <i class="bi bi-envelope me-2"></i>{{ employee.email }}
-                            </p>
-                        </div>
-                        <div class="mb-3">
-                            <small class="text-muted text-uppercase fw-bold">Date of Birth</small>
-                            <p class="mb-0">
-                                <i class="bi bi-cake2 me-2"></i>
-                                {% if employee.date_of_birth %}
-                                    {{ employee.date_of_birth|date:"F j, Y" }}
-                                {% else %}
-                                    Not specified
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div class="mb-3">
-                            <small class="text-muted text-uppercase fw-bold">Hire Date</small>
-                            <p class="mb-0">
-                                <i class="bi bi-calendar-check me-2"></i>
-                                {% if employee.hire_date %}
-                                    {{ employee.hire_date|date:"F j, Y" }}
-                                {% else %}
-                                    Not specified
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div class="mb-3">
-                            <small class="text-muted text-uppercase fw-bold">Today's Status</small>
-                            <p class="mb-0">
-                                {% if employee.is_checked_in_today %}
-                                    <span class="text-success">
-                                        <i class="bi bi-box-arrow-in-right me-2"></i>Checked In
-                                    </span>
-                                {% else %}
-                                    <span class="text-muted">
-                                        <i class="bi bi-dash me-2"></i>Not Present
-                                    </span>
-                                {% endif %}
-                            </p>
+                        <h4 class="mb-1">{{ employee.full_name }}</h4>
+                        <p class="text-muted mb-2">{{ employee.position|default:"No role assigned yet" }}</p>
+                        <div class="d-flex justify-content-center gap-2 flex-wrap">
+                            <span class="badge bg-info bg-opacity-10 text-info px-3 py-2">{{ employee.employee_id }}</span>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2">{{ employee.category.name }}</span>
+                            {% if employee.is_active %}
+                                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2">Inactive</span>
+                            {% endif %}
                         </div>
                     </div>
-                    
-                    <hr>
-                    
-                    <div class="d-flex gap-2">
+
+                    <div class="detail-card">
+                        <small class="detail-label">Quick Overview</small>
+                        <div class="detail-line"><span>Department</span><strong>{{ employee.department|default:"-" }}</strong></div>
+                        <div class="detail-line"><span>Line Manager</span><strong>{{ employee.line_manager.full_name|default:"-" }}</strong></div>
+                        <div class="detail-line"><span>Employment Status</span><strong>{{ employee.get_employment_status_display }}</strong></div>
+                        <div class="detail-line"><span>Today's Status</span><strong>{% if employee.is_checked_in_today %}Checked In{% else %}Not Present{% endif %}</strong></div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
                         <a href="{% url 'employee_edit' employee.pk %}" class="btn btn-outline-secondary flex-grow-1">
                             <i class="bi bi-pencil"></i> Edit
                         </a>
@@ -95,18 +47,203 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Attendance History -->
-        <div class="col-lg-8">
+
+        <div class="col-xl-8">
+            <div class="card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-0"><i class="bi bi-grid me-2"></i>Employee Profile</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="detail-card h-100">
+                                <small class="detail-label">Basic Information</small>
+                                <div class="detail-line"><span>Gender</span><strong>{{ employee.get_gender_display|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Date of Birth</span><strong>{% if employee.date_of_birth %}{{ employee.date_of_birth|date:"F j, Y" }}{% else %}-{% endif %}</strong></div>
+                                <div class="detail-line"><span>Nationality</span><strong>{{ employee.nationality|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Marital Status</span><strong>{{ employee.get_marital_status_display|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Religion</span><strong>{{ employee.religion|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Blood Group</span><strong>{{ employee.blood_group|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Genotype</span><strong>{{ employee.genotype|default:"-" }}</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="detail-card h-100">
+                                <small class="detail-label">Contact Information</small>
+                                <div class="detail-line"><span>Work Email</span><strong>{{ employee.email }}</strong></div>
+                                <div class="detail-line"><span>Personal Email</span><strong>{{ employee.personal_email|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Phone</span><strong>{{ employee.phone|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Alternative Phone</span><strong>{{ employee.alternative_phone|default:"-" }}</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="detail-card h-100">
+                                <small class="detail-label">Employment</small>
+                                <div class="detail-line"><span>Position</span><strong>{{ employee.position|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Department</span><strong>{{ employee.department|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Hire Date</span><strong>{% if employee.hire_date %}{{ employee.hire_date|date:"F j, Y" }}{% else %}-{% endif %}</strong></div>
+                                <div class="detail-line"><span>End Date</span><strong>{% if employee.end_date %}{{ employee.end_date|date:"F j, Y" }}{% else %}-{% endif %}</strong></div>
+                                <div class="detail-line"><span>Probation End</span><strong>{% if employee.probation_end_date %}{{ employee.probation_end_date|date:"F j, Y" }}{% else %}-{% endif %}</strong></div>
+                                <div class="detail-line"><span>Supervisor</span><strong>{{ employee.supervisor.full_name|default:"-" }}</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="detail-card h-100">
+                                <small class="detail-label">Address</small>
+                                <div class="detail-block">
+                                    <span>Residential Address</span>
+                                    <strong>{{ employee.residential_address|default:"-"|linebreaksbr }}</strong>
+                                </div>
+                                <div class="detail-block">
+                                    <span>Permanent Address</span>
+                                    <strong>{{ employee.permanent_address|default:"-"|linebreaksbr }}</strong>
+                                </div>
+                                <div class="detail-line"><span>City</span><strong>{{ employee.city|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>State</span><strong>{{ employee.state|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Country</span><strong>{{ employee.country|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Postal Code</span><strong>{{ employee.postal_code|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Local Government</span><strong>{{ employee.local_government|default:"-" }}</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="detail-card h-100">
+                                <small class="detail-label">Compliance</small>
+                                <div class="detail-line"><span>NIN</span><strong>{{ employee.nin_number|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>TIN</span><strong>{{ employee.tin_number|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Driver's License</span><strong>{{ employee.drivers_license_number|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Passport Number</span><strong>{{ employee.passport_number|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Passport Expiry</span><strong>{% if employee.passport_expiry_date %}{{ employee.passport_expiry_date|date:"F j, Y" }}{% else %}-{% endif %}</strong></div>
+                                <div class="detail-line"><span>Work Permit</span><strong>{{ employee.work_permit_number|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Work Permit Expiry</span><strong>{% if employee.work_permit_expiry_date %}{{ employee.work_permit_expiry_date|date:"F j, Y" }}{% else %}-{% endif %}</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="detail-card h-100">
+                                <small class="detail-label">Education Snapshot</small>
+                                <div class="detail-line"><span>Institution</span><strong>{{ employee.institution|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Qualification</span><strong>{{ employee.qualification_obtained|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Field of Study</span><strong>{{ employee.field_of_study|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Graduation Year</span><strong>{{ employee.year_of_graduation|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Class of Degree</span><strong>{{ employee.class_of_degree|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Student ID</span><strong>{{ employee.student_id|default:"-" }}</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="detail-card h-100">
+                                <small class="detail-label">Emergency & Next of Kin</small>
+                                <div class="detail-block">
+                                    <span>Emergency Contact</span>
+                                    <strong>
+                                        {{ employee.emergency_contact_name|default:"-" }}<br>
+                                        {{ employee.emergency_contact_relationship|default:"-" }}<br>
+                                        {{ employee.emergency_contact_phone|default:"-" }}
+                                    </strong>
+                                </div>
+                                <div class="detail-block">
+                                    <span>Next of Kin</span>
+                                    <strong>
+                                        {{ employee.next_of_kin_name|default:"-" }}<br>
+                                        {{ employee.next_of_kin_relationship|default:"-" }}<br>
+                                        {{ employee.next_of_kin_phone|default:"-" }}<br>
+                                        {{ employee.next_of_kin_email|default:"-" }}
+                                    </strong>
+                                </div>
+                                <div class="detail-block">
+                                    <span>Next of Kin Address</span>
+                                    <strong>{{ employee.next_of_kin_address|default:"-"|linebreaksbr }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-0"><i class="bi bi-journal-bookmark me-2"></i>Qualifications & Experience</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-lg-4">
+                            <div class="detail-card h-100">
+                                <small class="detail-label">Education Records</small>
+                                {% for education in employee.educations.all %}
+                                    <div class="timeline-item">
+                                        <strong>{{ education.qualification_obtained }}</strong>
+                                        <span>{{ education.institution|default:"Institution not specified" }}</span>
+                                        <span>{{ education.field_of_study|default:"Field not specified" }}</span>
+                                        <span>
+                                            {% if education.year_of_graduation %}{{ education.year_of_graduation }}{% else %}Year not specified{% endif %}
+                                            {% if education.class_of_degree %} · {{ education.class_of_degree }}{% endif %}
+                                        </span>
+                                    </div>
+                                {% empty %}
+                                    <p class="text-muted mb-0">No repeatable education records added yet.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="detail-card h-100">
+                                <small class="detail-label">Certifications</small>
+                                {% for certification in employee.certifications.all %}
+                                    <div class="timeline-item">
+                                        <strong>{{ certification.certification_name }}</strong>
+                                        <span>{{ certification.issuing_body|default:"Issuing body not specified" }}</span>
+                                        <span>
+                                            {% if certification.date_obtained %}Obtained {{ certification.date_obtained|date:"M Y" }}{% else %}Date obtained not specified{% endif %}
+                                        </span>
+                                        <span>
+                                            {% if certification.expiry_date %}Expires {{ certification.expiry_date|date:"M j, Y" }}{% else %}No expiry date{% endif %}
+                                        </span>
+                                    </div>
+                                {% empty %}
+                                    <p class="text-muted mb-0">No certifications added yet.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="detail-card h-100">
+                                <small class="detail-label">Work Experience</small>
+                                {% for experience in employee.work_experiences.all %}
+                                    <div class="timeline-item">
+                                        <strong>{{ experience.employer_name }}</strong>
+                                        <span>{{ experience.job_title|default:"Job title not specified" }}</span>
+                                        <span>
+                                            {% if experience.start_date %}{{ experience.start_date|date:"M Y" }}{% else %}Start not specified{% endif %}
+                                            -
+                                            {% if experience.end_date %}{{ experience.end_date|date:"M Y" }}{% else %}End not specified{% endif %}
+                                        </span>
+                                        {% if experience.reason_for_leaving %}
+                                            <span>Reason: {{ experience.reason_for_leaving }}</span>
+                                        {% endif %}
+                                        {% if experience.skills_and_competence %}
+                                            <span>Skills: {{ experience.skills_and_competence }}</span>
+                                        {% endif %}
+                                    </div>
+                                {% empty %}
+                                    <p class="text-muted mb-0">No work history added yet.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="card border-0">
                 <div class="card-header bg-white border-0 pt-4 px-4">
-                    <h5 class="mb-0">
-                        <i class="bi bi-clock-history me-2"></i>Recent Attendance History
-                    </h5>
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Attendance History</h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
+                        <table class="table table-hover align-middle mb-0">
                             <thead>
                                 <tr>
                                     <th>Date</th>
@@ -121,29 +258,15 @@
                                 <tr>
                                     <td>{{ record.check_in_time|date:"M d, Y" }}</td>
                                     <td>{{ record.check_in_time|time:"H:i" }}</td>
-                                    <td>
-                                        {% if record.check_out_time %}
-                                            {{ record.check_out_time|time:"H:i" }}
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if record.hours_worked %}
-                                            {{ record.hours_worked }} hrs
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
+                                    <td>{% if record.check_out_time %}{{ record.check_out_time|time:"H:i" }}{% else %}-{% endif %}</td>
+                                    <td>{% if record.hours_worked %}{{ record.hours_worked }} hrs{% else %}-{% endif %}</td>
                                     <td>
                                         {% if record.is_active %}
-                                            <span class="badge bg-warning bg-opacity-10 text-warning">
-                                                <i class="bi bi-hourglass-split me-1"></i> Active
-                                            </span>
+                                            <span class="badge bg-warning bg-opacity-10 text-warning">Active</span>
+                                        {% elif record.is_late %}
+                                            <span class="badge bg-danger bg-opacity-10 text-danger">Late</span>
                                         {% else %}
-                                            <span class="badge bg-success bg-opacity-10 text-success">
-                                                <i class="bi bi-check-circle me-1"></i> Completed
-                                            </span>
+                                            <span class="badge bg-success bg-opacity-10 text-success">Completed</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -163,4 +286,95 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+    .employee-avatar {
+        width: 112px;
+        height: 112px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(15, 23, 42, 0.08));
+        color: #2563eb;
+        font-size: 3rem;
+    }
+
+    .detail-card {
+        padding: 1.15rem 1.2rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        background: #f8fafc;
+    }
+
+    .detail-label {
+        display: block;
+        margin-bottom: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #2563eb;
+        font-weight: 700;
+    }
+
+    .detail-line,
+    .detail-block {
+        padding: 0.55rem 0;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+    }
+
+    .detail-line:last-child,
+    .detail-block:last-child {
+        border-bottom: 0;
+    }
+
+    .detail-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .detail-line span,
+    .detail-block span {
+        color: #64748b;
+        font-size: 0.92rem;
+    }
+
+    .detail-line strong,
+    .detail-block strong {
+        color: #0f172a;
+        text-align: right;
+    }
+
+    .detail-block strong {
+        display: block;
+        margin-top: 0.35rem;
+        text-align: left;
+    }
+
+    .timeline-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+    }
+
+    .timeline-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .timeline-item strong,
+    .timeline-item span {
+        display: block;
+    }
+
+    .timeline-item strong {
+        color: #0f172a;
+        margin-bottom: 0.2rem;
+    }
+
+    .timeline-item span {
+        color: #64748b;
+        font-size: 0.94rem;
+    }
+</style>
 {% endblock %}

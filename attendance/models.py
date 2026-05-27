@@ -52,6 +52,32 @@ class Employee(models.Model):
         ('Dr.', 'Dr.'),
         ('Prof.', 'Prof.'),
     ]
+
+    MARITAL_STATUS_CHOICES = [
+        ('single', 'Single'),
+        ('married', 'Married'),
+        ('divorced', 'Divorced'),
+        ('widowed', 'Widowed'),
+    ]
+
+    BLOOD_GROUP_CHOICES = [
+        ('A+', 'A+'),
+        ('A-', 'A-'),
+        ('B+', 'B+'),
+        ('B-', 'B-'),
+        ('AB+', 'AB+'),
+        ('AB-', 'AB-'),
+        ('O+', 'O+'),
+        ('O-', 'O-'),
+    ]
+
+    GENOTYPE_CHOICES = [
+        ('AA', 'AA'),
+        ('AS', 'AS'),
+        ('AC', 'AC'),
+        ('SS', 'SS'),
+        ('SC', 'SC'),
+    ]
     
     EMPLOYMENT_STATUS = [
         ('active', 'Active'),
@@ -71,23 +97,67 @@ class Employee(models.Model):
     email = models.EmailField(unique=True, help_text="Work/primary email used for kiosk check-in")
     personal_email = models.EmailField(blank=True, null=True, help_text="Personal email (for interns/students)")
     phone = models.CharField(max_length=20)
+    alternative_phone = models.CharField(max_length=20, blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     date_of_birth = models.DateField(null=True, blank=True, help_text="Required for Staff only")
+    nationality = models.CharField(max_length=100, blank=True)
+    marital_status = models.CharField(max_length=20, choices=MARITAL_STATUS_CHOICES, blank=True)
+    religion = models.CharField(max_length=100, blank=True)
+    blood_group = models.CharField(max_length=5, choices=BLOOD_GROUP_CHOICES, blank=True)
+    genotype = models.CharField(max_length=5, choices=GENOTYPE_CHOICES, blank=True)
+
+    residential_address = models.TextField(blank=True)
+    permanent_address = models.TextField(blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    postal_code = models.CharField(max_length=20, blank=True)
+    local_government = models.CharField(max_length=100, blank=True)
+
+    emergency_contact_name = models.CharField(max_length=150, blank=True)
+    emergency_contact_relationship = models.CharField(max_length=100, blank=True)
+    emergency_contact_phone = models.CharField(max_length=20, blank=True)
+
+    next_of_kin_name = models.CharField(max_length=150, blank=True)
+    next_of_kin_relationship = models.CharField(max_length=100, blank=True)
+    next_of_kin_phone = models.CharField(max_length=20, blank=True)
+    next_of_kin_email = models.EmailField(blank=True)
+    next_of_kin_address = models.TextField(blank=True)
     
     # === Work Information ===
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
     position = models.CharField(max_length=100, blank=True, help_text="Job title or role")
+    line_manager = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='direct_reports',
+        help_text="Line manager or reporting manager",
+    )
     
     # === Dates ===
     hire_date = models.DateField(null=True, blank=True, help_text="Staff: Hire date. Intern/Student: Start date")
     end_date = models.DateField(null=True, blank=True, help_text="For interns/students: Expected end date")
+    probation_end_date = models.DateField(null=True, blank=True)
     
     # === Intern/Student Specific ===
     institution = models.CharField(max_length=200, blank=True, help_text="University/School name")
+    qualification_obtained = models.CharField(max_length=150, blank=True)
     field_of_study = models.CharField(max_length=100, blank=True, help_text="Course or program")
+    year_of_graduation = models.PositiveIntegerField(null=True, blank=True)
+    class_of_degree = models.CharField(max_length=100, blank=True)
     student_id = models.CharField(max_length=50, blank=True, help_text="School ID number")
     supervisor = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, 
                                    related_name='supervisees', help_text="Supervising staff member")
+
+    nin_number = models.CharField(max_length=20, blank=True)
+    passport_number = models.CharField(max_length=30, blank=True)
+    passport_expiry_date = models.DateField(null=True, blank=True)
+    tin_number = models.CharField(max_length=30, blank=True)
+    drivers_license_number = models.CharField(max_length=50, blank=True)
+    work_permit_number = models.CharField(max_length=50, blank=True)
+    work_permit_expiry_date = models.DateField(null=True, blank=True)
     
     # === Status ===
     employment_status = models.CharField(max_length=20, choices=EMPLOYMENT_STATUS, default='active')
@@ -207,6 +277,94 @@ class Employee(models.Model):
                 'years': self.years_of_service
             }
         return None
+
+
+class EmployeeEducation(models.Model):
+    """Repeatable educational qualifications for an employee."""
+
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='educations')
+    qualification_obtained = models.CharField(max_length=150)
+    institution = models.CharField(max_length=200, blank=True)
+    field_of_study = models.CharField(max_length=150, blank=True)
+    year_of_graduation = models.PositiveIntegerField(null=True, blank=True)
+    class_of_degree = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-year_of_graduation', 'qualification_obtained', 'institution']
+
+    def __str__(self):
+        return f"{self.employee.full_name} - {self.qualification_obtained}"
+
+
+class EmployeeCertification(models.Model):
+    """Repeatable professional certifications for an employee."""
+
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='certifications')
+    certification_name = models.CharField(max_length=150)
+    issuing_body = models.CharField(max_length=150, blank=True)
+    date_obtained = models.DateField(null=True, blank=True)
+    expiry_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date_obtained', 'certification_name']
+
+    def __str__(self):
+        return f"{self.employee.full_name} - {self.certification_name}"
+
+
+class EmployeeWorkExperience(models.Model):
+    """Repeatable pre-employment work history for an employee."""
+
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='work_experiences')
+    employer_name = models.CharField(max_length=200)
+    job_title = models.CharField(max_length=150, blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    reason_for_leaving = models.TextField(blank=True)
+    skills_and_competence = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-end_date', '-start_date', 'employer_name']
+
+    def __str__(self):
+        return f"{self.employee.full_name} - {self.employer_name}"
+
+
+class AttendanceException(models.Model):
+    """Day-based attendance exceptions like leave, sick days, and approved absences."""
+
+    EXCEPTION_TYPE_CHOICES = [
+        ('leave', 'Leave'),
+        ('sick', 'Sick Day'),
+        ('authorized_absence', 'Authorized Absence'),
+        ('training', 'Training'),
+        ('remote', 'Remote Work'),
+        ('half_day', 'Half Day'),
+    ]
+
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='attendance_exceptions')
+    exception_type = models.CharField(max_length=30, choices=EXCEPTION_TYPE_CHOICES)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-start_date', '-end_date', 'employee__first_name']
+        indexes = [
+            models.Index(fields=['start_date', 'end_date']),
+            models.Index(fields=['employee', 'start_date']),
+        ]
+
+    def __str__(self):
+        return f"{self.employee.full_name} - {self.get_exception_type_display()}"
+
+    @property
+    def day_count(self):
+        return (self.end_date - self.start_date).days + 1
 
 
 class AttendanceRecord(models.Model):

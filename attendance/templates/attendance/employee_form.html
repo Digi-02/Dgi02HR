@@ -8,322 +8,704 @@
 {% block content %}
 <div class="container-fluid p-0">
     <div class="row">
-        <div class="col-lg-10 mx-auto">
-            <div class="card border-0">
+        <div class="col-xl-11 mx-auto">
+            <div class="card border-0 employee-form-card">
                 <div class="card-header bg-white border-0 pt-4 px-4">
-                    <h5 class="mb-0">
-                        <i class="bi bi-person-vcard me-2"></i>
-                        {% if action == 'Add' %}
-                            Add New Person
-                        {% else %}
-                            Edit Information
-                        {% endif %}
-                    </h5>
-                    <p class="text-muted mt-2 mb-0">
-                        <i class="bi bi-info-circle me-1"></i>
-                        Fields shown depend on the selected category (Staff, Intern, or Student).
-                    </p>
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                        <div>
+                            <h5 class="mb-1">
+                                <i class="bi bi-person-vcard me-2"></i>
+                                {% if action == 'Add' %}
+                                    Add New Person
+                                {% else %}
+                                    Edit Information
+                                {% endif %}
+                            </h5>
+                            <p class="text-muted mb-0">
+                                Group related information together and move across tabs without losing the form state.
+                            </p>
+                        </div>
+                        <div class="employee-form-tip">
+                            <small class="text-uppercase fw-semibold d-block">Current setup</small>
+                            <span class="text-muted">Core employee profile first. Repeatable education, certifications, and work history can follow next.</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body px-4 pb-4">
                     <form method="POST" id="employee-form">
                         {% csrf_token %}
-                        
+
                         {% if form.non_field_errors %}
                         <div class="alert alert-danger">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
                             {{ form.non_field_errors }}
                         </div>
                         {% endif %}
-                        
-                        <!-- Category Selection -->
-                        <div class="mb-4">
-                            <h6 class="text-uppercase text-muted mb-3 fw-bold small">
-                                <i class="bi bi-tag me-2"></i>Category
-                            </h6>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label class="form-label">
-                                        <i class="bi bi-people"></i> Person Type
-                                    </label>
-                                    {{ form.category }}
-                                    {% if form.category.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.category.errors.0 }}
+
+                        <ul class="nav nav-pills employee-tabs mb-4" id="employee-tabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="basic-tab" data-bs-toggle="pill" data-bs-target="#basic-pane" type="button" role="tab" aria-controls="basic-pane" aria-selected="true">Basic</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="contact-tab" data-bs-toggle="pill" data-bs-target="#contact-pane" type="button" role="tab" aria-controls="contact-pane" aria-selected="false">Contact</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="address-tab" data-bs-toggle="pill" data-bs-target="#address-pane" type="button" role="tab" aria-controls="address-pane" aria-selected="false">Address</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="employment-tab" data-bs-toggle="pill" data-bs-target="#employment-pane" type="button" role="tab" aria-controls="employment-pane" aria-selected="false">Employment</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="compliance-tab" data-bs-toggle="pill" data-bs-target="#compliance-pane" type="button" role="tab" aria-controls="compliance-pane" aria-selected="false">Compliance</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="education-tab" data-bs-toggle="pill" data-bs-target="#education-pane" type="button" role="tab" aria-controls="education-pane" aria-selected="false">Education</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="certifications-tab" data-bs-toggle="pill" data-bs-target="#certifications-pane" type="button" role="tab" aria-controls="certifications-pane" aria-selected="false">Certifications</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="work-history-tab" data-bs-toggle="pill" data-bs-target="#work-history-pane" type="button" role="tab" aria-controls="work-history-pane" aria-selected="false">Work History</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="contacts-tab" data-bs-toggle="pill" data-bs-target="#contacts-pane" type="button" role="tab" aria-controls="contacts-pane" aria-selected="false">Contacts</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="status-tab" data-bs-toggle="pill" data-bs-target="#status-pane" type="button" role="tab" aria-controls="status-pane" aria-selected="false">Status</button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="employee-tab-content">
+                            <div class="tab-pane fade show active" id="basic-pane" role="tabpanel" aria-labelledby="basic-tab" tabindex="0">
+                                <div class="form-section-card">
+                                    <h6 class="form-section-title"><i class="bi bi-person me-2"></i>Identity</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Person Type</label>
+                                            {{ form.category }}
+                                            {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Employee ID</label>
+                                            <input type="text" class="form-control" value="{% if form.instance.employee_id %}{{ form.instance.employee_id }}{% else %}Auto-generated on save{% endif %}" disabled>
+                                            <small class="text-muted">The system generates this automatically.</small>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Title</label>
+                                            {{ form.title }}
+                                            {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">First Name</label>
+                                            {{ form.first_name }}
+                                            {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Last Name</label>
+                                            {{ form.last_name }}
+                                            {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Gender</label>
+                                            {{ form.gender }}
+                                            {% if form.gender.errors %}<div class="text-danger small mt-1">{{ form.gender.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Date of Birth</label>
+                                            {{ form.date_of_birth }}
+                                            {% if form.date_of_birth.errors %}<div class="text-danger small mt-1">{{ form.date_of_birth.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Nationality</label>
+                                            {{ form.nationality }}
+                                            {% if form.nationality.errors %}<div class="text-danger small mt-1">{{ form.nationality.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Marital Status</label>
+                                            {{ form.marital_status }}
+                                            {% if form.marital_status.errors %}<div class="text-danger small mt-1">{{ form.marital_status.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Religion</label>
+                                            {{ form.religion }}
+                                            {% if form.religion.errors %}<div class="text-danger small mt-1">{{ form.religion.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Blood Group</label>
+                                            {{ form.blood_group }}
+                                            {% if form.blood_group.errors %}<div class="text-danger small mt-1">{{ form.blood_group.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Genotype</label>
+                                            {{ form.genotype }}
+                                            {% if form.genotype.errors %}<div class="text-danger small mt-1">{{ form.genotype.errors.0 }}</div>{% endif %}
+                                        </div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="contact-pane" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">
+                                <div class="form-section-card">
+                                    <h6 class="form-section-title"><i class="bi bi-envelope me-2"></i>Contact Information</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Work Email</label>
+                                            {{ form.email }}
+                                            {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Personal Email</label>
+                                            {{ form.personal_email }}
+                                            {% if form.personal_email.errors %}<div class="text-danger small mt-1">{{ form.personal_email.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Phone Number</label>
+                                            {{ form.phone }}
+                                            {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Alternative Phone</label>
+                                            {{ form.alternative_phone }}
+                                            {% if form.alternative_phone.errors %}<div class="text-danger small mt-1">{{ form.alternative_phone.errors.0 }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="address-pane" role="tabpanel" aria-labelledby="address-tab" tabindex="0">
+                                <div class="form-section-card">
+                                    <h6 class="form-section-title"><i class="bi bi-geo-alt me-2"></i>Address Details</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Residential Address</label>
+                                            {{ form.residential_address }}
+                                            {% if form.residential_address.errors %}<div class="text-danger small mt-1">{{ form.residential_address.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Permanent Address</label>
+                                            {{ form.permanent_address }}
+                                            {% if form.permanent_address.errors %}<div class="text-danger small mt-1">{{ form.permanent_address.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">City</label>
+                                            {{ form.city }}
+                                            {% if form.city.errors %}<div class="text-danger small mt-1">{{ form.city.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">State</label>
+                                            {{ form.state }}
+                                            {% if form.state.errors %}<div class="text-danger small mt-1">{{ form.state.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Country</label>
+                                            {{ form.country }}
+                                            {% if form.country.errors %}<div class="text-danger small mt-1">{{ form.country.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Postal Code</label>
+                                            {{ form.postal_code }}
+                                            {% if form.postal_code.errors %}<div class="text-danger small mt-1">{{ form.postal_code.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Local Government</label>
+                                            {{ form.local_government }}
+                                            {% if form.local_government.errors %}<div class="text-danger small mt-1">{{ form.local_government.errors.0 }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="employment-pane" role="tabpanel" aria-labelledby="employment-tab" tabindex="0">
+                                <div class="form-section-card">
+                                    <h6 class="form-section-title"><i class="bi bi-briefcase me-2"></i>Employment Information</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-4" id="department-field">
+                                            <label class="form-label">Department</label>
+                                            {{ form.department }}
+                                            {% if form.department.errors %}<div class="text-danger small mt-1">{{ form.department.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Position / Role</label>
+                                            {{ form.position }}
+                                            {% if form.position.errors %}<div class="text-danger small mt-1">{{ form.position.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Line Manager</label>
+                                            {{ form.line_manager }}
+                                            {% if form.line_manager.errors %}<div class="text-danger small mt-1">{{ form.line_manager.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label" for="id_hire_date">Hire Date</label>
+                                            {{ form.hire_date }}
+                                            {% if form.hire_date.errors %}<div class="text-danger small mt-1">{{ form.hire_date.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4" id="end-date-field">
+                                            <label class="form-label">End Date</label>
+                                            {{ form.end_date }}
+                                            {% if form.end_date.errors %}<div class="text-danger small mt-1">{{ form.end_date.errors.0 }}</div>{% endif %}
+                                            <small class="text-muted">For interns and students.</small>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Probation End Date</label>
+                                            {{ form.probation_end_date }}
+                                            {% if form.probation_end_date.errors %}<div class="text-danger small mt-1">{{ form.probation_end_date.errors.0 }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="compliance-pane" role="tabpanel" aria-labelledby="compliance-tab" tabindex="0">
+                                <div class="form-section-card">
+                                    <h6 class="form-section-title"><i class="bi bi-shield-check me-2"></i>Identity & Compliance</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">NIN Number</label>
+                                            {{ form.nin_number }}
+                                            {% if form.nin_number.errors %}<div class="text-danger small mt-1">{{ form.nin_number.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">TIN</label>
+                                            {{ form.tin_number }}
+                                            {% if form.tin_number.errors %}<div class="text-danger small mt-1">{{ form.tin_number.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Driver's License</label>
+                                            {{ form.drivers_license_number }}
+                                            {% if form.drivers_license_number.errors %}<div class="text-danger small mt-1">{{ form.drivers_license_number.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Passport Number</label>
+                                            {{ form.passport_number }}
+                                            {% if form.passport_number.errors %}<div class="text-danger small mt-1">{{ form.passport_number.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Passport Expiry Date</label>
+                                            {{ form.passport_expiry_date }}
+                                            {% if form.passport_expiry_date.errors %}<div class="text-danger small mt-1">{{ form.passport_expiry_date.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Work Permit / Visa Permit</label>
+                                            {{ form.work_permit_number }}
+                                            {% if form.work_permit_number.errors %}<div class="text-danger small mt-1">{{ form.work_permit_number.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Work Permit Expiry Date</label>
+                                            {{ form.work_permit_expiry_date }}
+                                            {% if form.work_permit_expiry_date.errors %}<div class="text-danger small mt-1">{{ form.work_permit_expiry_date.errors.0 }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="education-pane" role="tabpanel" aria-labelledby="education-tab" tabindex="0">
+                                <div class="form-section-card" id="intern-student-section">
+                                    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                                        <h6 class="form-section-title mb-0"><i class="bi bi-mortarboard me-2"></i>Education & Placement</h6>
+                                        <small class="text-muted">Use the employee fields for school placement details, and the repeatable cards below for full qualification history.</small>
+                                    </div>
+                                    <div class="row g-3 mt-1">
+                                        <div class="col-md-6" id="institution-field">
+                                            <label class="form-label">Institution</label>
+                                            {{ form.institution }}
+                                            {% if form.institution.errors %}<div class="text-danger small mt-1">{{ form.institution.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Qualification Obtained</label>
+                                            {{ form.qualification_obtained }}
+                                            {% if form.qualification_obtained.errors %}<div class="text-danger small mt-1">{{ form.qualification_obtained.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6" id="field-of-study-field">
+                                            <label class="form-label">Field of Study</label>
+                                            {{ form.field_of_study }}
+                                            {% if form.field_of_study.errors %}<div class="text-danger small mt-1">{{ form.field_of_study.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Year of Graduation</label>
+                                            {{ form.year_of_graduation }}
+                                            {% if form.year_of_graduation.errors %}<div class="text-danger small mt-1">{{ form.year_of_graduation.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Class of Degree</label>
+                                            {{ form.class_of_degree }}
+                                            {% if form.class_of_degree.errors %}<div class="text-danger small mt-1">{{ form.class_of_degree.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6" id="student-id-field">
+                                            <label class="form-label">Student ID</label>
+                                            {{ form.student_id }}
+                                            {% if form.student_id.errors %}<div class="text-danger small mt-1">{{ form.student_id.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6" id="supervisor-field">
+                                            <label class="form-label">Supervisor</label>
+                                            {{ form.supervisor }}
+                                            {% if form.supervisor.errors %}<div class="text-danger small mt-1">{{ form.supervisor.errors.0 }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section-card">
+                                    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+                                        <div>
+                                            <h6 class="form-section-title mb-1"><i class="bi bi-journal-text me-2"></i>Educational Qualifications</h6>
+                                            <small class="text-muted">Add as many qualifications as needed.</small>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-primary btn-sm add-formset-row" data-prefix="education" data-container="education-forms">
+                                            <i class="bi bi-plus-circle me-1"></i> Add Qualification
+                                        </button>
+                                    </div>
+                                    {{ education_formset.management_form }}
+                                    {% if education_formset.non_form_errors %}
+                                        <div class="alert alert-danger py-2">{{ education_formset.non_form_errors }}</div>
                                     {% endif %}
+                                    <div id="education-forms" class="formset-stack">
+                                        {% for education_item in education_formset %}
+                                            <div class="repeatable-card formset-row">
+                                                {{ education_item.id }}
+                                                <div class="row g-3">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Qualification Obtained</label>
+                                                        {{ education_item.qualification_obtained }}
+                                                        {% if education_item.qualification_obtained.errors %}<div class="text-danger small mt-1">{{ education_item.qualification_obtained.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Institution</label>
+                                                        {{ education_item.institution }}
+                                                        {% if education_item.institution.errors %}<div class="text-danger small mt-1">{{ education_item.institution.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Field of Study</label>
+                                                        {{ education_item.field_of_study }}
+                                                        {% if education_item.field_of_study.errors %}<div class="text-danger small mt-1">{{ education_item.field_of_study.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Year of Graduation</label>
+                                                        {{ education_item.year_of_graduation }}
+                                                        {% if education_item.year_of_graduation.errors %}<div class="text-danger small mt-1">{{ education_item.year_of_graduation.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-5">
+                                                        <label class="form-label">Class of Degree</label>
+                                                        {{ education_item.class_of_degree }}
+                                                        {% if education_item.class_of_degree.errors %}<div class="text-danger small mt-1">{{ education_item.class_of_degree.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-4 d-flex align-items-end justify-content-md-end">
+                                                        <div class="form-check delete-check">
+                                                            {{ education_item.DELETE }}
+                                                            <label class="form-check-label" for="{{ education_item.DELETE.id_for_label }}">Mark for removal</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="certifications-pane" role="tabpanel" aria-labelledby="certifications-tab" tabindex="0">
+                                <div class="form-section-card">
+                                    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+                                        <div>
+                                            <h6 class="form-section-title mb-1"><i class="bi bi-patch-check me-2"></i>Professional Certifications</h6>
+                                            <small class="text-muted">Track certifications, issuing bodies, and expiry dates where needed.</small>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-primary btn-sm add-formset-row" data-prefix="certification" data-container="certification-forms">
+                                            <i class="bi bi-plus-circle me-1"></i> Add Certification
+                                        </button>
+                                    </div>
+                                    {{ certification_formset.management_form }}
+                                    {% if certification_formset.non_form_errors %}
+                                        <div class="alert alert-danger py-2">{{ certification_formset.non_form_errors }}</div>
+                                    {% endif %}
+                                    <div id="certification-forms" class="formset-stack">
+                                        {% for certification_item in certification_formset %}
+                                            <div class="repeatable-card formset-row">
+                                                {{ certification_item.id }}
+                                                <div class="row g-3">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Certification Name</label>
+                                                        {{ certification_item.certification_name }}
+                                                        {% if certification_item.certification_name.errors %}<div class="text-danger small mt-1">{{ certification_item.certification_name.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Issuing Body</label>
+                                                        {{ certification_item.issuing_body }}
+                                                        {% if certification_item.issuing_body.errors %}<div class="text-danger small mt-1">{{ certification_item.issuing_body.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label">Date Obtained</label>
+                                                        {{ certification_item.date_obtained }}
+                                                        {% if certification_item.date_obtained.errors %}<div class="text-danger small mt-1">{{ certification_item.date_obtained.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label">Expiry Date</label>
+                                                        {{ certification_item.expiry_date }}
+                                                        {% if certification_item.expiry_date.errors %}<div class="text-danger small mt-1">{{ certification_item.expiry_date.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-12 d-flex justify-content-md-end">
+                                                        <div class="form-check delete-check">
+                                                            {{ certification_item.DELETE }}
+                                                            <label class="form-check-label" for="{{ certification_item.DELETE.id_for_label }}">Mark for removal</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="work-history-pane" role="tabpanel" aria-labelledby="work-history-tab" tabindex="0">
+                                <div class="form-section-card">
+                                    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+                                        <div>
+                                            <h6 class="form-section-title mb-1"><i class="bi bi-briefcase-history me-2"></i>Pre-Employment Work Experience</h6>
+                                            <small class="text-muted">Capture previous roles, durations, reasons for leaving, and strengths gained.</small>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-primary btn-sm add-formset-row" data-prefix="work" data-container="work-forms">
+                                            <i class="bi bi-plus-circle me-1"></i> Add Role
+                                        </button>
+                                    </div>
+                                    {{ work_experience_formset.management_form }}
+                                    {% if work_experience_formset.non_form_errors %}
+                                        <div class="alert alert-danger py-2">{{ work_experience_formset.non_form_errors }}</div>
+                                    {% endif %}
+                                    <div id="work-forms" class="formset-stack">
+                                        {% for work_item in work_experience_formset %}
+                                            <div class="repeatable-card formset-row">
+                                                {{ work_item.id }}
+                                                <div class="row g-3">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Previous Employer</label>
+                                                        {{ work_item.employer_name }}
+                                                        {% if work_item.employer_name.errors %}<div class="text-danger small mt-1">{{ work_item.employer_name.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Job Title</label>
+                                                        {{ work_item.job_title }}
+                                                        {% if work_item.job_title.errors %}<div class="text-danger small mt-1">{{ work_item.job_title.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label">Start Date</label>
+                                                        {{ work_item.start_date }}
+                                                        {% if work_item.start_date.errors %}<div class="text-danger small mt-1">{{ work_item.start_date.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label">End Date</label>
+                                                        {{ work_item.end_date }}
+                                                        {% if work_item.end_date.errors %}<div class="text-danger small mt-1">{{ work_item.end_date.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Reason for Leaving</label>
+                                                        {{ work_item.reason_for_leaving }}
+                                                        {% if work_item.reason_for_leaving.errors %}<div class="text-danger small mt-1">{{ work_item.reason_for_leaving.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Skills and Competence</label>
+                                                        {{ work_item.skills_and_competence }}
+                                                        {% if work_item.skills_and_competence.errors %}<div class="text-danger small mt-1">{{ work_item.skills_and_competence.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-12 d-flex justify-content-md-end">
+                                                        <div class="form-check delete-check">
+                                                            {{ work_item.DELETE }}
+                                                            <label class="form-check-label" for="{{ work_item.DELETE.id_for_label }}">Mark for removal</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="contacts-pane" role="tabpanel" aria-labelledby="contacts-tab" tabindex="0">
+                                <div class="form-section-card">
+                                    <h6 class="form-section-title"><i class="bi bi-telephone-forward me-2"></i>Emergency Contact</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Full Name</label>
+                                            {{ form.emergency_contact_name }}
+                                            {% if form.emergency_contact_name.errors %}<div class="text-danger small mt-1">{{ form.emergency_contact_name.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Relationship</label>
+                                            {{ form.emergency_contact_relationship }}
+                                            {% if form.emergency_contact_relationship.errors %}<div class="text-danger small mt-1">{{ form.emergency_contact_relationship.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Phone Number</label>
+                                            {{ form.emergency_contact_phone }}
+                                            {% if form.emergency_contact_phone.errors %}<div class="text-danger small mt-1">{{ form.emergency_contact_phone.errors.0 }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section-card">
+                                    <h6 class="form-section-title"><i class="bi bi-people me-2"></i>Next of Kin</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Full Name</label>
+                                            {{ form.next_of_kin_name }}
+                                            {% if form.next_of_kin_name.errors %}<div class="text-danger small mt-1">{{ form.next_of_kin_name.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Relationship</label>
+                                            {{ form.next_of_kin_relationship }}
+                                            {% if form.next_of_kin_relationship.errors %}<div class="text-danger small mt-1">{{ form.next_of_kin_relationship.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Phone Number</label>
+                                            {{ form.next_of_kin_phone }}
+                                            {% if form.next_of_kin_phone.errors %}<div class="text-danger small mt-1">{{ form.next_of_kin_phone.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Email Address</label>
+                                            {{ form.next_of_kin_email }}
+                                            {% if form.next_of_kin_email.errors %}<div class="text-danger small mt-1">{{ form.next_of_kin_email.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Address</label>
+                                            {{ form.next_of_kin_address }}
+                                            {% if form.next_of_kin_address.errors %}<div class="text-danger small mt-1">{{ form.next_of_kin_address.errors.0 }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="status-pane" role="tabpanel" aria-labelledby="status-tab" tabindex="0">
+                                <div class="form-section-card">
+                                    <h6 class="form-section-title"><i class="bi bi-toggle-on me-2"></i>Status & Access</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Employment Status</label>
+                                            {{ form.employment_status }}
+                                            {% if form.employment_status.errors %}<div class="text-danger small mt-1">{{ form.employment_status.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6 d-flex align-items-center">
+                                            <div class="form-check mt-4">
+                                                {{ form.is_active }}
+                                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                                    Active employee and can use kiosk
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Basic Information -->
-                        <div class="mb-4">
-                            <h6 class="text-uppercase text-muted mb-3 fw-bold small">
-                                <i class="bi bi-person me-2"></i>Basic Information
-                            </h6>
-                            <div class="row g-3">
-                                <div class="col-md-3">
-                                    <label class="form-label">
-                                        <i class="bi bi-person-badge"></i> Title
-                                    </label>
-                                    {{ form.title }}
-                                    {% if form.title.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.title.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">
-                                        <i class="bi bi-person"></i> First Name
-                                    </label>
-                                    {{ form.first_name }}
-                                    {% if form.first_name.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.first_name.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-5">
-                                    <label class="form-label">
-                                        <i class="bi bi-person"></i> Last Name
-                                    </label>
-                                    {{ form.last_name }}
-                                    {% if form.last_name.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.last_name.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="row g-3 mt-2">
-                                <div class="col-md-4">
-                                    <label class="form-label">
-                                        <i class="bi bi-gender-ambiguous"></i> Gender
-                                    </label>
-                                    {{ form.gender }}
-                                    {% if form.gender.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.gender.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Contact Information -->
-                        <div class="mb-4">
-                            <h6 class="text-uppercase text-muted mb-3 fw-bold small">
-                                <i class="bi bi-envelope me-2"></i>Contact Information
-                            </h6>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">
-                                        <i class="bi bi-envelope-at"></i> Work Email (for Kiosk)
-                                    </label>
-                                    {{ form.email }}
-                                    {% if form.email.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.email.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">
-                                        <i class="bi bi-envelope"></i> Personal Email (Optional)
-                                    </label>
-                                    {{ form.personal_email }}
-                                    {% if form.personal_email.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.personal_email.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="row g-3 mt-2">
-                                <div class="col-md-6">
-                                    <label class="form-label">
-                                        <i class="bi bi-telephone"></i> Phone Number
-                                    </label>
-                                    {{ form.phone }}
-                                    {% if form.phone.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.phone.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Work Information -->
-                        <div class="mb-4" id="work-info-section">
-                            <h6 class="text-uppercase text-muted mb-3 fw-bold small">
-                                <i class="bi bi-briefcase me-2"></i>Work Information
-                            </h6>
-                            <div class="row g-3">
-                                <div class="col-md-6" id="department-field">
-                                    <label class="form-label">
-                                        <i class="bi bi-diagram-3"></i> Department
-                                    </label>
-                                    {{ form.department }}
-                                    {% if form.department.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.department.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">
-                                        <i class="bi bi-briefcase"></i> Position / Role
-                                    </label>
-                                    {{ form.position }}
-                                    {% if form.position.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.position.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Dates -->
-                        <div class="mb-4">
-                            <h6 class="text-uppercase text-muted mb-3 fw-bold small">
-                                <i class="bi bi-calendar3 me-2"></i>Important Dates
-                            </h6>
-                            <div class="row g-3">
-                               <div class="col-md-4" id="dob-field">
-    <label class="form-label">
-        <i class="bi bi-cake2"></i> Date of Birth
-    </label>
-    {{ form.date_of_birth }}
-    {% if form.date_of_birth.errors %}
-    <div class="text-danger small mt-1">
-        <i class="bi bi-exclamation-circle"></i> {{ form.date_of_birth.errors.0 }}
-    </div>
-    {% endif %}
-    <small class="text-muted">Optional - For birthday reminders</small>
-</div>
-                                <div class="col-md-4" id="hire-date-field">
-                                    <label class="form-label" for="id_hire_date">
-                                        <i class="bi bi-calendar-check"></i> Hire Date
-                                    </label>
-                                    {{ form.hire_date }}
-                                    {% if form.hire_date.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.hire_date.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-4" id="end-date-field">
-                                    <label class="form-label">
-                                        <i class="bi bi-calendar-x"></i> End Date
-                                    </label>
-                                    {{ form.end_date }}
-                                    {% if form.end_date.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.end_date.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                    <small class="text-muted">For Interns/Students only</small>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Intern/Student Information -->
-                        <div class="mb-4" id="intern-student-section">
-                            <h6 class="text-uppercase text-muted mb-3 fw-bold small">
-                                <i class="bi bi-mortarboard me-2"></i>Academic Information (Interns/Students)
-                            </h6>
-                            <div class="row g-3">
-                                <div class="col-md-6" id="institution-field">
-                                    <label class="form-label">
-                                        <i class="bi bi-building"></i> Institution
-                                    </label>
-                                    {{ form.institution }}
-                                    {% if form.institution.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.institution.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6" id="field-of-study-field">
-                                    <label class="form-label">
-                                        <i class="bi bi-book"></i> Field of Study
-                                    </label>
-                                    {{ form.field_of_study }}
-                                    {% if form.field_of_study.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.field_of_study.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="row g-3 mt-2">
-                                <div class="col-md-6" id="student-id-field">
-                                    <label class="form-label">
-                                        <i class="bi bi-upc-scan"></i> Student ID
-                                    </label>
-                                    {{ form.student_id }}
-                                    {% if form.student_id.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.student_id.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                    <small class="text-muted">Students only</small>
-                                </div>
-                                <div class="col-md-6" id="supervisor-field">
-                                    <label class="form-label">
-                                        <i class="bi bi-person-check"></i> Supervisor
-                                    </label>
-                                    {{ form.supervisor }}
-                                    {% if form.supervisor.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.supervisor.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Status -->
-                        <div class="mb-4">
-                            <h6 class="text-uppercase text-muted mb-3 fw-bold small">
-                                <i class="bi bi-toggle-on me-2"></i>Status
-                            </h6>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">
-                                        <i class="bi bi-flag"></i> Employment Status
-                                    </label>
-                                    {{ form.employment_status }}
-                                    {% if form.employment_status.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle"></i> {{ form.employment_status.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check mt-4">
-                                        {{ form.is_active }}
-                                        <label class="form-check-label">
-                                            <i class="bi bi-check-circle"></i> Active (Can use Kiosk)
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Submit Buttons -->
+
                         <hr class="my-4">
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary px-4">
-                                <i class="bi bi-check-lg"></i> {{ action }} Person
-                            </button>
-                            <a href="{% url 'employee_list' %}" class="btn btn-outline-secondary px-4">
-                                <i class="bi bi-x-lg"></i> Cancel
-                            </a>
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                            <small class="text-muted">Save the profile now, then we can add repeatable qualifications, certifications, work history, payroll, and profile photo next.</small>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="bi bi-check-lg"></i> {{ action }} Person
+                                </button>
+                                <a href="{% url 'employee_list' %}" class="btn btn-outline-secondary px-4">
+                                    <i class="bi bi-x-lg"></i> Cancel
+                                </a>
+                            </div>
                         </div>
                     </form>
+
+                    <template id="education-empty-form-template">
+                        <div class="repeatable-card formset-row">
+                            {{ education_formset.empty_form.id }}
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Qualification Obtained</label>
+                                    {{ education_formset.empty_form.qualification_obtained }}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Institution</label>
+                                    {{ education_formset.empty_form.institution }}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Field of Study</label>
+                                    {{ education_formset.empty_form.field_of_study }}
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Year of Graduation</label>
+                                    {{ education_formset.empty_form.year_of_graduation }}
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label">Class of Degree</label>
+                                    {{ education_formset.empty_form.class_of_degree }}
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end justify-content-md-end">
+                                    <div class="form-check delete-check">
+                                        {{ education_formset.empty_form.DELETE }}
+                                        <label class="form-check-label" for="{{ education_formset.empty_form.DELETE.id_for_label }}">Mark for removal</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template id="certification-empty-form-template">
+                        <div class="repeatable-card formset-row">
+                            {{ certification_formset.empty_form.id }}
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Certification Name</label>
+                                    {{ certification_formset.empty_form.certification_name }}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Issuing Body</label>
+                                    {{ certification_formset.empty_form.issuing_body }}
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Date Obtained</label>
+                                    {{ certification_formset.empty_form.date_obtained }}
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Expiry Date</label>
+                                    {{ certification_formset.empty_form.expiry_date }}
+                                </div>
+                                <div class="col-12 d-flex justify-content-md-end">
+                                    <div class="form-check delete-check">
+                                        {{ certification_formset.empty_form.DELETE }}
+                                        <label class="form-check-label" for="{{ certification_formset.empty_form.DELETE.id_for_label }}">Mark for removal</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template id="work-empty-form-template">
+                        <div class="repeatable-card formset-row">
+                            {{ work_experience_formset.empty_form.id }}
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Previous Employer</label>
+                                    {{ work_experience_formset.empty_form.employer_name }}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Job Title</label>
+                                    {{ work_experience_formset.empty_form.job_title }}
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Start Date</label>
+                                    {{ work_experience_formset.empty_form.start_date }}
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">End Date</label>
+                                    {{ work_experience_formset.empty_form.end_date }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Reason for Leaving</label>
+                                    {{ work_experience_formset.empty_form.reason_for_leaving }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Skills and Competence</label>
+                                    {{ work_experience_formset.empty_form.skills_and_competence }}
+                                </div>
+                                <div class="col-12 d-flex justify-content-md-end">
+                                    <div class="form-check delete-check">
+                                        {{ work_experience_formset.empty_form.DELETE }}
+                                        <label class="form-check-label" for="{{ work_experience_formset.empty_form.DELETE.id_for_label }}">Mark for removal</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -332,28 +714,144 @@
 {% endblock %}
 
 {% block extra_js %}
+<style>
+    .employee-form-card {
+        overflow: hidden;
+    }
+
+    .employee-form-tip {
+        max-width: 360px;
+        padding: 0.85rem 1rem;
+        border-radius: 1rem;
+        background: linear-gradient(135deg, rgba(239, 246, 255, 0.98), rgba(248, 250, 252, 0.98));
+        border: 1px solid rgba(37, 99, 235, 0.14);
+    }
+
+    .employee-tabs {
+        gap: 0.55rem;
+        flex-wrap: wrap;
+    }
+
+    .employee-tabs .nav-link {
+        border-radius: 999px;
+        padding: 0.65rem 1rem;
+        color: #475569;
+        background: #f8fafc;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .employee-tabs .nav-link.active {
+        background: #0f172a;
+        color: #fff;
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.18);
+    }
+
+    .form-section-card {
+        padding: 1.4rem;
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        border-radius: 1rem;
+        background: #fff;
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+        margin-bottom: 1.1rem;
+    }
+
+    .form-section-title {
+        font-size: 0.92rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #0f172a;
+        margin-bottom: 1rem;
+    }
+
+    .tab-pane .form-label {
+        font-weight: 600;
+        color: #334155;
+    }
+
+    .formset-stack {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .repeatable-card {
+        padding: 1rem;
+        border-radius: 0.9rem;
+        background: #f8fafc;
+        border: 1px dashed rgba(148, 163, 184, 0.45);
+    }
+
+    .delete-check {
+        padding: 0.75rem 0 0;
+    }
+
+    @media (max-width: 767.98px) {
+        .form-section-card {
+            padding: 1rem;
+        }
+    }
+</style>
+
 <script>
-    // Show/hide fields based on selected category
     document.addEventListener('DOMContentLoaded', function() {
         const categorySelect = document.getElementById('{{ form.category.id_for_label }}');
-        if (!categorySelect) return;
-        
-        // Field element IDs
-        const dobField = document.getElementById('{{ form.date_of_birth.id_for_label }}')?.closest('.col-md-4');
-        const departmentField = document.getElementById('{{ form.department.id_for_label }}')?.closest('.col-md-6');
-        const endDateField = document.getElementById('{{ form.end_date.id_for_label }}')?.closest('.col-md-4');
-        const institutionField = document.getElementById('{{ form.institution.id_for_label }}')?.closest('.col-md-6');
-        const fieldOfStudyField = document.getElementById('{{ form.field_of_study.id_for_label }}')?.closest('.col-md-6');
-        const studentIdField = document.getElementById('{{ form.student_id.id_for_label }}')?.closest('.col-md-6');
-        const supervisorField = document.getElementById('{{ form.supervisor.id_for_label }}')?.closest('.col-md-6');
-        const internStudentSection = document.getElementById('intern-student-section');
-        
+        const employeeTabs = document.querySelectorAll('#employee-tabs button[data-bs-toggle="pill"]');
         const hireDateLabel = document.querySelector('label[for="id_hire_date"]');
-        
+        const departmentField = document.getElementById('department-field');
+        const endDateField = document.getElementById('end-date-field');
+        const institutionField = document.getElementById('institution-field');
+        const fieldOfStudyField = document.getElementById('field-of-study-field');
+        const studentIdField = document.getElementById('student-id-field');
+        const supervisorField = document.getElementById('supervisor-field');
+        const internStudentSection = document.getElementById('intern-student-section');
+        const formsetButtons = document.querySelectorAll('.add-formset-row');
+
+        employeeTabs.forEach((tab) => {
+            tab.addEventListener('shown.bs.tab', function(event) {
+                localStorage.setItem('employeeFormActiveTab', event.target.dataset.bsTarget);
+            });
+        });
+
+        const savedTab = localStorage.getItem('employeeFormActiveTab');
+        if (savedTab) {
+            const savedTrigger = document.querySelector(`#employee-tabs button[data-bs-target="${savedTab}"]`);
+            if (savedTrigger && window.bootstrap) {
+                bootstrap.Tab.getOrCreateInstance(savedTrigger).show();
+            }
+        }
+
+        formsetButtons.forEach((button) => {
+            button.addEventListener('click', function() {
+                const prefix = this.dataset.prefix;
+                const containerId = this.dataset.container;
+                const container = document.getElementById(containerId);
+                const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+                const template = document.getElementById(`${prefix}-empty-form-template`);
+                if (!container || !totalFormsInput || !template) {
+                    return;
+                }
+
+                const formIndex = parseInt(totalFormsInput.value, 10);
+                const templateHtml = template.innerHTML.replaceAll('__prefix__', formIndex);
+                container.insertAdjacentHTML('beforeend', templateHtml);
+                totalFormsInput.value = formIndex + 1;
+            });
+        });
+
+        if (!categorySelect) {
+            return;
+        }
+
+        function toggleBlock(field, shouldShow) {
+            if (!field) {
+                return;
+            }
+            field.style.display = shouldShow ? 'block' : 'none';
+        }
+
         function updateFieldVisibility() {
             const selectedOption = categorySelect.options[categorySelect.selectedIndex];
             const selectedText = selectedOption ? selectedOption.text.toLowerCase() : '';
-            
+
             let categoryCode = '';
             if (selectedText.includes('staff')) {
                 categoryCode = 'STAFF';
@@ -362,55 +860,33 @@
             } else if (selectedText.includes('student')) {
                 categoryCode = 'STUDENT';
             }
-            
-         const staffOnlyFields = [departmentField];  // Removed dobField
 
-            
-            // Intern/Student fields
-            const internStudentFields = [endDateField, institutionField, fieldOfStudyField, supervisorField];
-            internStudentFields.forEach(field => {
-                if (field) {
-                    field.style.display = (categoryCode === 'INTERN' || categoryCode === 'STUDENT') ? 'block' : 'none';
-                }
-            });
-            
-            // Student-only field
-            if (studentIdField) {
-                studentIdField.style.display = categoryCode === 'STUDENT' ? 'block' : 'none';
-            }
-            
-            // Show/hide entire Intern/Student section
-            if (internStudentSection) {
-                internStudentSection.style.display = (categoryCode === 'INTERN' || categoryCode === 'STUDENT') ? 'block' : 'none';
-            }
-            
-            // Update hire_date label
+            const isAcademic = categoryCode === 'INTERN' || categoryCode === 'STUDENT';
+
+            toggleBlock(departmentField, categoryCode === 'STAFF');
+            toggleBlock(endDateField, isAcademic);
+            toggleBlock(institutionField, isAcademic);
+            toggleBlock(fieldOfStudyField, isAcademic);
+            toggleBlock(supervisorField, isAcademic);
+            toggleBlock(studentIdField, categoryCode === 'STUDENT');
+            toggleBlock(internStudentSection, isAcademic);
+
             if (hireDateLabel) {
-                if (categoryCode === 'STAFF') {
-                    hireDateLabel.innerHTML = '<i class="bi bi-calendar-check"></i> Hire Date';
-                } else {
-                    hireDateLabel.innerHTML = '<i class="bi bi-calendar-plus"></i> Start Date';
-                }
+                hireDateLabel.textContent = categoryCode === 'STAFF' ? 'Hire Date' : 'Start Date';
             }
-            
-            // Update required attributes
-            const dobInput = document.getElementById('{{ form.date_of_birth.id_for_label }}');
+
             const deptInput = document.getElementById('{{ form.department.id_for_label }}');
             const endDateInput = document.getElementById('{{ form.end_date.id_for_label }}');
             const institutionInput = document.getElementById('{{ form.institution.id_for_label }}');
             const studentIdInput = document.getElementById('{{ form.student_id.id_for_label }}');
-            
-            if (dobInput) dobInput.required = (categoryCode === 'STAFF');
-            if (deptInput) deptInput.required = (categoryCode === 'STAFF');
-            if (endDateInput) endDateInput.required = (categoryCode === 'INTERN' || categoryCode === 'STUDENT');
-            if (institutionInput) institutionInput.required = (categoryCode === 'INTERN' || categoryCode === 'STUDENT');
-            if (studentIdInput) studentIdInput.required = (categoryCode === 'STUDENT');
+
+            if (deptInput) deptInput.required = categoryCode === 'STAFF';
+            if (endDateInput) endDateInput.required = isAcademic;
+            if (institutionInput) institutionInput.required = isAcademic;
+            if (studentIdInput) studentIdInput.required = categoryCode === 'STUDENT';
         }
-        
-        // Initial update
+
         updateFieldVisibility();
-        
-        // Update on change
         categorySelect.addEventListener('change', updateFieldVisibility);
     });
 </script>

@@ -6,14 +6,22 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout, authenticate
 from django.db.models import Q, Count
+from django.db import transaction
 from django.db.models.functions import TruncDate
 from django.http import HttpResponse
 from django.urls import reverse
 from datetime import timedelta, date
 import csv
 
-from .models import Employee, AttendanceRecord, Category, Department, AttendanceSettings
-from .forms import EmployeeForm, ManualAttendanceForm, DateFilterForm
+from .models import Employee, AttendanceRecord, Category, Department, AttendanceSettings, AttendanceException
+from .forms import (
+    EmployeeForm,
+    ManualAttendanceForm,
+    DateFilterForm,
+    EmployeeEducationFormSet,
+    EmployeeCertificationFormSet,
+    EmployeeWorkExperienceFormSet,
+)
 
 
 # ==================== AUTHENTICATION VIEWS ====================
@@ -315,18 +323,42 @@ def employee_list(request):
 @login_required
 def employee_create(request):
     """Add new employee"""
-    
+
+    employee = Employee()
+
     if request.method == 'POST':
-        form = EmployeeForm(request.POST)
-        if form.is_valid():
-            employee = form.save()
+        form = EmployeeForm(request.POST, instance=employee)
+        education_formset = EmployeeEducationFormSet(request.POST, instance=employee, prefix='education')
+        certification_formset = EmployeeCertificationFormSet(request.POST, instance=employee, prefix='certification')
+        work_experience_formset = EmployeeWorkExperienceFormSet(request.POST, instance=employee, prefix='work')
+
+        if all([
+            form.is_valid(),
+            education_formset.is_valid(),
+            certification_formset.is_valid(),
+            work_experience_formset.is_valid(),
+        ]):
+            with transaction.atomic():
+                employee = form.save()
+                education_formset.instance = employee
+                certification_formset.instance = employee
+                work_experience_formset.instance = employee
+                education_formset.save()
+                certification_formset.save()
+                work_experience_formset.save()
             messages.success(request, f'{employee.full_name} has been added successfully.')
             return redirect('employee_list')
     else:
-        form = EmployeeForm()
+        form = EmployeeForm(instance=employee)
+        education_formset = EmployeeEducationFormSet(instance=employee, prefix='education')
+        certification_formset = EmployeeCertificationFormSet(instance=employee, prefix='certification')
+        work_experience_formset = EmployeeWorkExperienceFormSet(instance=employee, prefix='work')
     
     context = {
         'form': form,
+        'education_formset': education_formset,
+        'certification_formset': certification_formset,
+        'work_experience_formset': work_experience_formset,
         'page_title': 'Add Employee',
         'action': 'Add',
     }
@@ -342,15 +374,33 @@ def employee_edit(request, pk):
     
     if request.method == 'POST':
         form = EmployeeForm(request.POST, instance=employee)
-        if form.is_valid():
-            form.save()
+        education_formset = EmployeeEducationFormSet(request.POST, instance=employee, prefix='education')
+        certification_formset = EmployeeCertificationFormSet(request.POST, instance=employee, prefix='certification')
+        work_experience_formset = EmployeeWorkExperienceFormSet(request.POST, instance=employee, prefix='work')
+        if all([
+            form.is_valid(),
+            education_formset.is_valid(),
+            certification_formset.is_valid(),
+            work_experience_formset.is_valid(),
+        ]):
+            with transaction.atomic():
+                form.save()
+                education_formset.save()
+                certification_formset.save()
+                work_experience_formset.save()
             messages.success(request, f'{employee.full_name} has been updated successfully.')
             return redirect('employee_list')
     else:
         form = EmployeeForm(instance=employee)
+        education_formset = EmployeeEducationFormSet(instance=employee, prefix='education')
+        certification_formset = EmployeeCertificationFormSet(instance=employee, prefix='certification')
+        work_experience_formset = EmployeeWorkExperienceFormSet(instance=employee, prefix='work')
     
     context = {
         'form': form,
+        'education_formset': education_formset,
+        'certification_formset': certification_formset,
+        'work_experience_formset': work_experience_formset,
         'employee': employee,
         'page_title': f'Edit: {employee.full_name}',
         'action': 'Update',
@@ -383,7 +433,10 @@ def employee_delete(request, pk):
 def employee_detail(request, pk):
     """View employee details with attendance history"""
     
-    employee = get_object_or_404(Employee, pk=pk)
+    employee = get_object_or_404(
+        Employee.objects.prefetch_related('educations', 'certifications', 'work_experiences'),
+        pk=pk,
+    )
     
     # Get attendance history
     attendance_history = AttendanceRecord.objects.filter(
@@ -408,9 +461,11 @@ def attendance_reports(request):
     # Date filter form
     date_form = DateFilterForm(request.GET or None)
     records = build_filtered_attendance_queryset(date_form, default_to_today=True)
+    exceptions = build_filtered_exception_queryset(date_form, default_to_today=True)
     records = records.order_by('-check_in_time')
     total_hours = sum((record.hours_worked or 0) for record in records)
     late_records = sum(1 for record in records if record.is_late)
+    exception_count = exceptions.count()
     recent_attendance_days = list(
         AttendanceRecord.objects.filter(employee__is_active=True)
         .annotate(attendance_date=TruncDate('check_in_time'))
@@ -428,6 +483,8 @@ def attendance_reports(request):
         'date_form': date_form,
         'total_hours': round(total_hours, 2),
         'late_records': late_records,
+        'attendance_exceptions': exceptions.order_by('-start_date', 'employee__first_name')[:20],
+        'exception_count': exception_count,
         'recent_attendance_days': recent_attendance_days,
         'page_title': 'Attendance Reports',
     }
@@ -443,16 +500,29 @@ def manual_attendance_add(request):
         form = ManualAttendanceForm(request.POST)
         if form.is_valid():
             employee = form.cleaned_data['employee']
-            check_in = form.cleaned_data['check_in_time']
-            check_out = form.cleaned_data['check_out_time']
-            
-            AttendanceRecord.objects.create(
-                employee=employee,
-                check_in_time=check_in,
-                check_out_time=check_out
-            )
-            
-            messages.success(request, f'Attendance recorded for {employee.full_name}')
+            entry_type = form.cleaned_data['entry_type']
+
+            if entry_type == 'work_session':
+                check_in = form.cleaned_data['check_in_time']
+                check_out = form.cleaned_data['check_out_time']
+                AttendanceRecord.objects.create(
+                    employee=employee,
+                    check_in_time=check_in,
+                    check_out_time=check_out
+                )
+                messages.success(request, f'Attendance recorded for {employee.full_name}')
+            else:
+                attendance_exception = AttendanceException.objects.create(
+                    employee=employee,
+                    exception_type=form.cleaned_data['exception_type'],
+                    start_date=form.cleaned_data['exception_start_date'],
+                    end_date=form.cleaned_data['exception_end_date'],
+                    notes=form.cleaned_data['notes'],
+                )
+                messages.success(
+                    request,
+                    f'{attendance_exception.get_exception_type_display()} recorded for {employee.full_name}.'
+                )
             return redirect('attendance_reports')
     else:
         form = ManualAttendanceForm()
@@ -474,8 +544,11 @@ def reports_view(request):
     today = timezone.now().date()
     date_form = DateFilterForm(request.GET or None)
     records = build_filtered_attendance_queryset(date_form).order_by('-check_in_time')
-    employee_scope = build_employee_scope(date_form.cleaned_data if date_form.is_valid() else {})
+    exceptions = build_filtered_exception_queryset(date_form).order_by('-start_date')
+    cleaned_data = date_form.cleaned_data if date_form.is_valid() else {}
+    employee_scope = build_employee_scope(cleaned_data)
     records_total = records.count()
+    exceptions_total = exceptions.count()
 
     total_employees = employee_scope.count()
     present_count = records.values('employee_id').distinct().count()
@@ -484,8 +557,12 @@ def reports_view(request):
     late_records = sum(1 for record in records if record.is_late)
     total_hours = round(sum((record.hours_worked or 0) for record in records), 2)
     avg_daily_hours = round((total_hours / checked_out_count), 2) if checked_out_count else 0
+    exception_employee_count = exceptions.values('employee_id').distinct().count()
+    covered_employee_count = build_covered_employee_count(employee_scope, cleaned_data)
     attendance_rate = round((present_count / total_employees) * 100) if total_employees else 0
-    absent_count = max(total_employees - present_count, 0)
+    absent_count = max(total_employees - covered_employee_count, 0)
+    leave_count = exceptions.filter(exception_type='leave').count()
+    sick_count = exceptions.filter(exception_type='sick').count()
 
     department_summary = build_scope_breakdown(employee_scope, 'department', 'department__name')
     category_summary = build_scope_breakdown(employee_scope, 'category', 'category__name')
@@ -507,6 +584,10 @@ def reports_view(request):
         'total_hours': total_hours,
         'avg_daily_hours': avg_daily_hours,
         'absent_count': absent_count,
+        'exceptions_total': exceptions_total,
+        'leave_count': leave_count,
+        'sick_count': sick_count,
+        'attendance_exceptions': exceptions[:20],
         'attendance_rate': attendance_rate,
         'department_summary': department_summary,
         'category_summary': category_summary,
@@ -552,6 +633,29 @@ def export_attendance_csv(request):
             record.hours_worked or '-',
             record.status.title(),
         ])
+
+    exceptions = build_filtered_exception_queryset(
+        date_form,
+        default_to_today=(export_scope != 'reports'),
+        default_to_current_month=False,
+    ).order_by('-start_date')
+
+    if exceptions.exists():
+        writer.writerow([])
+        writer.writerow(['Attendance Exceptions'])
+        writer.writerow(['Start Date', 'End Date', 'Employee ID', 'Employee', 'Category', 'Department', 'Employment Status', 'Exception Type', 'Notes'])
+        for exception in exceptions:
+            writer.writerow([
+                exception.start_date.strftime('%Y-%m-%d'),
+                exception.end_date.strftime('%Y-%m-%d'),
+                exception.employee.employee_id,
+                exception.employee.full_name,
+                exception.employee.category.name,
+                exception.employee.department,
+                exception.employee.get_employment_status_display(),
+                exception.get_exception_type_display(),
+                exception.notes or '-',
+            ])
     
     return response
 
@@ -602,6 +706,57 @@ def build_filtered_attendance_queryset(date_form, default_to_today=False, defaul
         records = records.filter(check_in_time__date=timezone.now().date())
 
     return records
+
+
+def build_filtered_exception_queryset(date_form, default_to_today=False, default_to_current_month=False):
+    cleaned_data = date_form.cleaned_data if date_form.is_valid() else {}
+    exceptions = AttendanceException.objects.select_related('employee__department', 'employee__category').all()
+    employees = build_employee_scope(cleaned_data)
+    exceptions = exceptions.filter(employee__in=employees)
+
+    if cleaned_data.get('date'):
+        exceptions = exceptions.filter(start_date__lte=cleaned_data['date'], end_date__gte=cleaned_data['date'])
+    elif cleaned_data.get('start_date') and cleaned_data.get('end_date'):
+        exceptions = exceptions.filter(
+            start_date__lte=cleaned_data['end_date'],
+            end_date__gte=cleaned_data['start_date'],
+        )
+    elif default_to_current_month:
+        today = timezone.now().date()
+        month_start = today.replace(day=1)
+        exceptions = exceptions.filter(end_date__gte=month_start, start_date__lte=today)
+    elif default_to_today:
+        today = timezone.now().date()
+        exceptions = exceptions.filter(start_date__lte=today, end_date__gte=today)
+
+    return exceptions
+
+
+def build_covered_employee_count(employee_scope, cleaned_data=None):
+    cleaned_data = cleaned_data or {}
+    attendance_filters = Q()
+    exception_filters = Q()
+
+    if cleaned_data.get('date'):
+        attendance_filters &= Q(attendance_records__check_in_time__date=cleaned_data['date'])
+        exception_filters &= Q(
+            attendance_exceptions__start_date__lte=cleaned_data['date'],
+            attendance_exceptions__end_date__gte=cleaned_data['date'],
+        )
+    elif cleaned_data.get('start_date') and cleaned_data.get('end_date'):
+        attendance_filters &= Q(
+            attendance_records__check_in_time__date__range=[cleaned_data['start_date'], cleaned_data['end_date']]
+        )
+        exception_filters &= Q(
+            attendance_exceptions__start_date__lte=cleaned_data['end_date'],
+            attendance_exceptions__end_date__gte=cleaned_data['start_date'],
+        )
+    else:
+        return employee_scope.filter(
+            Q(attendance_records__isnull=False) | Q(attendance_exceptions__isnull=False)
+        ).distinct().count()
+
+    return employee_scope.filter(attendance_filters | exception_filters).distinct().count()
 
 
 def build_scope_breakdown(employee_scope, relation_name, order_field):

@@ -8,98 +8,109 @@
 {% block content %}
 <div class="container-fluid p-0">
     <div class="row">
-        <div class="col-lg-7 mx-auto">
+        <div class="col-xl-9 mx-auto">
             <div class="card border-0">
                 <div class="card-header bg-white border-0 pt-4 px-4">
                     <h5 class="mb-0">
                         <i class="bi bi-calendar-plus me-2"></i>
-                        Add Manual Attendance Record
+                        Add Manual Attendance Item
                     </h5>
                     <p class="text-muted mt-2 mb-0">
-                        <i class="bi bi-info-circle me-1"></i>
-                        Use this form to manually add or correct attendance records.
+                        Record either a real work session or an attendance exception such as leave or a sick day.
                     </p>
                 </div>
                 <div class="card-body px-4 pb-4">
-                    <form method="POST">
+                    <form method="POST" id="manual-attendance-form">
                         {% csrf_token %}
-                        
+
                         {% if form.non_field_errors %}
                         <div class="alert alert-danger">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
                             {{ form.non_field_errors }}
                         </div>
                         {% endif %}
-                        
-                        <div class="mb-4">
-                            <label class="form-label">
-                                <i class="bi bi-person"></i> Select Employee
-                            </label>
-                            {{ form.employee }}
-                            {% if form.employee.errors %}
-                            <div class="text-danger small mt-1">
-                                <i class="bi bi-exclamation-circle"></i> {{ form.employee.errors.0 }}
-                            </div>
-                            {% endif %}
-                        </div>
-                        
+
                         <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label">
-                                    <i class="bi bi-box-arrow-in-right"></i> Check In Time
-                                </label>
-                                {{ form.check_in_time }}
-                                {% if form.check_in_time.errors %}
-                                <div class="text-danger small mt-1">
-                                    <i class="bi bi-exclamation-circle"></i> {{ form.check_in_time.errors.0 }}
-                                </div>
-                                {% endif %}
-                                {% if form.check_in_time.help_text %}
-                                <small class="text-muted d-block mt-1">
-                                    <i class="bi bi-question-circle"></i> {{ form.check_in_time.help_text }}
-                                </small>
-                                {% endif %}
+                            <div class="col-md-4">
+                                <label class="form-label"><i class="bi bi-sliders2"></i> Entry Type</label>
+                                {{ form.entry_type }}
+                                {% if form.entry_type.errors %}<div class="text-danger small mt-1">{{ form.entry_type.errors.0 }}</div>{% endif %}
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">
-                                    <i class="bi bi-box-arrow-right"></i> Check Out Time (Optional)
-                                </label>
-                                {{ form.check_out_time }}
-                                {% if form.check_out_time.errors %}
-                                <div class="text-danger small mt-1">
-                                    <i class="bi bi-exclamation-circle"></i> {{ form.check_out_time.errors.0 }}
-                                </div>
-                                {% endif %}
-                                {% if form.check_out_time.help_text %}
-                                <small class="text-muted d-block mt-1">
-                                    <i class="bi bi-question-circle"></i> {{ form.check_out_time.help_text }}
-                                </small>
-                                {% endif %}
+                            <div class="col-md-8">
+                                <label class="form-label"><i class="bi bi-person"></i> Select Employee</label>
+                                {{ form.employee }}
+                                {% if form.employee.errors %}<div class="text-danger small mt-1">{{ form.employee.errors.0 }}</div>{% endif %}
                             </div>
                         </div>
-                        
-                        <!-- Info Alert -->
-                        <div class="alert alert-info bg-info bg-opacity-10 border-0">
-                            <div class="d-flex">
-                                <div class="me-3">
-                                    <i class="bi bi-lightbulb-fill fs-4"></i>
+
+                        <div id="work-session-fields" class="entry-mode-card">
+                            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
+                                <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Work Session</h6>
+                                <small class="text-muted">Use this for real check-in and check-out corrections.</small>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label"><i class="bi bi-box-arrow-in-right"></i> Check In Time</label>
+                                    {{ form.check_in_time }}
+                                    {% if form.check_in_time.errors %}<div class="text-danger small mt-1">{{ form.check_in_time.errors.0 }}</div>{% endif %}
+                                    <small class="text-muted d-block mt-1">{{ form.check_in_time.help_text }}</small>
                                 </div>
+                                <div class="col-md-6">
+                                    <label class="form-label"><i class="bi bi-box-arrow-right"></i> Check Out Time</label>
+                                    {{ form.check_out_time }}
+                                    {% if form.check_out_time.errors %}<div class="text-danger small mt-1">{{ form.check_out_time.errors.0 }}</div>{% endif %}
+                                    <small class="text-muted d-block mt-1">{{ form.check_out_time.help_text }}</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="exception-fields" class="entry-mode-card">
+                            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
+                                <h6 class="mb-0"><i class="bi bi-calendar2-x me-2"></i>Attendance Exception</h6>
+                                <small class="text-muted">Use this for leave, sick days, training, remote days, or approved absences.</small>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label"><i class="bi bi-bookmark-check"></i> Exception Type</label>
+                                    {{ form.exception_type }}
+                                    {% if form.exception_type.errors %}<div class="text-danger small mt-1">{{ form.exception_type.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label"><i class="bi bi-calendar-event"></i> Start Date</label>
+                                    {{ form.exception_start_date }}
+                                    {% if form.exception_start_date.errors %}<div class="text-danger small mt-1">{{ form.exception_start_date.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label"><i class="bi bi-calendar-range"></i> End Date</label>
+                                    {{ form.exception_end_date }}
+                                    {% if form.exception_end_date.errors %}<div class="text-danger small mt-1">{{ form.exception_end_date.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label"><i class="bi bi-journal-text"></i> Notes</label>
+                                    {{ form.notes }}
+                                    {% if form.notes.errors %}<div class="text-danger small mt-1">{{ form.notes.errors.0 }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info bg-info bg-opacity-10 border-0 mt-4">
+                            <div class="d-flex">
+                                <div class="me-3"><i class="bi bi-lightbulb-fill fs-4"></i></div>
                                 <div>
-                                    <strong>Important Notes:</strong>
+                                    <strong>How this works now:</strong>
                                     <ul class="mb-0 mt-1 small">
-                                        <li>Check-in time is required and cannot be in the future</li>
-                                        <li>Check-out time must be after check-in time</li>
-                                        <li>Leave check-out blank if the employee is currently working</li>
-                                        <li>This will create a new attendance record separate from kiosk entries</li>
+                                        <li>Use `Work Session` for normal time-based attendance corrections.</li>
+                                        <li>Use `Attendance Exception` for leave, sick day, training, or approved absence.</li>
+                                        <li>Exceptions do not create fake check-in/check-out rows.</li>
+                                        <li>Reports and CSV export now include exceptions separately.</li>
                                     </ul>
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Submit Buttons -->
+
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-success px-4">
-                                <i class="bi bi-save"></i> Save Attendance Record
+                                <i class="bi bi-save"></i> Save Attendance Item
                             </button>
                             <a href="{% url 'attendance_reports' %}" class="btn btn-outline-secondary px-4">
                                 <i class="bi bi-x-lg"></i> Cancel
@@ -108,41 +119,29 @@
                     </form>
                 </div>
             </div>
-            
-            <!-- Quick Tips Card -->
+
             <div class="card border-0 mt-4">
                 <div class="card-header bg-white border-0 pt-4 px-4">
-                    <h6 class="mb-0">
-                        <i class="bi bi-lightbulb me-2"></i>Common Use Cases
-                    </h6>
+                    <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Common Use Cases</h6>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <div class="p-3 bg-light rounded">
+                            <div class="p-3 bg-light rounded h-100">
                                 <i class="bi bi-wifi-off text-warning fs-5"></i>
-                                <p class="small mt-2 mb-0">
-                                    <strong>Missed Check-in</strong><br>
-                                    Employee forgot to scan QR code in the morning
-                                </p>
+                                <p class="small mt-2 mb-0"><strong>Missed Check-in</strong><br>Use `Work Session` to correct real hours.</p>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-3 bg-light rounded">
-                                <i class="bi bi-bug text-danger fs-5"></i>
-                                <p class="small mt-2 mb-0">
-                                    <strong>System Error</strong><br>
-                                    Kiosk was down or QR code didn't work
-                                </p>
+                            <div class="p-3 bg-light rounded h-100">
+                                <i class="bi bi-heart-pulse text-danger fs-5"></i>
+                                <p class="small mt-2 mb-0"><strong>Sick Day</strong><br>Use `Attendance Exception` and choose `Sick Day`.</p>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-3 bg-light rounded">
-                                <i class="bi bi-pencil text-primary fs-5"></i>
-                                <p class="small mt-2 mb-0">
-                                    <strong>Correction</strong><br>
-                                    Fix incorrect check-in or check-out times
-                                </p>
+                            <div class="p-3 bg-light rounded h-100">
+                                <i class="bi bi-airplane text-primary fs-5"></i>
+                                <p class="small mt-2 mb-0"><strong>Leave Period</strong><br>Use `Attendance Exception` with a start and end date range.</p>
                             </div>
                         </div>
                     </div>
@@ -151,4 +150,39 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+    .entry-mode-card {
+        padding: 1.25rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        background: #fff;
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+        margin-bottom: 1rem;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const entryTypeInput = document.getElementById('{{ form.entry_type.id_for_label }}');
+        const workSessionFields = document.getElementById('work-session-fields');
+        const exceptionFields = document.getElementById('exception-fields');
+
+        function updateEntryMode() {
+            if (!entryTypeInput) {
+                return;
+            }
+            const isWorkSession = entryTypeInput.value === 'work_session';
+            workSessionFields.style.display = isWorkSession ? 'block' : 'none';
+            exceptionFields.style.display = isWorkSession ? 'none' : 'block';
+        }
+
+        updateEntryMode();
+        if (entryTypeInput) {
+            entryTypeInput.addEventListener('change', updateEntryMode);
+        }
+    });
+</script>
 {% endblock %}
