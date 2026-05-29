@@ -1,5 +1,12 @@
+asgiref==3.11.1
+cffi==2.0.0
+crispy-bootstrap5==2026.3
+cryptography==46.0.7
 Django==5.2.13
 django-bootstrap5==26.2
-gunicorn
-PyMySQL
-cryptography
+django-crispy-forms==2.6
+pillow==12.2.0
+pycparser==3.0
+PyMySQL==1.1.2
+sqlparse==0.5.5
+tzdata==2026.1
