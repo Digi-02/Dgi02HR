@@ -1,0 +1,51 @@
+<!-- attendance/templates/attendance/leave_request_review.html -->
+{% extends 'attendance/base.html' %}
+
+{% block title %}{{ action }} Leave | HR Management{% endblock %}
+{% block page_title %}{{ action }} Leave{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row">
+        <div class="col-xl-7 mx-auto">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1">
+                        <i class="bi bi-check2-square me-2"></i>{{ action }} Leave Request
+                    </h5>
+                    <p class="text-muted mb-0">{{ leave_request.employee.display_name }} - {{ leave_request.leave_type.name }}</p>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div class="bg-light rounded p-3 mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-6"><strong>Period:</strong> {{ leave_request.start_date }} to {{ leave_request.end_date }}</div>
+                            <div class="col-md-6"><strong>Days:</strong> {{ leave_request.day_count }}</div>
+                            <div class="col-md-6"><strong>Manager Review:</strong> {{ leave_request.get_manager_approval_status_display }}</div>
+                            <div class="col-md-6"><strong>Final Status:</strong> {{ leave_request.get_status_display }}</div>
+                            <div class="col-12"><strong>Reason:</strong> {{ leave_request.reason|default:"-" }}</div>
+                            {% if leave_request.manager_review_note %}
+                            <div class="col-12"><strong>Manager Note:</strong> {{ leave_request.manager_review_note }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label">Review Note</label>
+                            {{ form.review_note }}
+                            {% if form.review_note.errors %}<div class="text-danger small mt-1">{{ form.review_note.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'leave_requests' %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn {% if action == 'Approve' %}btn-success{% else %}btn-danger{% endif %}">
+                                {{ action }} Leave
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

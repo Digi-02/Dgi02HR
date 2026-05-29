@@ -227,6 +227,9 @@ STATIC_ROOT = _env_str("DJANGO_STATIC_ROOT")
 _static_dir = BASE_DIR / "static"
 STATICFILES_DIRS = [_static_dir] if _static_dir.exists() else []
 
+MEDIA_URL = os.getenv("DJANGO_MEDIA_URL", "/media/")
+MEDIA_ROOT = _env_str("DJANGO_MEDIA_ROOT") or (BASE_DIR / "media")
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 

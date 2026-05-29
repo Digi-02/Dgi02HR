@@ -2,13 +2,68 @@
 
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 from datetime import date, time
+
+
+def employee_profile_photo_path(instance, filename):
+    return f"employees/{instance.organization_id or 'pending'}/profile_photos/{filename}"
+
+
+def employee_document_path(instance, filename):
+    employee = instance.employee
+    return f"employees/{employee.organization_id}/documents/{employee.employee_id}/{filename}"
+
+
+class Organization(models.Model):
+    """A company or institution using the HR platform."""
+
+    name = models.CharField(max_length=150, unique=True)
+    slug = models.SlugField(max_length=80, unique=True)
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=30, blank=True)
+    address = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class OrganizationMembership(models.Model):
+    """Connects login users to the organizations they can manage."""
+
+    ROLE_CHOICES = [
+        ('owner', 'Owner'),
+        ('hr_admin', 'HR Admin'),
+        ('manager', 'Manager'),
+        ('employee', 'Employee'),
+        ('payroll_officer', 'Payroll Officer'),
+        ('viewer', 'Viewer'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='organization_memberships')
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='memberships')
+    role = models.CharField(max_length=30, choices=ROLE_CHOICES, default='hr_admin')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'organization')
+        ordering = ['organization__name', 'user__username']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.organization.name}"
 
 
 class Category(models.Model):
     """User categories: Staff, Intern, Student"""
-    name = models.CharField(max_length=50, unique=True)
-    code = models.CharField(max_length=10, unique=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='categories')
+    name = models.CharField(max_length=50)
+    code = models.CharField(max_length=10)
     icon = models.CharField(max_length=50, help_text="Bootstrap icon name (e.g., bi-person-badge)")
     color = models.CharField(max_length=20, help_text="Bootstrap color class (e.g., primary, success, info)")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -16,6 +71,10 @@ class Category(models.Model):
     class Meta:
         verbose_name_plural = "Categories"
         ordering = ['name']
+        unique_together = (
+            ('organization', 'code'),
+            ('organization', 'name'),
+        )
     
     def __str__(self):
         return self.name
@@ -23,14 +82,16 @@ class Category(models.Model):
 
 class Department(models.Model):
     """Organization departments"""
-    name = models.CharField(max_length=100, unique=True)
-    code = models.CharField(max_length=20, unique=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='departments')
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=20)
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         ordering = ['name']
+        unique_together = ('organization', 'code')
     
     def __str__(self):
         return self.name
@@ -87,14 +148,17 @@ class Employee(models.Model):
     ]
     
     # === Identification ===
-    employee_id = models.CharField(max_length=20, unique=True, help_text="Auto-generated ID")
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='employees')
+    user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='employee_profile')
+    employee_id = models.CharField(max_length=20, help_text="Auto-generated ID")
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='employees')
     
     # === Personal Information ===
+    profile_photo = models.ImageField(upload_to=employee_profile_photo_path, blank=True, null=True)
     title = models.CharField(max_length=10, choices=TITLE_CHOICES, blank=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True, help_text="Work/primary email used for kiosk check-in")
+    email = models.EmailField(help_text="Work/primary email used for kiosk check-in")
     personal_email = models.EmailField(blank=True, null=True, help_text="Personal email (for interns/students)")
     phone = models.CharField(max_length=20)
     alternative_phone = models.CharField(max_length=20, blank=True)
@@ -105,6 +169,13 @@ class Employee(models.Model):
     religion = models.CharField(max_length=100, blank=True)
     blood_group = models.CharField(max_length=5, choices=BLOOD_GROUP_CHOICES, blank=True)
     genotype = models.CharField(max_length=5, choices=GENOTYPE_CHOICES, blank=True)
+    allergies_or_medical_conditions = models.TextField(
+        blank=True,
+        help_text="Only record emergency-relevant medical information where appropriate.",
+    )
+    emergency_medical_contact_name = models.CharField(max_length=150, blank=True)
+    emergency_medical_contact_relationship = models.CharField(max_length=100, blank=True)
+    emergency_medical_contact_phone = models.CharField(max_length=20, blank=True)
 
     residential_address = models.TextField(blank=True)
     permanent_address = models.TextField(blank=True)
@@ -158,6 +229,21 @@ class Employee(models.Model):
     drivers_license_number = models.CharField(max_length=50, blank=True)
     work_permit_number = models.CharField(max_length=50, blank=True)
     work_permit_expiry_date = models.DateField(null=True, blank=True)
+
+    # === Payroll Information ===
+    bank_name = models.CharField(max_length=120, blank=True)
+    bank_account_name = models.CharField(max_length=150, blank=True)
+    bank_account_number = models.CharField(max_length=30, blank=True)
+    bank_branch = models.CharField(max_length=120, blank=True)
+    pension_rsa_pin = models.CharField(max_length=50, blank=True)
+    pension_fund_administrator = models.CharField(max_length=150, blank=True)
+    basic_salary = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    housing_allowance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    transport_allowance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    other_allowances = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    tax_deduction = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    pension_deduction = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    other_deductions = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     
     # === Status ===
     employment_status = models.CharField(max_length=20, choices=EMPLOYMENT_STATUS, default='active')
@@ -169,6 +255,10 @@ class Employee(models.Model):
     
     class Meta:
         ordering = ['category', 'first_name', 'last_name']
+        unique_together = (
+            ('organization', 'employee_id'),
+            ('organization', 'email'),
+        )
     
     def __str__(self):
         return f"[{self.category.code}] {self.full_name}"
@@ -179,6 +269,7 @@ class Employee(models.Model):
             prefix = self.category.code if self.category else 'USR'
             year = timezone.now().year
             last_emp = Employee.objects.filter(
+                organization=self.organization,
                 employee_id__startswith=f"{prefix}-{year}"
             ).order_by('-employee_id').first()
             
@@ -278,6 +369,18 @@ class Employee(models.Model):
             }
         return None
 
+    @property
+    def gross_pay(self):
+        return self.basic_salary + self.housing_allowance + self.transport_allowance + self.other_allowances
+
+    @property
+    def total_deductions(self):
+        return self.tax_deduction + self.pension_deduction + self.other_deductions
+
+    @property
+    def net_pay(self):
+        return self.gross_pay - self.total_deductions
+
 
 class EmployeeEducation(models.Model):
     """Repeatable educational qualifications for an employee."""
@@ -333,20 +436,61 @@ class EmployeeWorkExperience(models.Model):
         return f"{self.employee.full_name} - {self.employer_name}"
 
 
+class EmployeeDocument(models.Model):
+    """Repeatable uploaded documents for an employee profile."""
+
+    DOCUMENT_TYPE_CHOICES = [
+        ('contract', 'Employment Contract'),
+        ('id', 'Identification Document'),
+        ('certificate', 'Certificate / Qualification'),
+        ('passport', 'Passport'),
+        ('work_permit', 'Work Permit / Visa'),
+        ('medical', 'Medical Document'),
+        ('payroll', 'Payroll Document'),
+        ('other', 'Other'),
+    ]
+
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='documents')
+    document_type = models.CharField(max_length=30, choices=DOCUMENT_TYPE_CHOICES, default='other')
+    title = models.CharField(max_length=150)
+    file = models.FileField(upload_to=employee_document_path)
+    issue_date = models.DateField(null=True, blank=True)
+    expiry_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-uploaded_at', 'title']
+
+    def __str__(self):
+        return f"{self.employee.full_name} - {self.title}"
+
+
+class AttendanceExceptionType(models.Model):
+    """Configurable attendance exception labels managed by HR."""
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='attendance_exception_types')
+    code = models.SlugField(max_length=50)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    color = models.CharField(max_length=20, default='primary', help_text="Bootstrap color class, e.g. primary, warning, info")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
+        unique_together = ('organization', 'code')
+
+    def __str__(self):
+        return self.name
+
+
 class AttendanceException(models.Model):
     """Day-based attendance exceptions like leave, sick days, and approved absences."""
 
-    EXCEPTION_TYPE_CHOICES = [
-        ('leave', 'Leave'),
-        ('sick', 'Sick Day'),
-        ('authorized_absence', 'Authorized Absence'),
-        ('training', 'Training'),
-        ('remote', 'Remote Work'),
-        ('half_day', 'Half Day'),
-    ]
-
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='attendance_exceptions')
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='attendance_exceptions')
-    exception_type = models.CharField(max_length=30, choices=EXCEPTION_TYPE_CHOICES)
+    exception_type = models.CharField(max_length=50)
     start_date = models.DateField()
     end_date = models.DateField()
     notes = models.TextField(blank=True)
@@ -362,14 +506,191 @@ class AttendanceException(models.Model):
     def __str__(self):
         return f"{self.employee.full_name} - {self.get_exception_type_display()}"
 
+    def get_exception_type_display(self):
+        exception_type = AttendanceExceptionType.objects.filter(
+            organization=self.organization,
+            code=self.exception_type,
+        ).first()
+        if exception_type:
+            return exception_type.name
+        return self.exception_type.replace('_', ' ').title()
+
+    @property
+    def exception_type_color(self):
+        exception_type = AttendanceExceptionType.objects.filter(
+            organization=self.organization,
+            code=self.exception_type,
+        ).first()
+        return exception_type.color if exception_type else 'primary'
+
     @property
     def day_count(self):
         return (self.end_date - self.start_date).days + 1
 
 
+class LeaveType(models.Model):
+    """Configurable leave policies for each organization."""
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='leave_types')
+    name = models.CharField(max_length=100)
+    code = models.SlugField(max_length=50)
+    annual_entitlement_days = models.PositiveSmallIntegerField(default=0)
+    color = models.CharField(max_length=20, default='success', help_text="Bootstrap color class, e.g. success, warning, info")
+    requires_attachment = models.BooleanField(default=False)
+    is_paid = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
+        unique_together = ('organization', 'code')
+
+    def __str__(self):
+        return self.name
+
+
+class LeaveRequest(models.Model):
+    """Employee leave request with a lightweight HR approval workflow."""
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    MANAGER_APPROVAL_CHOICES = [
+        ('pending', 'Pending Manager Review'),
+        ('approved', 'Manager Approved'),
+        ('rejected', 'Manager Rejected'),
+        ('not_required', 'Not Required'),
+    ]
+
+    DAY_PART_CHOICES = [
+        ('full_day', 'Full Day'),
+        ('first_half', 'First Half'),
+        ('second_half', 'Second Half'),
+    ]
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='leave_requests')
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='leave_requests')
+    leave_type = models.ForeignKey(LeaveType, on_delete=models.PROTECT, related_name='leave_requests')
+    start_date = models.DateField()
+    end_date = models.DateField()
+    day_part = models.CharField(max_length=20, choices=DAY_PART_CHOICES, default='full_day')
+    reason = models.TextField(blank=True)
+    manager_approval_status = models.CharField(max_length=20, choices=MANAGER_APPROVAL_CHOICES, default='pending')
+    manager_reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='manager_reviewed_leave_requests')
+    manager_reviewed_at = models.DateTimeField(null=True, blank=True)
+    manager_review_note = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_leave_requests')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    review_note = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['organization', 'status']),
+            models.Index(fields=['employee', 'start_date']),
+        ]
+
+    def __str__(self):
+        return f"{self.employee.full_name} - {self.leave_type.name}"
+
+    @property
+    def day_count(self):
+        days = (self.end_date - self.start_date).days + 1
+        if self.day_part != 'full_day' and days == 1:
+            return 0.5
+        return days
+
+
+class PayrollRun(models.Model):
+    """A monthly payroll batch for an organization."""
+
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('processed', 'Processed'),
+        ('approved', 'Approved'),
+        ('paid', 'Paid'),
+    ]
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='payroll_runs')
+    title = models.CharField(max_length=150)
+    payroll_month = models.DateField(help_text="Use the first day of the payroll month.")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_payroll_runs')
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_payroll_runs')
+    approved_at = models.DateTimeField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-payroll_month', '-created_at']
+        unique_together = ('organization', 'payroll_month')
+
+    def __str__(self):
+        return f"{self.organization.name} - {self.payroll_month:%B %Y}"
+
+    @property
+    def total_gross(self):
+        return sum((payslip.gross_pay for payslip in self.payslips.all()), 0)
+
+    @property
+    def total_deductions(self):
+        return sum((payslip.total_deductions for payslip in self.payslips.all()), 0)
+
+    @property
+    def total_net(self):
+        return sum((payslip.net_pay for payslip in self.payslips.all()), 0)
+
+
+class Payslip(models.Model):
+    """Generated salary snapshot for one employee in a payroll run."""
+
+    payroll_run = models.ForeignKey(PayrollRun, on_delete=models.CASCADE, related_name='payslips')
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='payslips')
+    basic_salary = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    housing_allowance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    transport_allowance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    other_allowances = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    tax_deduction = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    pension_deduction = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    other_deductions = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    bank_name = models.CharField(max_length=120, blank=True)
+    bank_account_name = models.CharField(max_length=150, blank=True)
+    bank_account_number = models.CharField(max_length=30, blank=True)
+    pension_rsa_pin = models.CharField(max_length=50, blank=True)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['employee__first_name', 'employee__last_name']
+        unique_together = ('payroll_run', 'employee')
+
+    def __str__(self):
+        return f"{self.employee.full_name} - {self.payroll_run.payroll_month:%B %Y}"
+
+    @property
+    def gross_pay(self):
+        return self.basic_salary + self.housing_allowance + self.transport_allowance + self.other_allowances
+
+    @property
+    def total_deductions(self):
+        return self.tax_deduction + self.pension_deduction + self.other_deductions
+
+    @property
+    def net_pay(self):
+        return self.gross_pay - self.total_deductions
+
+
 class AttendanceRecord(models.Model):
     """Check-in and check-out records for all users"""
     
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='attendance_records')
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='attendance_records')
     check_in_time = models.DateTimeField()
     check_out_time = models.DateTimeField(null=True, blank=True)
@@ -401,7 +722,7 @@ class AttendanceRecord(models.Model):
     def is_late(self):
         """Check if check-in was after the configured late threshold."""
         local_check_in = timezone.localtime(self.check_in_time)
-        threshold = AttendanceSettings.get_solo().late_threshold
+        threshold = AttendanceSettings.get_solo(self.organization).late_threshold
         return local_check_in.time() >= threshold
     
     @property
@@ -417,6 +738,7 @@ class AttendanceRecord(models.Model):
 class AttendanceSettings(models.Model):
     """Singleton-like settings for attendance behavior and reminders."""
 
+    organization = models.OneToOneField(Organization, on_delete=models.CASCADE, related_name='attendance_settings')
     workday_start = models.TimeField(default=time(8, 0), help_text="Official workday start time.")
     late_threshold = models.TimeField(default=time(8, 30), help_text="Check-ins at or after this time are marked late.")
     birthday_reminder_days = models.PositiveSmallIntegerField(default=7)
@@ -428,15 +750,21 @@ class AttendanceSettings(models.Model):
         verbose_name_plural = "Attendance Settings"
 
     def save(self, *args, **kwargs):
-        self.pk = 1
         super().save(*args, **kwargs)
 
     def __str__(self):
         return "Attendance Settings"
 
     @classmethod
-    def get_solo(cls):
+    def get_solo(cls, organization=None):
+        if organization:
+            settings_obj, _ = cls.objects.get_or_create(organization=organization)
+            return settings_obj
         settings_obj = cls.objects.first()
         if settings_obj:
             return settings_obj
-        return cls(pk=1)
+        default_org, _ = Organization.objects.get_or_create(
+            slug='digi02techsystem',
+            defaults={'name': 'Digi02TechSystem'},
+        )
+        return cls.objects.create(organization=default_org)

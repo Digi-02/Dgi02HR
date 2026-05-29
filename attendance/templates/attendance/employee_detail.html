@@ -13,7 +13,11 @@
                 <div class="card-body p-4">
                     <div class="text-center mb-4">
                         <div class="employee-avatar mx-auto mb-3">
-                            <i class="bi bi-person-circle"></i>
+                            {% if employee.profile_photo %}
+                                <img src="{{ employee.profile_photo.url }}" alt="{{ employee.full_name }}" class="employee-photo">
+                            {% else %}
+                                <i class="bi bi-person-circle"></i>
+                            {% endif %}
                         </div>
                         <h4 class="mb-1">{{ employee.full_name }}</h4>
                         <p class="text-muted mb-2">{{ employee.position|default:"No role assigned yet" }}</p>
@@ -40,6 +44,11 @@
                         <a href="{% url 'employee_edit' employee.pk %}" class="btn btn-outline-secondary flex-grow-1">
                             <i class="bi bi-pencil"></i> Edit
                         </a>
+                        {% if not employee.user %}
+                        <a href="{% url 'employee_account_create' employee.pk %}" class="btn btn-outline-primary flex-grow-1">
+                            <i class="bi bi-person-lock"></i> Account
+                        </a>
+                        {% endif %}
                         <a href="{% url 'employee_delete' employee.pk %}" class="btn btn-outline-danger flex-grow-1">
                             <i class="bi bi-trash"></i> Delete
                         </a>
@@ -63,8 +72,6 @@
                                 <div class="detail-line"><span>Nationality</span><strong>{{ employee.nationality|default:"-" }}</strong></div>
                                 <div class="detail-line"><span>Marital Status</span><strong>{{ employee.get_marital_status_display|default:"-" }}</strong></div>
                                 <div class="detail-line"><span>Religion</span><strong>{{ employee.religion|default:"-" }}</strong></div>
-                                <div class="detail-line"><span>Blood Group</span><strong>{{ employee.blood_group|default:"-" }}</strong></div>
-                                <div class="detail-line"><span>Genotype</span><strong>{{ employee.genotype|default:"-" }}</strong></div>
                             </div>
                         </div>
 
@@ -75,6 +82,26 @@
                                 <div class="detail-line"><span>Personal Email</span><strong>{{ employee.personal_email|default:"-" }}</strong></div>
                                 <div class="detail-line"><span>Phone</span><strong>{{ employee.phone|default:"-" }}</strong></div>
                                 <div class="detail-line"><span>Alternative Phone</span><strong>{{ employee.alternative_phone|default:"-" }}</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="detail-card h-100">
+                                <small class="detail-label">Medical Information</small>
+                                <div class="detail-line"><span>Blood Group</span><strong>{{ employee.blood_group|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Genotype</span><strong>{{ employee.genotype|default:"-" }}</strong></div>
+                                <div class="detail-block">
+                                    <span>Allergies / Medical Conditions</span>
+                                    <strong>{{ employee.allergies_or_medical_conditions|default:"-"|linebreaksbr }}</strong>
+                                </div>
+                                <div class="detail-block">
+                                    <span>Emergency Medical Contact</span>
+                                    <strong>
+                                        {{ employee.emergency_medical_contact_name|default:"-" }}<br>
+                                        {{ employee.emergency_medical_contact_relationship|default:"-" }}<br>
+                                        {{ employee.emergency_medical_contact_phone|default:"-" }}
+                                    </strong>
+                                </div>
                             </div>
                         </div>
 
@@ -119,6 +146,19 @@
                                 <div class="detail-line"><span>Passport Expiry</span><strong>{% if employee.passport_expiry_date %}{{ employee.passport_expiry_date|date:"F j, Y" }}{% else %}-{% endif %}</strong></div>
                                 <div class="detail-line"><span>Work Permit</span><strong>{{ employee.work_permit_number|default:"-" }}</strong></div>
                                 <div class="detail-line"><span>Work Permit Expiry</span><strong>{% if employee.work_permit_expiry_date %}{{ employee.work_permit_expiry_date|date:"F j, Y" }}{% else %}-{% endif %}</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="detail-card h-100">
+                                <small class="detail-label">Payroll Foundation</small>
+                                <div class="detail-line"><span>Bank</span><strong>{{ employee.bank_name|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Account Name</span><strong>{{ employee.bank_account_name|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Account Number</span><strong>{{ employee.bank_account_number|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>RSA PIN</span><strong>{{ employee.pension_rsa_pin|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Gross Pay</span><strong>{{ employee.gross_pay }}</strong></div>
+                                <div class="detail-line"><span>Total Deductions</span><strong>{{ employee.total_deductions }}</strong></div>
+                                <div class="detail-line"><span>Net Pay</span><strong>{{ employee.net_pay }}</strong></div>
                             </div>
                         </div>
 
@@ -237,6 +277,52 @@
                 </div>
             </div>
 
+            <div class="card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-0"><i class="bi bi-folder2-open me-2"></i>Employee Documents</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Document</th>
+                                    <th>Type</th>
+                                    <th>Issue Date</th>
+                                    <th>Expiry Date</th>
+                                    <th>File</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for document in employee.documents.all %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ document.title }}</strong>
+                                        {% if document.notes %}<br><small class="text-muted">{{ document.notes }}</small>{% endif %}
+                                    </td>
+                                    <td>{{ document.get_document_type_display }}</td>
+                                    <td>{% if document.issue_date %}{{ document.issue_date|date:"M d, Y" }}{% else %}-{% endif %}</td>
+                                    <td>{% if document.expiry_date %}{{ document.expiry_date|date:"M d, Y" }}{% else %}-{% endif %}</td>
+                                    <td>
+                                        <a href="{{ document.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                            <i class="bi bi-box-arrow-up-right me-1"></i> Open
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        <i class="bi bi-folder fs-1 d-block mb-3"></i>
+                                        No documents uploaded yet.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <div class="card border-0">
                 <div class="card-header bg-white border-0 pt-4 px-4">
                     <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Attendance History</h5>
@@ -299,6 +385,13 @@
         background: linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(15, 23, 42, 0.08));
         color: #2563eb;
         font-size: 3rem;
+        overflow: hidden;
+    }
+
+    .employee-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     .detail-card {

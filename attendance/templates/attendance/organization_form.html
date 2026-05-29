@@ -1,0 +1,82 @@
+<!-- attendance/templates/attendance/organization_form.html -->
+{% extends 'attendance/base.html' %}
+
+{% block title %}{{ page_title }} | HR Management{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row">
+        <div class="col-xl-8 mx-auto">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1">
+                        <i class="bi bi-building-add me-2"></i>{{ action }} Organization
+                    </h5>
+                    <p class="text-muted mb-0">This profile controls the company workspace, kiosk link, and default HR setup.</p>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                        {% endif %}
+
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <label class="form-label">Organization Name</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">URL Slug</label>
+                                {{ form.slug }}
+                                {% if form.slug.errors %}<div class="text-danger small mt-1">{{ form.slug.errors.0 }}</div>{% endif %}
+                                <small class="text-muted">Used for the kiosk URL, e.g. `/o/company/kiosk/`.</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Phone</label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Address</label>
+                                {{ form.address }}
+                                {% if form.address.errors %}<div class="text-danger small mt-1">{{ form.address.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Organization is active</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info bg-info bg-opacity-10 border-0 mt-4">
+                            <i class="bi bi-info-circle me-2"></i>
+                            New organizations receive default categories, departments, attendance settings, and attendance exception types automatically.
+                        </div>
+
+                        <hr class="my-4">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{% url 'organization_list' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-save me-1"></i> {{ action }} Organization
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+<!-- attendance/templates/attendance/leave_request_form.html -->
+{% extends 'attendance/base.html' %}
+
+{% block title %}New Leave Request | HR Management{% endblock %}
+{% block page_title %}New Leave Request{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row">
+        <div class="col-xl-8 mx-auto">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1"><i class="bi bi-calendar-plus me-2"></i>Create Leave Request</h5>
+                    <p class="text-muted mb-0">Once approved, this will automatically appear in attendance exceptions.</p>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <form method="POST">
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+
+                        <div class="row g-3">
+                            {% if is_self_service %}
+                                {{ form.employee }}
+                                <div class="col-md-6">
+                                    <label class="form-label">Employee</label>
+                                    <input type="text" class="form-control" value="{{ employee.display_name }}" disabled>
+                                </div>
+                            {% else %}
+                                <div class="col-md-6">
+                                    <label class="form-label">Employee</label>
+                                    {{ form.employee }}
+                                    {% if form.employee.errors %}<div class="text-danger small mt-1">{{ form.employee.errors.0 }}</div>{% endif %}
+                                </div>
+                            {% endif %}
+                            <div class="col-md-6">
+                                <label class="form-label">Leave Type</label>
+                                {{ form.leave_type }}
+                                {% if form.leave_type.errors %}<div class="text-danger small mt-1">{{ form.leave_type.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Start Date</label>
+                                {{ form.start_date }}
+                                {% if form.start_date.errors %}<div class="text-danger small mt-1">{{ form.start_date.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">End Date</label>
+                                {{ form.end_date }}
+                                {% if form.end_date.errors %}<div class="text-danger small mt-1">{{ form.end_date.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Day Part</label>
+                                {{ form.day_part }}
+                                {% if form.day_part.errors %}<div class="text-danger small mt-1">{{ form.day_part.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Reason</label>
+                                {{ form.reason }}
+                                {% if form.reason.errors %}<div class="text-danger small mt-1">{{ form.reason.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% if is_self_service %}{% url 'employee_self_service_dashboard' %}{% else %}{% url 'leave_requests' %}{% endif %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send me-1"></i> Submit Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

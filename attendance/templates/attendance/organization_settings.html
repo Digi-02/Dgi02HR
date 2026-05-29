@@ -1,0 +1,98 @@
+<!-- attendance/templates/attendance/organization_settings.html -->
+{% extends 'attendance/base.html' %}
+
+{% block title %}Organization Settings | HR Management{% endblock %}
+
+{% block page_title %}Organization Settings{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+        <div>
+            <h5 class="mb-1"><i class="bi bi-sliders me-2"></i>{{ organization.name }}</h5>
+            <small class="text-muted">Manage workspace setup, attendance policy, and reusable HR lists.</small>
+        </div>
+        <a href="{% url 'organization_edit' organization.pk %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i> Edit Profile
+        </a>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-xl-3">
+            <a href="{% url 'organization_departments' %}" class="settings-tile">
+                <i class="bi bi-diagram-3"></i>
+                <span>Departments</span>
+                <strong>{{ departments|length }}</strong>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a href="{% url 'organization_categories' %}" class="settings-tile">
+                <i class="bi bi-collection"></i>
+                <span>Employee Categories</span>
+                <strong>{{ categories|length }}</strong>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a href="{% url 'attendance_exception_types' %}" class="settings-tile">
+                <i class="bi bi-calendar2-x"></i>
+                <span>Exception Types</span>
+                <strong>{{ exception_types|length }}</strong>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a href="{% url 'organization_attendance_settings' %}" class="settings-tile">
+                <i class="bi bi-clock"></i>
+                <span>Attendance Policy</span>
+                <strong>{{ settings_obj.late_threshold|time:"H:i" }}</strong>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a href="{% url 'organization_leave_types' %}" class="settings-tile">
+                <i class="bi bi-calendar2-week"></i>
+                <span>Leave Types</span>
+                <strong>{{ leave_types|length }}</strong>
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <h5 class="mb-1"><i class="bi bi-qr-code me-2"></i>Kiosk URL</h5>
+            <small class="text-muted">Share this link with employees in {{ organization.name }}.</small>
+        </div>
+        <div class="card-body px-4 pb-4">
+            <code class="d-block bg-light rounded p-3">{{ kiosk_url }}</code>
+        </div>
+    </div>
+</div>
+
+<style>
+    .settings-tile {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 0.9rem;
+        min-height: 86px;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background: #fff;
+        color: #0f172a;
+        text-decoration: none;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    .settings-tile i {
+        font-size: 1.4rem;
+        color: #2563eb;
+    }
+
+    .settings-tile span {
+        color: #475569;
+        font-weight: 600;
+    }
+
+    .settings-tile strong {
+        font-size: 1.25rem;
+    }
+</style>
+{% endblock %}

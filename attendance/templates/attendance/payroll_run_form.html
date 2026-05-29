@@ -1,0 +1,49 @@
+<!-- attendance/templates/attendance/payroll_run_form.html -->
+{% extends 'attendance/base.html' %}
+
+{% block title %}Create Payroll Run | HR Management{% endblock %}
+{% block page_title %}Create Payroll Run{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row">
+        <div class="col-xl-7 mx-auto">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1"><i class="bi bi-cash-stack me-2"></i>New Payroll Run</h5>
+                    <p class="text-muted mb-0">Create the month first, then generate payslips from employee salary records.</p>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <form method="POST">
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <label class="form-label">Title</label>
+                                {{ form.title }}
+                                {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">Payroll Month</label>
+                                {{ form.payroll_month }}
+                                {% if form.payroll_month.errors %}<div class="text-danger small mt-1">{{ form.payroll_month.errors.0 }}</div>{% endif %}
+                                <small class="text-muted">Any date in the month is okay; it will save as the first day.</small>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Notes</label>
+                                {{ form.notes }}
+                                {% if form.notes.errors %}<div class="text-danger small mt-1">{{ form.notes.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+                        <hr class="my-4">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'payroll_runs' %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create Payroll Run</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -70,11 +70,16 @@
                                 <small class="text-muted">Use this for leave, sick days, training, remote days, or approved absences.</small>
                             </div>
                             <div class="row g-3">
-                                <div class="col-md-4">
+                            <div class="col-md-4">
+                                <div class="d-flex justify-content-between align-items-center gap-2">
                                     <label class="form-label"><i class="bi bi-bookmark-check"></i> Exception Type</label>
-                                    {{ form.exception_type }}
-                                    {% if form.exception_type.errors %}<div class="text-danger small mt-1">{{ form.exception_type.errors.0 }}</div>{% endif %}
+                                    <a href="{% url 'attendance_exception_types' %}" class="small text-decoration-none">
+                                        <i class="bi bi-plus-circle me-1"></i>Add option
+                                    </a>
                                 </div>
+                                {{ form.exception_type }}
+                                {% if form.exception_type.errors %}<div class="text-danger small mt-1">{{ form.exception_type.errors.0 }}</div>{% endif %}
+                            </div>
                                 <div class="col-md-4">
                                     <label class="form-label"><i class="bi bi-calendar-event"></i> Start Date</label>
                                     {{ form.exception_start_date }}

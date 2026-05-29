@@ -1,0 +1,79 @@
+<!-- attendance/templates/attendance/payroll_run_detail.html -->
+{% extends 'attendance/base.html' %}
+
+{% block title %}{{ payroll_run.title }} | HR Management{% endblock %}
+{% block page_title %}{{ payroll_run.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+        <div>
+            <h5 class="mb-1"><i class="bi bi-receipt me-2"></i>{{ payroll_run.payroll_month|date:"F Y" }}</h5>
+            <small class="text-muted">Status: {{ payroll_run.get_status_display }}</small>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            {% if payroll_run.status == 'draft' or payroll_run.status == 'processed' %}
+                <a href="{% url 'payroll_run_generate' payroll_run.pk %}" class="btn btn-outline-primary">
+                    <i class="bi bi-gear me-1"></i> Generate Payslips
+                </a>
+            {% endif %}
+            {% if payroll_run.status == 'processed' %}
+                <a href="{% url 'payroll_run_approve' payroll_run.pk %}" class="btn btn-success">
+                    <i class="bi bi-check-lg me-1"></i> Approve
+                </a>
+            {% endif %}
+            {% if payroll_run.status == 'approved' %}
+                <a href="{% url 'payroll_run_mark_paid' payroll_run.pk %}" class="btn btn-primary">
+                    <i class="bi bi-credit-card me-1"></i> Mark Paid
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="card border-0"><div class="card-body"><small class="text-muted">Gross</small><h4 class="mb-0">{{ payroll_run.total_gross }}</h4></div></div></div>
+        <div class="col-md-4"><div class="card border-0"><div class="card-body"><small class="text-muted">Deductions</small><h4 class="mb-0">{{ payroll_run.total_deductions }}</h4></div></div></div>
+        <div class="col-md-4"><div class="card border-0"><div class="card-body"><small class="text-muted">Net Pay</small><h4 class="mb-0">{{ payroll_run.total_net }}</h4></div></div></div>
+    </div>
+
+    <div class="card border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Gross</th>
+                            <th>Deductions</th>
+                            <th>Net Pay</th>
+                            <th>Bank</th>
+                            <th class="text-end">Payslip</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payslip in payslips %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ payslip.employee.display_name }}</div>
+                                <small class="text-muted">{{ payslip.employee.employee_id }}</small>
+                            </td>
+                            <td>{{ payslip.gross_pay }}</td>
+                            <td>{{ payslip.total_deductions }}</td>
+                            <td><strong>{{ payslip.net_pay }}</strong></td>
+                            <td>{{ payslip.bank_name|default:"-" }}</td>
+                            <td class="text-end">
+                                <a href="{% url 'payslip_detail' payslip.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">No payslips generated yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

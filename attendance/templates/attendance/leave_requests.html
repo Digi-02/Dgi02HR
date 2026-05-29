@@ -1,0 +1,194 @@
+<!-- attendance/templates/attendance/leave_requests.html -->
+{% extends 'attendance/base.html' %}
+
+{% block title %}Leave Management | HR Management{% endblock %}
+{% block page_title %}Leave Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+        <div>
+            <h5 class="mb-1"><i class="bi bi-calendar2-week me-2"></i>{{ organization.name }} Leave Requests</h5>
+            <small class="text-muted">Track requests, approvals, and attendance coverage from one place.</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'organization_leave_types' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-sliders me-1"></i> Leave Types
+            </a>
+            <a href="{% url 'leave_request_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i> New Request
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0">
+                <div class="card-body">
+                    <small class="text-muted">Pending Requests</small>
+                    <h3 class="mb-0">{{ pending_count }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0">
+                <div class="card-body">
+                    <small class="text-muted">Approved Requests</small>
+                    <h3 class="mb-0">{{ approved_count }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 mb-4">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <h5 class="mb-1"><i class="bi bi-pie-chart me-2"></i>Leave Balances</h5>
+            <small class="text-muted">Current year entitlement, used, pending, and remaining days.</small>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Leave Balances</th>
+                            <th>Total Remaining</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in leave_balances %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ row.employee.display_name }}</div>
+                                <small class="text-muted">{{ row.employee.employee_id }}</small>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    {% for balance in row.balances %}
+                                    <span class="badge bg-{{ balance.leave_type.color }} bg-opacity-10 text-{{ balance.leave_type.color }} px-3 py-2">
+                                        {{ balance.leave_type.name }}:
+                                        {{ balance.remaining }} left
+                                        <span class="text-muted">({{ balance.used }} used, {{ balance.pending }} pending)</span>
+                                    </span>
+                                    {% empty %}
+                                    <span class="text-muted">No leave types configured</span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td><strong>{{ row.total_remaining }}</strong></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-5 text-muted">No employees available for leave balance tracking.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <form method="GET" class="row g-2 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Employee, ID, or leave type">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-search me-1"></i> Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Leave Type</th>
+                            <th>Period</th>
+                            <th>Days</th>
+                            <th>Manager Review</th>
+                            <th>Status</th>
+                            <th>Reviewed By</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave_request in leave_requests %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ leave_request.employee.display_name }}</div>
+                                <small class="text-muted">{{ leave_request.employee.employee_id }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ leave_request.leave_type.color }} bg-opacity-10 text-{{ leave_request.leave_type.color }}">
+                                    {{ leave_request.leave_type.name }}
+                                </span>
+                            </td>
+                            <td>{{ leave_request.start_date }} to {{ leave_request.end_date }}</td>
+                            <td>{{ leave_request.day_count }}</td>
+                            <td>
+                                {% if leave_request.employee.line_manager %}
+                                    {% if leave_request.manager_approval_status == 'approved' %}
+                                        <span class="badge bg-success bg-opacity-10 text-success">Approved</span>
+                                    {% elif leave_request.manager_approval_status == 'rejected' %}
+                                        <span class="badge bg-danger bg-opacity-10 text-danger">Rejected</span>
+                                    {% else %}
+                                        <span class="badge bg-warning bg-opacity-10 text-warning">Pending</span>
+                                    {% endif %}
+                                    <br><small class="text-muted">{{ leave_request.employee.line_manager.full_name }}</small>
+                                {% else %}
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary">Not Required</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if leave_request.status == 'approved' %}
+                                    <span class="badge bg-success bg-opacity-10 text-success">Approved</span>
+                                {% elif leave_request.status == 'rejected' %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger">Rejected</span>
+                                {% elif leave_request.status == 'cancelled' %}
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary">Cancelled</span>
+                                {% else %}
+                                    <span class="badge bg-warning bg-opacity-10 text-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ leave_request.reviewed_by|default:"-" }}</td>
+                            <td class="text-end">
+                                {% if leave_request.status == 'pending' %}
+                                    {% if not leave_request.employee.line_manager or leave_request.manager_approval_status == 'approved' %}
+                                        <a href="{% url 'leave_request_approve' leave_request.pk %}" class="btn btn-sm btn-outline-success">Approve</a>
+                                    {% endif %}
+                                    <a href="{% url 'leave_request_reject' leave_request.pk %}" class="btn btn-sm btn-outline-danger">Reject</a>
+                                {% else %}
+                                    <span class="text-muted small">Reviewed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-calendar2-x fs-1 d-block mb-3"></i>
+                                No leave requests found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

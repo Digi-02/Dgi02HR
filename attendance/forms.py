@@ -1,9 +1,23 @@
 # attendance/forms.py
 
 from django import forms
+from django.contrib.auth.models import User
 from django.forms import inlineformset_factory
+from django.utils.text import slugify
 from .models import Employee, AttendanceRecord, Category, Department
-from .models import EmployeeEducation, EmployeeCertification, EmployeeWorkExperience, AttendanceException
+from .models import (
+    EmployeeEducation,
+    EmployeeCertification,
+    EmployeeWorkExperience,
+    EmployeeDocument,
+    AttendanceException,
+    AttendanceExceptionType,
+    Organization,
+    AttendanceSettings,
+    LeaveType,
+    LeaveRequest,
+    PayrollRun,
+)
 
 
 class EmployeeForm(forms.ModelForm):
@@ -12,10 +26,12 @@ class EmployeeForm(forms.ModelForm):
     class Meta:
         model = Employee
         fields = [
-            'category', 'title', 'first_name', 'last_name', 
+            'category', 'profile_photo', 'title', 'first_name', 'last_name', 
             'email', 'personal_email', 'phone', 'alternative_phone', 'gender',
             'date_of_birth', 'nationality', 'marital_status', 'religion',
-            'blood_group', 'genotype',
+            'blood_group', 'genotype', 'allergies_or_medical_conditions',
+            'emergency_medical_contact_name', 'emergency_medical_contact_relationship',
+            'emergency_medical_contact_phone',
             'residential_address', 'permanent_address', 'city', 'state',
             'country', 'postal_code', 'local_government',
             'emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_phone',
@@ -28,12 +44,20 @@ class EmployeeForm(forms.ModelForm):
             'nin_number', 'passport_number', 'passport_expiry_date',
             'tin_number', 'drivers_license_number',
             'work_permit_number', 'work_permit_expiry_date',
+            'bank_name', 'bank_account_name', 'bank_account_number', 'bank_branch',
+            'pension_rsa_pin', 'pension_fund_administrator',
+            'basic_salary', 'housing_allowance', 'transport_allowance', 'other_allowances',
+            'tax_deduction', 'pension_deduction', 'other_deductions',
             'employment_status', 'is_active'
         ]
         widgets = {
             'category': forms.Select(attrs={
                 'class': 'form-select',
                 'id': 'category-select'
+            }),
+            'profile_photo': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*'
             }),
             'title': forms.Select(attrs={'class': 'form-select'}),
             'first_name': forms.TextInput(attrs={
@@ -76,6 +100,23 @@ class EmployeeForm(forms.ModelForm):
             }),
             'blood_group': forms.Select(attrs={'class': 'form-select'}),
             'genotype': forms.Select(attrs={'class': 'form-select'}),
+            'allergies_or_medical_conditions': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Emergency-relevant allergies or medical conditions'
+            }),
+            'emergency_medical_contact_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Medical emergency contact name'
+            }),
+            'emergency_medical_contact_relationship': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Relationship or role'
+            }),
+            'emergency_medical_contact_phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Medical emergency contact phone'
+            }),
             'residential_address': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 3,
@@ -215,6 +256,19 @@ class EmployeeForm(forms.ModelForm):
                 'class': 'form-control',
                 'type': 'date'
             }),
+            'bank_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Bank name'}),
+            'bank_account_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Account name'}),
+            'bank_account_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Account number'}),
+            'bank_branch': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Branch'}),
+            'pension_rsa_pin': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'RSA PIN'}),
+            'pension_fund_administrator': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Pension fund administrator'}),
+            'basic_salary': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': 0}),
+            'housing_allowance': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': 0}),
+            'transport_allowance': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': 0}),
+            'other_allowances': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': 0}),
+            'tax_deduction': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': 0}),
+            'pension_deduction': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': 0}),
+            'other_deductions': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': 0}),
             'employment_status': forms.Select(attrs={'class': 'form-select'}),
             'is_active': forms.CheckboxInput(attrs={
                 'class': 'form-check-input'
@@ -222,21 +276,43 @@ class EmployeeForm(forms.ModelForm):
         }
     
     def __init__(self, *args, **kwargs):
+        self.organization = kwargs.pop('organization', None)
         super().__init__(*args, **kwargs)
+
+        if self.organization and not self.instance.pk:
+            self.instance.organization = self.organization
+
+        if self.organization:
+            self.fields['category'].queryset = Category.objects.filter(
+                organization=self.organization
+            ).order_by('name')
+            self.fields['department'].queryset = Department.objects.filter(
+                organization=self.organization,
+                is_active=True,
+            ).order_by('name')
         
         # Filter supervisor choices to only Staff
-        staff_category = Category.objects.filter(code='STAFF').first()
+        staff_categories = Category.objects.filter(code='STAFF')
+        if self.organization:
+            staff_categories = staff_categories.filter(organization=self.organization)
+        staff_category = staff_categories.first()
         if staff_category:
-            self.fields['supervisor'].queryset = Employee.objects.filter(
+            supervisor_qs = Employee.objects.filter(
                 category=staff_category,
                 is_active=True
             )
+            if self.organization:
+                supervisor_qs = supervisor_qs.filter(organization=self.organization)
+            self.fields['supervisor'].queryset = supervisor_qs
         else:
             self.fields['supervisor'].queryset = Employee.objects.none()
 
-        self.fields['line_manager'].queryset = Employee.objects.filter(
+        line_manager_qs = Employee.objects.filter(
             is_active=True
-        ).order_by('first_name', 'last_name')
+        )
+        if self.organization:
+            line_manager_qs = line_manager_qs.filter(organization=self.organization)
+        self.fields['line_manager'].queryset = line_manager_qs.order_by('first_name', 'last_name')
         if self.instance.pk:
             self.fields['line_manager'].queryset = self.fields['line_manager'].queryset.exclude(pk=self.instance.pk)
             self.fields['supervisor'].queryset = self.fields['supervisor'].queryset.exclude(pk=self.instance.pk)
@@ -251,6 +327,8 @@ class EmployeeForm(forms.ModelForm):
         if email:
             email = email.lower().strip()
             qs = Employee.objects.filter(email=email)
+            if self.organization:
+                qs = qs.filter(organization=self.organization)
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
@@ -329,10 +407,11 @@ class ManualAttendanceForm(forms.Form):
         help_text="Leave blank if still working"
     )
 
-    exception_type = forms.ChoiceField(
+    exception_type = forms.ModelChoiceField(
         required=False,
-        choices=[('', 'Select exception type')] + list(AttendanceException.EXCEPTION_TYPE_CHOICES),
-        widget=forms.Select(attrs={'class': 'form-select'})
+        queryset=AttendanceExceptionType.objects.none(),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        empty_label='Select exception type'
     )
 
     exception_start_date = forms.DateField(
@@ -361,12 +440,21 @@ class ManualAttendanceForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
+        self.organization = kwargs.pop('organization', None)
         super().__init__(*args, **kwargs)
         # Group employees by category in dropdown
-        self.fields['employee'].queryset = Employee.objects.filter(
+        employee_qs = Employee.objects.filter(
             is_active=True, 
             employment_status='active'
-        ).select_related('category').order_by('category__name', 'first_name')
+        )
+        exception_qs = AttendanceExceptionType.objects.filter(
+            is_active=True
+        )
+        if self.organization:
+            employee_qs = employee_qs.filter(organization=self.organization)
+            exception_qs = exception_qs.filter(organization=self.organization)
+        self.fields['employee'].queryset = employee_qs.select_related('category').order_by('category__name', 'first_name')
+        self.fields['exception_type'].queryset = exception_qs.order_by('name')
 
     def clean(self):
         cleaned_data = super().clean()
@@ -393,6 +481,321 @@ class ManualAttendanceForm(forms.Form):
                 self.add_error('exception_end_date', 'End date cannot be earlier than the start date.')
 
         return cleaned_data
+
+
+class OrganizationForm(forms.ModelForm):
+    class Meta:
+        model = Organization
+        fields = ['name', 'slug', 'email', 'phone', 'address', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Organization name'
+            }),
+            'slug': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'organization-url-name'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'contact@company.com'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Phone number'
+            }),
+            'address': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Office address'
+            }),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def clean_slug(self):
+        slug = self.cleaned_data.get('slug')
+        name = self.cleaned_data.get('name', '')
+        slug = slugify(slug or name)
+        if not slug:
+            raise forms.ValidationError('Enter a valid organization URL slug.')
+
+        qs = Organization.objects.filter(slug=slug)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError('An organization already uses this slug.')
+        return slug
+
+
+class DepartmentForm(forms.ModelForm):
+    class Meta:
+        model = Department
+        fields = ['name', 'code', 'description', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Department name'}),
+            'code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Short code'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Optional description'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.organization = kwargs.pop('organization', None)
+        super().__init__(*args, **kwargs)
+
+    def clean_code(self):
+        return (self.cleaned_data.get('code') or '').strip().upper()
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if self.organization:
+            instance.organization = self.organization
+        if commit:
+            instance.save()
+        return instance
+
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['name', 'code', 'icon', 'color']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Category name'}),
+            'code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Short code'}),
+            'icon': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Bootstrap icon class'}),
+            'color': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'primary, success, info'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.organization = kwargs.pop('organization', None)
+        super().__init__(*args, **kwargs)
+
+    def clean_code(self):
+        return (self.cleaned_data.get('code') or '').strip().upper()
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if self.organization:
+            instance.organization = self.organization
+        if commit:
+            instance.save()
+        return instance
+
+
+class AttendanceSettingsForm(forms.ModelForm):
+    class Meta:
+        model = AttendanceSettings
+        fields = ['workday_start', 'late_threshold', 'birthday_reminder_days', 'internship_reminder_days']
+        widgets = {
+            'workday_start': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'late_threshold': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'birthday_reminder_days': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'internship_reminder_days': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+        }
+
+
+class AttendanceExceptionTypeForm(forms.ModelForm):
+    class Meta:
+        model = AttendanceExceptionType
+        fields = ['name', 'code', 'description', 'color', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g. Public Holiday'
+            }),
+            'code': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g. public_holiday'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Optional policy note or description'
+            }),
+            'color': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'primary, success, warning, info, danger'
+            }),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def clean_code(self):
+        code = self.cleaned_data.get('code', '')
+        return code.strip().lower().replace(' ', '_')
+
+    def __init__(self, *args, **kwargs):
+        self.organization = kwargs.pop('organization', None)
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if self.organization:
+            instance.organization = self.organization
+        if commit:
+            instance.save()
+        return instance
+
+
+class LeaveTypeForm(forms.ModelForm):
+    class Meta:
+        model = LeaveType
+        fields = [
+            'name',
+            'code',
+            'annual_entitlement_days',
+            'color',
+            'requires_attachment',
+            'is_paid',
+            'is_active',
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Annual Leave'}),
+            'code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'annual_leave'}),
+            'annual_entitlement_days': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+            'color': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'success, warning, info'}),
+            'requires_attachment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'is_paid': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.organization = kwargs.pop('organization', None)
+        super().__init__(*args, **kwargs)
+
+    def clean_code(self):
+        code = self.cleaned_data.get('code', '')
+        return slugify(code).replace('-', '_')
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if self.organization:
+            instance.organization = self.organization
+        if commit:
+            instance.save()
+        return instance
+
+
+class LeaveRequestForm(forms.ModelForm):
+    class Meta:
+        model = LeaveRequest
+        fields = ['employee', 'leave_type', 'start_date', 'end_date', 'day_part', 'reason']
+        widgets = {
+            'employee': forms.Select(attrs={'class': 'form-select'}),
+            'leave_type': forms.Select(attrs={'class': 'form-select'}),
+            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'day_part': forms.Select(attrs={'class': 'form-select'}),
+            'reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Reason or handover notes'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.organization = kwargs.pop('organization', None)
+        self.employee = kwargs.pop('employee', None)
+        super().__init__(*args, **kwargs)
+        employee_qs = Employee.objects.filter(is_active=True).select_related('category')
+        leave_type_qs = LeaveType.objects.filter(is_active=True)
+        if self.organization:
+            employee_qs = employee_qs.filter(organization=self.organization)
+            leave_type_qs = leave_type_qs.filter(organization=self.organization)
+        self.fields['employee'].queryset = employee_qs.order_by('first_name', 'last_name')
+        self.fields['leave_type'].queryset = leave_type_qs.order_by('name')
+        if self.employee:
+            self.fields['employee'].required = False
+            self.fields['employee'].widget = forms.HiddenInput()
+            self.fields['employee'].initial = self.employee
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.employee:
+            cleaned_data['employee'] = self.employee
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+        day_part = cleaned_data.get('day_part')
+
+        if start_date and end_date and end_date < start_date:
+            self.add_error('end_date', 'End date cannot be earlier than start date.')
+        if start_date and end_date and day_part != 'full_day' and start_date != end_date:
+            self.add_error('day_part', 'Half-day leave can only be used for a single date.')
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if self.organization:
+            instance.organization = self.organization
+        if commit:
+            instance.save()
+        return instance
+
+
+class LeaveReviewForm(forms.Form):
+    review_note = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Optional review note',
+        })
+    )
+
+
+class EmployeeAccountForm(forms.Form):
+    username = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username'})
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'employee@company.com'})
+    )
+    password = forms.CharField(
+        min_length=8,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Temporary password'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.employee = kwargs.pop('employee', None)
+        super().__init__(*args, **kwargs)
+        if self.employee and not self.is_bound:
+            base_username = self.employee.email.split('@')[0] if self.employee.email else self.employee.employee_id.lower()
+            self.fields['username'].initial = slugify(base_username).replace('-', '_')
+            self.fields['email'].initial = self.employee.email
+
+    def clean_username(self):
+        username = self.cleaned_data['username'].strip()
+        if User.objects.filter(username__iexact=username).exists():
+            raise forms.ValidationError('This username is already taken.')
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip().lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError('A user account already uses this email.')
+        return email
+
+
+class PayrollRunForm(forms.ModelForm):
+    class Meta:
+        model = PayrollRun
+        fields = ['title', 'payroll_month', 'notes']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. May 2026 Payroll'}),
+            'payroll_month': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Optional payroll notes'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.organization = kwargs.pop('organization', None)
+        super().__init__(*args, **kwargs)
+
+    def clean_payroll_month(self):
+        payroll_month = self.cleaned_data['payroll_month']
+        return payroll_month.replace(day=1)
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if self.organization:
+            instance.organization = self.organization
+        if commit:
+            instance.save()
+        return instance
 
 
 class DateFilterForm(forms.Form):
@@ -460,8 +863,18 @@ class DateFilterForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
+        self.organization = kwargs.pop('organization', None)
         super().__init__(*args, **kwargs)
-        self.fields['employee'].queryset = Employee.objects.filter(is_active=True).order_by('first_name', 'last_name')
+        employee_qs = Employee.objects.filter(is_active=True)
+        category_qs = Category.objects.order_by('name')
+        department_qs = Department.objects.filter(is_active=True).order_by('name')
+        if self.organization:
+            employee_qs = employee_qs.filter(organization=self.organization)
+            category_qs = category_qs.filter(organization=self.organization)
+            department_qs = department_qs.filter(organization=self.organization)
+        self.fields['employee'].queryset = employee_qs.order_by('first_name', 'last_name')
+        self.fields['category'].queryset = category_qs
+        self.fields['department'].queryset = department_qs
 
 
 class EmployeeEducationForm(forms.ModelForm):
@@ -503,6 +916,20 @@ class EmployeeWorkExperienceForm(forms.ModelForm):
         }
 
 
+class EmployeeDocumentForm(forms.ModelForm):
+    class Meta:
+        model = EmployeeDocument
+        fields = ['document_type', 'title', 'file', 'issue_date', 'expiry_date', 'notes']
+        widgets = {
+            'document_type': forms.Select(attrs={'class': 'form-select'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Document title'}),
+            'file': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'issue_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'expiry_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Optional notes'}),
+        }
+
+
 EmployeeEducationFormSet = inlineformset_factory(
     Employee,
     EmployeeEducation,
@@ -523,6 +950,14 @@ EmployeeWorkExperienceFormSet = inlineformset_factory(
     Employee,
     EmployeeWorkExperience,
     form=EmployeeWorkExperienceForm,
+    extra=1,
+    can_delete=True,
+)
+
+EmployeeDocumentFormSet = inlineformset_factory(
+    Employee,
+    EmployeeDocument,
+    form=EmployeeDocumentForm,
     extra=1,
     can_delete=True,
 )

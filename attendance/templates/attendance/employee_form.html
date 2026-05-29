@@ -32,7 +32,7 @@
                     </div>
                 </div>
                 <div class="card-body px-4 pb-4">
-                    <form method="POST" id="employee-form">
+                    <form method="POST" id="employee-form" enctype="multipart/form-data">
                         {% csrf_token %}
 
                         {% if form.non_field_errors %}
@@ -50,6 +50,9 @@
                                 <button class="nav-link" id="contact-tab" data-bs-toggle="pill" data-bs-target="#contact-pane" type="button" role="tab" aria-controls="contact-pane" aria-selected="false">Contact</button>
                             </li>
                             <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="medical-tab" data-bs-toggle="pill" data-bs-target="#medical-pane" type="button" role="tab" aria-controls="medical-pane" aria-selected="false">Medical</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="address-tab" data-bs-toggle="pill" data-bs-target="#address-pane" type="button" role="tab" aria-controls="address-pane" aria-selected="false">Address</button>
                             </li>
                             <li class="nav-item" role="presentation">
@@ -59,6 +62,9 @@
                                 <button class="nav-link" id="compliance-tab" data-bs-toggle="pill" data-bs-target="#compliance-pane" type="button" role="tab" aria-controls="compliance-pane" aria-selected="false">Compliance</button>
                             </li>
                             <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="payroll-tab" data-bs-toggle="pill" data-bs-target="#payroll-pane" type="button" role="tab" aria-controls="payroll-pane" aria-selected="false">Payroll</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="education-tab" data-bs-toggle="pill" data-bs-target="#education-pane" type="button" role="tab" aria-controls="education-pane" aria-selected="false">Education</button>
                             </li>
                             <li class="nav-item" role="presentation">
@@ -66,6 +72,9 @@
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="work-history-tab" data-bs-toggle="pill" data-bs-target="#work-history-pane" type="button" role="tab" aria-controls="work-history-pane" aria-selected="false">Work History</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="documents-tab" data-bs-toggle="pill" data-bs-target="#documents-pane" type="button" role="tab" aria-controls="documents-pane" aria-selected="false">Documents</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="contacts-tab" data-bs-toggle="pill" data-bs-target="#contacts-pane" type="button" role="tab" aria-controls="contacts-pane" aria-selected="false">Contacts</button>
@@ -84,6 +93,11 @@
                                             <label class="form-label">Person Type</label>
                                             {{ form.category }}
                                             {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Profile Photo</label>
+                                            {{ form.profile_photo }}
+                                            {% if form.profile_photo.errors %}<div class="text-danger small mt-1">{{ form.profile_photo.errors.0 }}</div>{% endif %}
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label">Employee ID</label>
@@ -130,16 +144,6 @@
                                             {{ form.religion }}
                                             {% if form.religion.errors %}<div class="text-danger small mt-1">{{ form.religion.errors.0 }}</div>{% endif %}
                                         </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Blood Group</label>
-                                            {{ form.blood_group }}
-                                            {% if form.blood_group.errors %}<div class="text-danger small mt-1">{{ form.blood_group.errors.0 }}</div>{% endif %}
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Genotype</label>
-                                            {{ form.genotype }}
-                                            {% if form.genotype.errors %}<div class="text-danger small mt-1">{{ form.genotype.errors.0 }}</div>{% endif %}
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -167,6 +171,45 @@
                                             <label class="form-label">Alternative Phone</label>
                                             {{ form.alternative_phone }}
                                             {% if form.alternative_phone.errors %}<div class="text-danger small mt-1">{{ form.alternative_phone.errors.0 }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="medical-pane" role="tabpanel" aria-labelledby="medical-tab" tabindex="0">
+                                <div class="form-section-card">
+                                    <h6 class="form-section-title"><i class="bi bi-heart-pulse me-2"></i>Medical Information</h6>
+                                    <p class="text-muted small mb-3">Only capture information that is necessary and appropriate for emergency support.</p>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Blood Group</label>
+                                            {{ form.blood_group }}
+                                            {% if form.blood_group.errors %}<div class="text-danger small mt-1">{{ form.blood_group.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Genotype</label>
+                                            {{ form.genotype }}
+                                            {% if form.genotype.errors %}<div class="text-danger small mt-1">{{ form.genotype.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Allergies or Medical Conditions</label>
+                                            {{ form.allergies_or_medical_conditions }}
+                                            {% if form.allergies_or_medical_conditions.errors %}<div class="text-danger small mt-1">{{ form.allergies_or_medical_conditions.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Emergency Medical Contact Name</label>
+                                            {{ form.emergency_medical_contact_name }}
+                                            {% if form.emergency_medical_contact_name.errors %}<div class="text-danger small mt-1">{{ form.emergency_medical_contact_name.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Relationship / Role</label>
+                                            {{ form.emergency_medical_contact_relationship }}
+                                            {% if form.emergency_medical_contact_relationship.errors %}<div class="text-danger small mt-1">{{ form.emergency_medical_contact_relationship.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Phone Number</label>
+                                            {{ form.emergency_medical_contact_phone }}
+                                            {% if form.emergency_medical_contact_phone.errors %}<div class="text-danger small mt-1">{{ form.emergency_medical_contact_phone.errors.0 }}</div>{% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -292,6 +335,85 @@
                                             <label class="form-label">Work Permit Expiry Date</label>
                                             {{ form.work_permit_expiry_date }}
                                             {% if form.work_permit_expiry_date.errors %}<div class="text-danger small mt-1">{{ form.work_permit_expiry_date.errors.0 }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="payroll-pane" role="tabpanel" aria-labelledby="payroll-tab" tabindex="0">
+                                <div class="form-section-card">
+                                    <h6 class="form-section-title"><i class="bi bi-bank me-2"></i>Bank & Pension Details</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Bank Name</label>
+                                            {{ form.bank_name }}
+                                            {% if form.bank_name.errors %}<div class="text-danger small mt-1">{{ form.bank_name.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Account Name</label>
+                                            {{ form.bank_account_name }}
+                                            {% if form.bank_account_name.errors %}<div class="text-danger small mt-1">{{ form.bank_account_name.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Account Number</label>
+                                            {{ form.bank_account_number }}
+                                            {% if form.bank_account_number.errors %}<div class="text-danger small mt-1">{{ form.bank_account_number.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Branch</label>
+                                            {{ form.bank_branch }}
+                                            {% if form.bank_branch.errors %}<div class="text-danger small mt-1">{{ form.bank_branch.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">RSA PIN</label>
+                                            {{ form.pension_rsa_pin }}
+                                            {% if form.pension_rsa_pin.errors %}<div class="text-danger small mt-1">{{ form.pension_rsa_pin.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Pension Fund Administrator</label>
+                                            {{ form.pension_fund_administrator }}
+                                            {% if form.pension_fund_administrator.errors %}<div class="text-danger small mt-1">{{ form.pension_fund_administrator.errors.0 }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section-card">
+                                    <h6 class="form-section-title"><i class="bi bi-cash-stack me-2"></i>Salary Structure</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-3">
+                                            <label class="form-label">Basic Salary</label>
+                                            {{ form.basic_salary }}
+                                            {% if form.basic_salary.errors %}<div class="text-danger small mt-1">{{ form.basic_salary.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Housing Allowance</label>
+                                            {{ form.housing_allowance }}
+                                            {% if form.housing_allowance.errors %}<div class="text-danger small mt-1">{{ form.housing_allowance.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Transport Allowance</label>
+                                            {{ form.transport_allowance }}
+                                            {% if form.transport_allowance.errors %}<div class="text-danger small mt-1">{{ form.transport_allowance.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Other Allowances</label>
+                                            {{ form.other_allowances }}
+                                            {% if form.other_allowances.errors %}<div class="text-danger small mt-1">{{ form.other_allowances.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Tax Deduction</label>
+                                            {{ form.tax_deduction }}
+                                            {% if form.tax_deduction.errors %}<div class="text-danger small mt-1">{{ form.tax_deduction.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Pension Deduction</label>
+                                            {{ form.pension_deduction }}
+                                            {% if form.pension_deduction.errors %}<div class="text-danger small mt-1">{{ form.pension_deduction.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Other Deductions</label>
+                                            {{ form.other_deductions }}
+                                            {% if form.other_deductions.errors %}<div class="text-danger small mt-1">{{ form.other_deductions.errors.0 }}</div>{% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -569,6 +691,66 @@
                                 </div>
                             </div>
 
+                            <div class="tab-pane fade" id="documents-pane" role="tabpanel" aria-labelledby="documents-tab" tabindex="0">
+                                <div class="form-section-card">
+                                    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                                        <h6 class="form-section-title mb-0"><i class="bi bi-folder2-open me-2"></i>Employee Documents</h6>
+                                        <button type="button" class="btn btn-outline-primary btn-sm add-formset-row" data-prefix="document" data-container="document-forms">
+                                            <i class="bi bi-plus-lg me-1"></i> Add Document
+                                        </button>
+                                    </div>
+                                    {{ document_formset.management_form }}
+                                    {% if document_formset.non_form_errors %}
+                                        <div class="alert alert-danger py-2 mt-3">{{ document_formset.non_form_errors }}</div>
+                                    {% endif %}
+                                    <div id="document-forms" class="formset-stack mt-3">
+                                        {% for document_item in document_formset %}
+                                            <div class="repeatable-card formset-row">
+                                                {{ document_item.id }}
+                                                <div class="row g-3">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Document Type</label>
+                                                        {{ document_item.document_type }}
+                                                        {% if document_item.document_type.errors %}<div class="text-danger small mt-1">{{ document_item.document_type.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Title</label>
+                                                        {{ document_item.title }}
+                                                        {% if document_item.title.errors %}<div class="text-danger small mt-1">{{ document_item.title.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">File</label>
+                                                        {{ document_item.file }}
+                                                        {% if document_item.file.errors %}<div class="text-danger small mt-1">{{ document_item.file.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Issue Date</label>
+                                                        {{ document_item.issue_date }}
+                                                        {% if document_item.issue_date.errors %}<div class="text-danger small mt-1">{{ document_item.issue_date.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Expiry Date</label>
+                                                        {{ document_item.expiry_date }}
+                                                        {% if document_item.expiry_date.errors %}<div class="text-danger small mt-1">{{ document_item.expiry_date.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Notes</label>
+                                                        {{ document_item.notes }}
+                                                        {% if document_item.notes.errors %}<div class="text-danger small mt-1">{{ document_item.notes.errors.0 }}</div>{% endif %}
+                                                    </div>
+                                                    <div class="col-12 d-flex justify-content-md-end">
+                                                        <div class="form-check delete-check">
+                                                            {{ document_item.DELETE }}
+                                                            <label class="form-check-label" for="{{ document_item.DELETE.id_for_label }}">Mark for removal</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="tab-pane fade" id="status-pane" role="tabpanel" aria-labelledby="status-tab" tabindex="0">
                                 <div class="form-section-card">
                                     <h6 class="form-section-title"><i class="bi bi-toggle-on me-2"></i>Status & Access</h6>
@@ -701,6 +883,44 @@
                                     <div class="form-check delete-check">
                                         {{ work_experience_formset.empty_form.DELETE }}
                                         <label class="form-check-label" for="{{ work_experience_formset.empty_form.DELETE.id_for_label }}">Mark for removal</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template id="document-empty-form-template">
+                        <div class="repeatable-card formset-row">
+                            {{ document_formset.empty_form.id }}
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Document Type</label>
+                                    {{ document_formset.empty_form.document_type }}
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Title</label>
+                                    {{ document_formset.empty_form.title }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">File</label>
+                                    {{ document_formset.empty_form.file }}
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Issue Date</label>
+                                    {{ document_formset.empty_form.issue_date }}
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Expiry Date</label>
+                                    {{ document_formset.empty_form.expiry_date }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Notes</label>
+                                    {{ document_formset.empty_form.notes }}
+                                </div>
+                                <div class="col-12 d-flex justify-content-md-end">
+                                    <div class="form-check delete-check">
+                                        {{ document_formset.empty_form.DELETE }}
+                                        <label class="form-check-label" for="{{ document_formset.empty_form.DELETE.id_for_label }}">Mark for removal</label>
                                     </div>
                                 </div>
                             </div>

@@ -93,9 +93,13 @@
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <div class="bg-primary bg-opacity-10 p-2 rounded me-3">
-                                        <i class="bi bi-person text-primary"></i>
-                                    </div>
+                                    {% if employee.profile_photo %}
+                                        <img src="{{ employee.profile_photo.url }}" alt="{{ employee.full_name }}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-primary bg-opacity-10 p-2 rounded me-3">
+                                            <i class="bi bi-person text-primary"></i>
+                                        </div>
+                                    {% endif %}
                                     <div>
                                         <strong>{{ employee.full_name }}</strong>
                                         <br>

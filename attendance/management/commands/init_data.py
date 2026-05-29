@@ -2,12 +2,15 @@
 
 from django.core.management.base import BaseCommand
 from attendance.models import Category, Department
+from attendance.organization import get_default_organization
 
 
 class Command(BaseCommand):
     help = 'Initialize default categories and departments'
 
     def handle(self, *args, **options):
+        organization = get_default_organization()
+
         # Create Categories
         categories = [
             {
@@ -32,6 +35,7 @@ class Command(BaseCommand):
 
         for cat_data in categories:
             category, created = Category.objects.get_or_create(
+                organization=organization,
                 code=cat_data['code'],
                 defaults=cat_data
             )
@@ -49,6 +53,7 @@ class Command(BaseCommand):
 
         for dept_data in departments:
             department, created = Department.objects.get_or_create(
+                organization=organization,
                 code=dept_data['code'],
                 defaults=dept_data
             )

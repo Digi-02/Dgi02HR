@@ -1,0 +1,99 @@
+<!-- attendance/templates/attendance/organization_departments.html -->
+{% extends 'attendance/base.html' %}
+
+{% block title %}Departments | HR Management{% endblock %}
+{% block page_title %}Departments{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1"><i class="bi bi-plus-circle me-2"></i>Add Department</h5>
+                    <p class="text-muted mb-0">Departments help group employees, reports, and approvals.</p>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <form method="POST">
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Code</label>
+                            {{ form.code }}
+                            {% if form.code.errors %}<div class="text-danger small mt-1">{{ form.code.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="form-check mb-4">
+                            {{ form.is_active }}
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Active</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-save me-1"></i> Add Department
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                        <div>
+                            <h5 class="mb-1"><i class="bi bi-diagram-3 me-2"></i>Configured Departments</h5>
+                            <small class="text-muted">{{ organization.name }} department structure.</small>
+                        </div>
+                        <a href="{% url 'organization_settings' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Settings
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Code</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for department in departments %}
+                                <tr>
+                                    <td class="fw-semibold">{{ department.name }}</td>
+                                    <td><code>{{ department.code }}</code></td>
+                                    <td>{{ department.description|default:"-" }}</td>
+                                    <td>
+                                        {% if department.is_active %}
+                                            <span class="badge bg-success bg-opacity-10 text-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-5 text-muted">No departments yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

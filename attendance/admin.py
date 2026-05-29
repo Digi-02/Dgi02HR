@@ -13,41 +13,74 @@ from .models import (
     EmployeeEducation,
     EmployeeCertification,
     EmployeeWorkExperience,
+    EmployeeDocument,
     AttendanceException,
+    AttendanceExceptionType,
+    LeaveType,
+    LeaveRequest,
+    Organization,
+    OrganizationMembership,
 )
+
+
+@admin.register(Organization)
+class OrganizationAdmin(admin.ModelAdmin):
+    list_display = ['name', 'slug', 'email', 'phone', 'is_active', 'created_at']
+    list_filter = ['is_active']
+    search_fields = ['name', 'slug', 'email']
+    prepopulated_fields = {'slug': ('name',)}
+
+
+@admin.register(OrganizationMembership)
+class OrganizationMembershipAdmin(admin.ModelAdmin):
+    list_display = ['user', 'organization', 'role', 'is_active', 'created_at']
+    list_filter = ['role', 'is_active', 'organization']
+    search_fields = ['user__username', 'user__email', 'organization__name']
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'code', 'icon', 'color', 'created_at']
-    search_fields = ['name', 'code']
+    list_display = ['name', 'code', 'organization', 'icon', 'color', 'created_at']
+    list_filter = ['organization']
+    search_fields = ['name', 'code', 'organization__name']
     list_editable = ['icon', 'color']
 
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ['name', 'code', 'is_active', 'created_at']
-    search_fields = ['name', 'code']
-    list_filter = ['is_active']
+    list_display = ['name', 'code', 'organization', 'is_active', 'created_at']
+    search_fields = ['name', 'code', 'organization__name']
+    list_filter = ['organization', 'is_active']
     list_editable = ['is_active']
 
 
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
     list_display = ['employee_id', 'display_name', 'category_badge', 'email', 
-                    'department', 'employment_status', 'attendance_status']
-    list_filter = ['category', 'department', 'employment_status', 'is_active', 'gender']
+                    'department', 'organization', 'employment_status', 'attendance_status']
+    list_filter = ['organization', 'category', 'department', 'employment_status', 'is_active', 'gender']
     search_fields = ['first_name', 'last_name', 'email', 'employee_id']
     list_editable = ['employment_status']
     readonly_fields = ['employee_id', 'created_at', 'updated_at']
     
     fieldsets = (
         ('Identification', {
-            'fields': ('employee_id', 'category')
+            'fields': ('organization', 'user', 'employee_id', 'category')
         }),
         ('Personal Information', {
-            'fields': ('title', 'first_name', 'last_name', 'email', 'personal_email', 
+            'fields': ('profile_photo', 'title', 'first_name', 'last_name', 'email', 'personal_email', 
                       'phone', 'gender', 'date_of_birth')
+        }),
+        ('Medical Information', {
+            'fields': (
+                'blood_group',
+                'genotype',
+                'allergies_or_medical_conditions',
+                'emergency_medical_contact_name',
+                'emergency_medical_contact_relationship',
+                'emergency_medical_contact_phone',
+            ),
+            'classes': ('collapse',)
         }),
         ('Work Information', {
             'fields': ('department', 'position', 'hire_date', 'end_date', 'supervisor')
@@ -58,6 +91,24 @@ class EmployeeAdmin(admin.ModelAdmin):
         }),
         ('Status', {
             'fields': ('employment_status', 'is_active')
+        }),
+        ('Payroll', {
+            'fields': (
+                'bank_name',
+                'bank_account_name',
+                'bank_account_number',
+                'bank_branch',
+                'pension_rsa_pin',
+                'pension_fund_administrator',
+                'basic_salary',
+                'housing_allowance',
+                'transport_allowance',
+                'other_allowances',
+                'tax_deduction',
+                'pension_deduction',
+                'other_deductions',
+            ),
+            'classes': ('collapse',)
         }),
         ('Metadata', {
             'fields': ('created_at', 'updated_at'),
@@ -111,15 +162,50 @@ class EmployeeWorkExperienceAdmin(admin.ModelAdmin):
     search_fields = ['employee__first_name', 'employee__last_name', 'employer_name', 'job_title']
 
 
+@admin.register(EmployeeDocument)
+class EmployeeDocumentAdmin(admin.ModelAdmin):
+    list_display = ['employee', 'document_type', 'title', 'issue_date', 'expiry_date', 'uploaded_at']
+    list_filter = ['document_type', 'uploaded_at']
+    search_fields = ['employee__first_name', 'employee__last_name', 'employee__employee_id', 'title', 'notes']
+
+
+@admin.register(AttendanceExceptionType)
+class AttendanceExceptionTypeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'code', 'organization', 'color', 'is_active', 'created_at']
+    list_filter = ['organization', 'is_active']
+    search_fields = ['name', 'code', 'description', 'organization__name']
+    prepopulated_fields = {'code': ('name',)}
+
+
 @admin.register(AttendanceException)
 class AttendanceExceptionAdmin(admin.ModelAdmin):
-    list_display = ['employee', 'exception_type', 'start_date', 'end_date', 'day_span']
-    list_filter = ['exception_type', 'start_date']
+    list_display = ['employee', 'organization', 'exception_type_display', 'start_date', 'end_date', 'day_span']
+    list_filter = ['organization', 'exception_type', 'start_date']
     search_fields = ['employee__first_name', 'employee__last_name', 'employee__employee_id', 'notes']
+
+    def exception_type_display(self, obj):
+        return obj.get_exception_type_display()
+    exception_type_display.short_description = 'Exception Type'
 
     def day_span(self, obj):
         return obj.day_count
     day_span.short_description = 'Days'
+
+
+@admin.register(LeaveType)
+class LeaveTypeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'code', 'organization', 'annual_entitlement_days', 'is_paid', 'requires_attachment', 'is_active']
+    list_filter = ['organization', 'is_paid', 'requires_attachment', 'is_active']
+    search_fields = ['name', 'code', 'organization__name']
+    prepopulated_fields = {'code': ('name',)}
+
+
+@admin.register(LeaveRequest)
+class LeaveRequestAdmin(admin.ModelAdmin):
+    list_display = ['employee', 'organization', 'leave_type', 'start_date', 'end_date', 'day_count', 'status', 'reviewed_by']
+    list_filter = ['organization', 'leave_type', 'status', 'start_date']
+    search_fields = ['employee__first_name', 'employee__last_name', 'employee__employee_id', 'reason', 'review_note']
+    readonly_fields = ['created_at', 'updated_at', 'reviewed_at']
 
 
 class DateListFilter(admin.SimpleListFilter):
@@ -144,9 +230,9 @@ class DateListFilter(admin.SimpleListFilter):
 
 @admin.register(AttendanceRecord)
 class AttendanceRecordAdmin(admin.ModelAdmin):
-    list_display = ['employee', 'employee_category', 'date_display', 
+    list_display = ['employee', 'organization', 'employee_category', 'date_display', 
                     'check_in_display', 'check_out_display', 'hours_display', 'status_badge']
-    list_filter = ['employee__category', DateListFilter]  # Fixed: using custom filter
+    list_filter = ['organization', 'employee__category', DateListFilter]  # Fixed: using custom filter
     search_fields = ['employee__first_name', 'employee__last_name', 'employee__email']
     date_hierarchy = 'check_in_time'  # This gives clickable date drill-down
     
@@ -193,10 +279,7 @@ class AttendanceRecordAdmin(admin.ModelAdmin):
 
 @admin.register(AttendanceSettings)
 class AttendanceSettingsAdmin(admin.ModelAdmin):
-    list_display = ['workday_start', 'late_threshold', 'birthday_reminder_days', 'internship_reminder_days', 'updated_at']
-
-    def has_add_permission(self, request):
-        return not AttendanceSettings.objects.exists()
+    list_display = ['organization', 'workday_start', 'late_threshold', 'birthday_reminder_days', 'internship_reminder_days', 'updated_at']
 
     def has_delete_permission(self, request, obj=None):
         return False

@@ -143,7 +143,7 @@
                                 <strong>{{ exception.employee.full_name }}</strong>
                                 <div class="small text-muted">{{ exception.employee.employee_id }} · {{ exception.employee.category.name }}</div>
                             </td>
-                            <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ exception.get_exception_type_display }}</span></td>
+                            <td><span class="badge bg-{{ exception.exception_type_color }} bg-opacity-10 text-{{ exception.exception_type_color }}">{{ exception.get_exception_type_display }}</span></td>
                             <td>{{ exception.start_date|date:"M d, Y" }}</td>
                             <td>{{ exception.end_date|date:"M d, Y" }}</td>
                             <td>{{ exception.day_count }}</td>
