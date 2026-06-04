@@ -1,0 +1,173 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Employee Documents | HR Management{% endblock %}
+{% block page_title %}Employee Documents{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="portal-hero card border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <p class="text-uppercase small fw-semibold text-muted mb-1">HR Documents</p>
+                    <h5 class="mb-1"><i class="bi bi-folder2-open me-2"></i>Employee Document Register</h5>
+                    <small class="text-muted">Upload, review, and track employee documents visible in staff self-service.</small>
+                </div>
+                <div class="responsive-actions">
+                    <a href="{% url 'employee_document_upload' %}" class="btn btn-primary">
+                        <i class="bi bi-cloud-arrow-up me-1"></i> Upload Document
+                    </a>
+                    <a href="{% url 'employee_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-people me-1"></i> Employees
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="document-register-grid mb-4">
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Matching Documents</small>
+                <h3 class="mt-2 mb-0">{{ total_documents }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Expired</small>
+                <h3 class="mt-2 mb-0 text-danger">{{ expired_count }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Expiring In 30 Days</small>
+                <h3 class="mt-2 mb-0 text-warning">{{ expiring_soon_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 toolbar-card mb-4">
+        <div class="card-body">
+            <form method="get" class="document-filter-grid">
+                <div class="search-control">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search employee, ID, title, notes">
+                    </div>
+                </div>
+                <select name="document_type" class="form-select">
+                    <option value="">All Document Types</option>
+                    {% for value, label in document_type_choices %}
+                    <option value="{{ value }}" {% if selected_document_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <select name="expiring" class="form-select">
+                    <option value="">All Expiry States</option>
+                    <option value="expired" {% if selected_expiring == "expired" %}selected{% endif %}>Expired</option>
+                    <option value="soon" {% if selected_expiring == "soon" %}selected{% endif %}>Expiring Soon</option>
+                    <option value="none" {% if selected_expiring == "none" %}selected{% endif %}>No Expiry Date</option>
+                </select>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i> Filter</button>
+                <a href="{% url 'employee_documents' %}" class="btn btn-outline-secondary">Reset</a>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Document</th>
+                            <th>Employee</th>
+                            <th>Type</th>
+                            <th>Issue Date</th>
+                            <th>Expiry Date</th>
+                            <th>Uploaded</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for document in documents %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ document.title }}</div>
+                                {% if document.notes %}<small class="text-muted">{{ document.notes }}</small>{% endif %}
+                            </td>
+                            <td>
+                                <div class="fw-semibold">{{ document.employee.display_name }}</div>
+                                <small class="text-muted">{{ document.employee.employee_id }}</small>
+                            </td>
+                            <td>{{ document.get_document_type_display }}</td>
+                            <td>{% if document.issue_date %}{{ document.issue_date|date:"M j, Y" }}{% else %}-{% endif %}</td>
+                            <td>
+                                {% if document.expiry_date %}
+                                    <span class="{% if document.expiry_date < today %}text-danger{% endif %}">{{ document.expiry_date|date:"M j, Y" }}</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ document.uploaded_at|date:"M j, Y" }}</td>
+                            <td class="text-end">
+                                <div class="table-actions">
+                                    <a href="{{ document.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener">Open</a>
+                                    <a href="{% url 'employee_document_edit' document.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <a href="{% url 'employee_document_delete' document.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                No documents match this view.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .document-register-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .document-filter-grid {
+        display: grid;
+        grid-template-columns: minmax(220px, 1.4fr) minmax(160px, 0.8fr) minmax(160px, 0.8fr) auto auto;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .table-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.45rem;
+    }
+
+    @media (max-width: 1199.98px) {
+        .document-filter-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .document-register-grid,
+        .document-filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .table-actions {
+            align-items: stretch;
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}

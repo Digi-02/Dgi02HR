@@ -59,6 +59,39 @@ class OrganizationMembership(models.Model):
         return f"{self.user.username} - {self.organization.name}"
 
 
+class AuditLog(models.Model):
+    """Immutable record of sensitive actions in the HR platform."""
+
+    AREA_CHOICES = [
+        ('employee', 'Employee'),
+        ('attendance', 'Attendance'),
+        ('leave', 'Leave'),
+        ('payroll', 'Payroll'),
+        ('organization', 'Organization'),
+        ('security', 'Security'),
+    ]
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='audit_logs')
+    actor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='audit_logs')
+    area = models.CharField(max_length=30, choices=AREA_CHOICES)
+    action = models.CharField(max_length=80)
+    target_model = models.CharField(max_length=80, blank=True)
+    target_id = models.CharField(max_length=80, blank=True)
+    summary = models.CharField(max_length=255)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['organization', 'area', 'created_at']),
+            models.Index(fields=['target_model', 'target_id']),
+        ]
+
+    def __str__(self):
+        return f"{self.get_area_display()} - {self.action} - {self.created_at:%Y-%m-%d %H:%M}"
+
+
 class Category(models.Model):
     """User categories: Staff, Intern, Student"""
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='categories')
@@ -139,6 +172,20 @@ class Employee(models.Model):
         ('SS', 'SS'),
         ('SC', 'SC'),
     ]
+
+    INTERNSHIP_TYPE_CHOICES = [
+        ('siwes', 'SIWES'),
+        ('industrial_training', 'Industrial Training (IT)'),
+        ('student_internship', 'Student Internship'),
+        ('graduate_internship', 'Graduate Internship'),
+        ('other', 'Other'),
+    ]
+
+    SKILL_LEVEL_CHOICES = [
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
+    ]
     
     EMPLOYMENT_STATUS = [
         ('active', 'Active'),
@@ -157,6 +204,7 @@ class Employee(models.Model):
     profile_photo = models.ImageField(upload_to=employee_profile_photo_path, blank=True, null=True)
     title = models.CharField(max_length=10, choices=TITLE_CHOICES, blank=True)
     first_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(help_text="Work/primary email used for kiosk check-in")
     personal_email = models.EmailField(blank=True, null=True, help_text="Personal email (for interns/students)")
@@ -214,11 +262,37 @@ class Employee(models.Model):
     
     # === Intern/Student Specific ===
     institution = models.CharField(max_length=200, blank=True, help_text="University/School name")
+    faculty = models.CharField(max_length=150, blank=True)
+    academic_department = models.CharField(max_length=150, blank=True)
     qualification_obtained = models.CharField(max_length=150, blank=True)
     field_of_study = models.CharField(max_length=100, blank=True, help_text="Course or program")
     year_of_graduation = models.PositiveIntegerField(null=True, blank=True)
     class_of_degree = models.CharField(max_length=100, blank=True)
     student_id = models.CharField(max_length=50, blank=True, help_text="School ID number")
+    current_level = models.CharField(max_length=50, blank=True)
+    expected_graduation_date = models.DateField(null=True, blank=True)
+    academic_supervisor_name = models.CharField(max_length=150, blank=True)
+    academic_supervisor_phone = models.CharField(max_length=20, blank=True)
+    academic_supervisor_email = models.EmailField(blank=True)
+    internship_type = models.CharField(max_length=30, choices=INTERNSHIP_TYPE_CHOICES, blank=True)
+    internship_type_other = models.CharField(max_length=100, blank=True)
+    area_of_interest = models.TextField(blank=True)
+    area_of_interest_other = models.CharField(max_length=120, blank=True)
+    preferred_department = models.CharField(max_length=150, blank=True)
+    skill_html_css = models.CharField(max_length=20, choices=SKILL_LEVEL_CHOICES, blank=True)
+    skill_javascript = models.CharField(max_length=20, choices=SKILL_LEVEL_CHOICES, blank=True)
+    skill_python = models.CharField(max_length=20, choices=SKILL_LEVEL_CHOICES, blank=True)
+    skill_java = models.CharField(max_length=20, choices=SKILL_LEVEL_CHOICES, blank=True)
+    skill_c_cpp = models.CharField(max_length=20, choices=SKILL_LEVEL_CHOICES, blank=True)
+    skill_django = models.CharField(max_length=20, choices=SKILL_LEVEL_CHOICES, blank=True)
+    skill_react = models.CharField(max_length=20, choices=SKILL_LEVEL_CHOICES, blank=True)
+    skill_nodejs = models.CharField(max_length=20, choices=SKILL_LEVEL_CHOICES, blank=True)
+    skill_ui_ux = models.CharField(max_length=20, choices=SKILL_LEVEL_CHOICES, blank=True)
+    skill_networking = models.CharField(max_length=20, choices=SKILL_LEVEL_CHOICES, blank=True)
+    skill_cybersecurity = models.CharField(max_length=20, choices=SKILL_LEVEL_CHOICES, blank=True)
+    other_technical_skill = models.CharField(max_length=150, blank=True)
+    skill_other = models.CharField(max_length=20, choices=SKILL_LEVEL_CHOICES, blank=True)
+    relevant_skills_projects = models.TextField(blank=True)
     supervisor = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, 
                                    related_name='supervisees', help_text="Supervising staff member")
 
@@ -292,7 +366,9 @@ class Employee(models.Model):
     
     @property
     def full_name(self):
-        return f"{self.first_name} {self.last_name}".strip()
+        return " ".join(
+            part for part in [self.first_name, self.middle_name, self.last_name] if part
+        ).strip()
     
     @property
     def display_name(self):
@@ -464,6 +540,55 @@ class EmployeeDocument(models.Model):
 
     def __str__(self):
         return f"{self.employee.full_name} - {self.title}"
+
+
+class OnboardingTask(models.Model):
+    """Checklist item for onboarding a staff member, intern, or student."""
+
+    CATEGORY_CHOICES = [
+        ('hr', 'HR'),
+        ('it', 'IT / Access'),
+        ('documents', 'Documents'),
+        ('training', 'Training'),
+        ('equipment', 'Equipment'),
+        ('manager', 'Manager'),
+        ('other', 'Other'),
+    ]
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('waived', 'Waived'),
+    ]
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='onboarding_tasks')
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='onboarding_tasks')
+    title = models.CharField(max_length=160)
+    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default='hr')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_onboarding_tasks')
+    due_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    completed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='completed_onboarding_tasks')
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['status', 'due_date', 'employee__first_name', 'title']
+        indexes = [
+            models.Index(fields=['organization', 'status']),
+            models.Index(fields=['employee', 'status']),
+            models.Index(fields=['due_date']),
+        ]
+
+    def __str__(self):
+        return f"{self.employee.full_name} - {self.title}"
+
+    @property
+    def is_overdue(self):
+        return self.due_date and self.due_date < timezone.localdate() and self.status not in ['completed', 'waived']
 
 
 class AttendanceExceptionType(models.Model):

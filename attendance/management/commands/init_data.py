@@ -2,7 +2,7 @@
 
 from django.core.management.base import BaseCommand
 from attendance.models import Category, Department
-from attendance.organization import get_default_organization
+from attendance.organization import DEFAULT_CATEGORIES, get_default_organization
 
 
 class Command(BaseCommand):
@@ -12,28 +12,7 @@ class Command(BaseCommand):
         organization = get_default_organization()
 
         # Create Categories
-        categories = [
-            {
-                'name': 'Staff',
-                'code': 'STAFF',
-                'icon': 'bi-person-badge',
-                'color': 'primary',
-            },
-            {
-                'name': 'Intern',
-                'code': 'INTERN',
-                'icon': 'bi-mortarboard',
-                'color': 'success',
-            },
-            {
-                'name': 'Student',
-                'code': 'STUDENT',
-                'icon': 'bi-backpack',
-                'color': 'info',
-            },
-        ]
-
-        for cat_data in categories:
+        for cat_data in DEFAULT_CATEGORIES:
             category, created = Category.objects.get_or_create(
                 organization=organization,
                 code=cat_data['code'],

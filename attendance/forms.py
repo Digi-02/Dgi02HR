@@ -16,17 +16,38 @@ from .models import (
     AttendanceSettings,
     LeaveType,
     LeaveRequest,
+    OnboardingTask,
     PayrollRun,
 )
 
 
 class EmployeeForm(forms.ModelForm):
     """Form for adding/editing employees with category-specific fields"""
+
+    AREA_OF_INTEREST_CHOICES = [
+        ('software_development', 'Software Development'),
+        ('ui_ux_design', 'UI/UX Design'),
+        ('cybersecurity', 'Cybersecurity'),
+        ('data_science', 'Data Science'),
+        ('artificial_intelligence', 'Artificial Intelligence'),
+        ('cloud_computing', 'Cloud Computing'),
+        ('networking', 'Networking'),
+        ('devops', 'DevOps'),
+        ('digital_marketing', 'Digital Marketing'),
+        ('content_creation', 'Content Creation'),
+        ('other', 'Other'),
+    ]
+
+    area_of_interest = forms.MultipleChoiceField(
+        choices=AREA_OF_INTEREST_CHOICES,
+        required=False,
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'intern-interest-options'}),
+    )
     
     class Meta:
         model = Employee
         fields = [
-            'category', 'profile_photo', 'title', 'first_name', 'last_name', 
+            'category', 'profile_photo', 'title', 'first_name', 'middle_name', 'last_name', 
             'email', 'personal_email', 'phone', 'alternative_phone', 'gender',
             'date_of_birth', 'nationality', 'marital_status', 'religion',
             'blood_group', 'genotype', 'allergies_or_medical_conditions',
@@ -39,8 +60,17 @@ class EmployeeForm(forms.ModelForm):
             'next_of_kin_email', 'next_of_kin_address',
             'department', 'position', 'line_manager',
             'hire_date', 'end_date', 'probation_end_date', 'institution',
-            'qualification_obtained', 'field_of_study', 'year_of_graduation',
-            'class_of_degree', 'student_id', 'supervisor',
+            'faculty', 'academic_department', 'qualification_obtained', 'field_of_study',
+            'year_of_graduation', 'class_of_degree', 'student_id', 'current_level',
+            'expected_graduation_date', 'academic_supervisor_name',
+            'academic_supervisor_phone', 'academic_supervisor_email',
+            'internship_type', 'internship_type_other', 'area_of_interest',
+            'area_of_interest_other', 'preferred_department',
+            'skill_html_css', 'skill_javascript', 'skill_python', 'skill_java',
+            'skill_c_cpp', 'skill_django', 'skill_react', 'skill_nodejs',
+            'skill_ui_ux', 'skill_networking', 'skill_cybersecurity',
+            'other_technical_skill', 'skill_other', 'relevant_skills_projects',
+            'supervisor',
             'nin_number', 'passport_number', 'passport_expiry_date',
             'tin_number', 'drivers_license_number',
             'work_permit_number', 'work_permit_expiry_date',
@@ -64,9 +94,13 @@ class EmployeeForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'First name'
             }),
+            'middle_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Middle name'
+            }),
             'last_name': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Last name'
+                'placeholder': 'Surname'
             }),
             'email': forms.EmailInput(attrs={
                 'class': 'form-control',
@@ -200,6 +234,14 @@ class EmployeeForm(forms.ModelForm):
                 'class': 'form-control intern-student-field',
                 'placeholder': 'University/School name'
             }),
+            'faculty': forms.TextInput(attrs={
+                'class': 'form-control intern-field',
+                'placeholder': 'Faculty or school'
+            }),
+            'academic_department': forms.TextInput(attrs={
+                'class': 'form-control intern-field',
+                'placeholder': 'Academic department'
+            }),
             'qualification_obtained': forms.TextInput(attrs={
                 'class': 'form-control intern-student-field',
                 'placeholder': 'Qualification obtained'
@@ -220,6 +262,60 @@ class EmployeeForm(forms.ModelForm):
             'student_id': forms.TextInput(attrs={
                 'class': 'form-control student-field',
                 'placeholder': 'School ID number'
+            }),
+            'current_level': forms.TextInput(attrs={
+                'class': 'form-control intern-field',
+                'placeholder': 'e.g., 300 Level, HND 2, Final Year'
+            }),
+            'expected_graduation_date': forms.DateInput(attrs={
+                'class': 'form-control intern-field',
+                'type': 'date'
+            }),
+            'academic_supervisor_name': forms.TextInput(attrs={
+                'class': 'form-control intern-field',
+                'placeholder': 'Academic supervisor full name'
+            }),
+            'academic_supervisor_phone': forms.TextInput(attrs={
+                'class': 'form-control intern-field',
+                'placeholder': 'Academic supervisor phone'
+            }),
+            'academic_supervisor_email': forms.EmailInput(attrs={
+                'class': 'form-control intern-field',
+                'placeholder': 'Academic supervisor email'
+            }),
+            'internship_type': forms.Select(attrs={'class': 'form-select intern-field'}),
+            'internship_type_other': forms.TextInput(attrs={
+                'class': 'form-control intern-field',
+                'placeholder': 'Specify internship type'
+            }),
+            'area_of_interest_other': forms.TextInput(attrs={
+                'class': 'form-control intern-field',
+                'placeholder': 'Specify other area of interest'
+            }),
+            'preferred_department': forms.TextInput(attrs={
+                'class': 'form-control intern-field',
+                'placeholder': 'Preferred company department'
+            }),
+            'skill_html_css': forms.Select(attrs={'class': 'form-select intern-field skill-level-select'}),
+            'skill_javascript': forms.Select(attrs={'class': 'form-select intern-field skill-level-select'}),
+            'skill_python': forms.Select(attrs={'class': 'form-select intern-field skill-level-select'}),
+            'skill_java': forms.Select(attrs={'class': 'form-select intern-field skill-level-select'}),
+            'skill_c_cpp': forms.Select(attrs={'class': 'form-select intern-field skill-level-select'}),
+            'skill_django': forms.Select(attrs={'class': 'form-select intern-field skill-level-select'}),
+            'skill_react': forms.Select(attrs={'class': 'form-select intern-field skill-level-select'}),
+            'skill_nodejs': forms.Select(attrs={'class': 'form-select intern-field skill-level-select'}),
+            'skill_ui_ux': forms.Select(attrs={'class': 'form-select intern-field skill-level-select'}),
+            'skill_networking': forms.Select(attrs={'class': 'form-select intern-field skill-level-select'}),
+            'skill_cybersecurity': forms.Select(attrs={'class': 'form-select intern-field skill-level-select'}),
+            'other_technical_skill': forms.TextInput(attrs={
+                'class': 'form-control intern-field',
+                'placeholder': 'Other skill'
+            }),
+            'skill_other': forms.Select(attrs={'class': 'form-select intern-field skill-level-select'}),
+            'relevant_skills_projects': forms.Textarea(attrs={
+                'class': 'form-control intern-field',
+                'rows': 4,
+                'placeholder': 'List other relevant skills, certifications, projects, portfolio links, or achievements'
             }),
             'supervisor': forms.Select(attrs={
                 'class': 'form-select intern-student-field'
@@ -282,6 +378,13 @@ class EmployeeForm(forms.ModelForm):
         if self.organization and not self.instance.pk:
             self.instance.organization = self.organization
 
+        if self.instance.pk and self.instance.area_of_interest:
+            self.initial['area_of_interest'] = [
+                item.strip()
+                for item in self.instance.area_of_interest.split(',')
+                if item.strip()
+            ]
+
         if self.organization:
             self.fields['category'].queryset = Category.objects.filter(
                 organization=self.organization
@@ -334,6 +437,10 @@ class EmployeeForm(forms.ModelForm):
             if qs.exists():
                 raise forms.ValidationError('A person with this email already exists.')
         return email
+
+    def clean_area_of_interest(self):
+        values = self.cleaned_data.get('area_of_interest') or []
+        return ','.join(values)
     
     def clean(self):
         cleaned_data = super().clean()
@@ -354,6 +461,14 @@ class EmployeeForm(forms.ModelForm):
                 self.add_error('end_date', 'End date is required for Interns.')
             if not cleaned_data.get('institution'):
                 self.add_error('institution', 'Institution is required for Interns.')
+            if not cleaned_data.get('field_of_study'):
+                self.add_error('field_of_study', 'Course of study is required for Interns.')
+            if not cleaned_data.get('student_id'):
+                self.add_error('student_id', 'Matriculation number is required for Interns.')
+            if not cleaned_data.get('internship_type'):
+                self.add_error('internship_type', 'Internship type is required for Interns.')
+            if cleaned_data.get('internship_type') == 'other' and not cleaned_data.get('internship_type_other'):
+                self.add_error('internship_type_other', 'Please specify the internship type.')
 
         # Student-specific validation
         if category and category.code == 'STUDENT':
@@ -928,6 +1043,36 @@ class EmployeeDocumentForm(forms.ModelForm):
             'expiry_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Optional notes'}),
         }
+
+
+class OnboardingTaskForm(forms.ModelForm):
+    class Meta:
+        model = OnboardingTask
+        fields = ['employee', 'title', 'category', 'status', 'assigned_to', 'due_date', 'notes']
+        widgets = {
+            'employee': forms.Select(attrs={'class': 'form-select'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Task title'}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'status': forms.Select(attrs={'class': 'form-select'}),
+            'assigned_to': forms.Select(attrs={'class': 'form-select'}),
+            'due_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Optional notes or instructions'}),
+        }
+
+    def __init__(self, *args, organization=None, employee=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if organization:
+            self.fields['employee'].queryset = Employee.objects.filter(
+                organization=organization,
+                is_active=True,
+            ).order_by('first_name', 'last_name')
+            self.fields['assigned_to'].queryset = User.objects.filter(
+                organization_memberships__organization=organization,
+                organization_memberships__is_active=True,
+            ).distinct().order_by('first_name', 'last_name', 'username')
+        if employee:
+            self.fields['employee'].initial = employee
+            self.fields['employee'].widget = forms.HiddenInput()
 
 
 EmployeeEducationFormSet = inlineformset_factory(

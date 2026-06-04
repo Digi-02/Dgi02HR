@@ -1,0 +1,120 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}My Documents | HR Management{% endblock %}
+{% block page_title %}My Documents{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="portal-hero card border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <p class="text-uppercase small fw-semibold text-muted mb-1">Staff Workspace</p>
+                    <h5 class="mb-1"><i class="bi bi-folder2-open me-2"></i>My Documents</h5>
+                    <small class="text-muted">Employment documents, identification files, certificates, and payroll documents uploaded by HR.</small>
+                </div>
+                <div class="responsive-actions">
+                    <a href="{% url 'employee_self_service_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                    </a>
+                    <a href="{% url 'employee_my_profile' %}" class="btn btn-primary">
+                        <i class="bi bi-person-vcard me-1"></i> My Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="document-metrics-grid mb-4">
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Documents</small>
+                <h3 class="mt-2 mb-0">{{ document_count }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Employee</small>
+                <h5 class="mt-2 mb-1">{{ employee.display_name }}</h5>
+                <span class="small text-muted">{{ employee.employee_id }}</span>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Category</small>
+                <h5 class="mt-2 mb-1">{{ employee.category.name|default:"-" }}</h5>
+                <span class="small text-muted">{{ employee.department|default:"No department" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <h5 class="mb-1"><i class="bi bi-files me-2"></i>Uploaded Documents</h5>
+            <small class="text-muted">Only documents attached to your employee profile are shown here.</small>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Document</th>
+                            <th>Type</th>
+                            <th>Issue Date</th>
+                            <th>Expiry Date</th>
+                            <th>Uploaded</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for document in documents %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ document.title }}</div>
+                                {% if document.notes %}<small class="text-muted">{{ document.notes }}</small>{% endif %}
+                            </td>
+                            <td>{{ document.get_document_type_display }}</td>
+                            <td>{% if document.issue_date %}{{ document.issue_date|date:"M j, Y" }}{% else %}-{% endif %}</td>
+                            <td>
+                                {% if document.expiry_date %}
+                                    <span class="{% if document.expiry_date < today %}text-danger{% endif %}">{{ document.expiry_date|date:"M j, Y" }}</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ document.uploaded_at|date:"M j, Y" }}</td>
+                            <td class="text-end">
+                                <a href="{{ document.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i> Open
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                No documents have been uploaded to your profile yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .document-metrics-grid {
+        display: grid;
+        grid-template-columns: 0.7fr 1.2fr 1.1fr;
+        gap: 1rem;
+    }
+
+    @media (max-width: 991.98px) {
+        .document-metrics-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

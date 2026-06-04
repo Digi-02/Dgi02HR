@@ -6,6 +6,43 @@
 
 {% block content %}
 <div class="container-fluid p-0">
+    <div class="portal-hero card border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="employee-avatar employee-avatar-sm">
+                        {% if employee.profile_photo %}
+                            <img src="{{ employee.profile_photo.url }}" alt="{{ employee.full_name }}" class="employee-photo">
+                        {% else %}
+                            <i class="bi bi-person-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="text-uppercase small fw-semibold text-muted mb-1">Staff Workspace</p>
+                        <h5 class="mb-1">{{ employee.display_name }}</h5>
+                        <small class="text-muted">{{ employee.position|default:"Employee" }}{% if employee.department %} · {{ employee.department }}{% endif %}</small>
+                    </div>
+                </div>
+                <div class="responsive-actions">
+                    <a href="{% url 'employee_my_profile' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-person-lines-fill me-1"></i> My Profile
+                    </a>
+                    <a href="{% url 'employee_my_documents' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-folder2-open me-1"></i> Documents
+                    </a>
+                    <a href="{% url 'employee_leave_request_create' %}" class="btn btn-primary">
+                        <i class="bi bi-calendar-plus me-1"></i> Request Leave
+                    </a>
+                    {% if manager_pending_count %}
+                    <a href="{% url 'manager_leave_requests' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-person-check me-1"></i> Team Approvals
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row g-4">
         <div class="col-xl-4">
             <div class="card border-0 h-100">
@@ -19,45 +56,72 @@
                     </div>
                     <h4 class="mb-1">{{ employee.display_name }}</h4>
                     <p class="text-muted mb-3">{{ employee.position|default:"Employee" }}</p>
-                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">{{ employee.employee_id }}</span>
-                    <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2">{{ organization.name }}</span>
-                    {% if manager_pending_count %}
-                    <div class="mt-3">
-                        <a href="{% url 'manager_leave_requests' %}" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-person-check me-1"></i> {{ manager_pending_count }} Team Approval{{ manager_pending_count|pluralize }}
-                        </a>
+                    <div class="profile-badge-row">
+                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">{{ employee.employee_id }}</span>
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2">{{ organization.name }}</span>
                     </div>
-                    {% endif %}
+                    <div class="profile-detail-list text-start mt-4">
+                        <div><span>Category</span><strong>{{ employee.category.name|default:"-" }}</strong></div>
+                        <div><span>Department</span><strong>{{ employee.department|default:"-" }}</strong></div>
+                        <div><span>Line Manager</span><strong>{{ employee.line_manager.full_name|default:"-" }}</strong></div>
+                        <div><span>Status</span><strong>{{ employee.get_employment_status_display }}</strong></div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-8">
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <div class="card border-0">
-                        <div class="card-body">
-                            <small class="text-muted">Department</small>
-                            <h6 class="mb-0">{{ employee.department|default:"-" }}</h6>
-                        </div>
+            <div class="staff-metrics-grid mb-4">
+                <div class="card border-0 h-100">
+                    <div class="card-body">
+                        <small class="text-muted text-uppercase fw-semibold">Today</small>
+                        <h5 class="mt-2 mb-1">{% if today_record %}{% if today_record.check_out_time %}Completed{% else %}Checked In{% endif %}{% else %}Not Present{% endif %}</h5>
+                        <span class="small text-muted">
+                            {% if today_record %}{{ today_record.check_in_time|time:"H:i" }}{% if today_record.check_out_time %} - {{ today_record.check_out_time|time:"H:i" }}{% endif %}{% else %}No attendance record yet{% endif %}
+                        </span>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card border-0">
-                        <div class="card-body">
-                            <small class="text-muted">Line Manager</small>
-                            <h6 class="mb-0">{{ employee.line_manager.full_name|default:"-" }}</h6>
-                        </div>
+                <div class="card border-0 h-100">
+                    <div class="card-body">
+                        <small class="text-muted text-uppercase fw-semibold">Pending Leave</small>
+                        <h3 class="mt-2 mb-0 text-warning">{{ pending_leave_count }}</h3>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card border-0">
-                        <div class="card-body">
-                            <small class="text-muted">Today</small>
-                            <h6 class="mb-0">{% if employee.is_checked_in_today %}Checked In{% else %}Not Present{% endif %}</h6>
-                        </div>
+                <div class="card border-0 h-100">
+                    <div class="card-body">
+                        <small class="text-muted text-uppercase fw-semibold">Approved Leave</small>
+                        <h3 class="mt-2 mb-0 text-success">{{ approved_leave_count }}</h3>
                     </div>
                 </div>
+                <div class="card border-0 h-100">
+                    <div class="card-body">
+                        <small class="text-muted text-uppercase fw-semibold">Latest Payslip</small>
+                        {% if latest_payslip %}
+                            <h5 class="mt-2 mb-1">{{ latest_payslip.payroll_run.payroll_month|date:"M Y" }}</h5>
+                            <a href="{% url 'payslip_detail' latest_payslip.pk %}" class="small text-decoration-none">View payslip</a>
+                        {% else %}
+                            <h5 class="mt-2 mb-1">None</h5>
+                            <span class="small text-muted">No released payslip</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="staff-shortcuts-grid mb-4">
+                <a href="{% url 'employee_my_profile' %}" class="staff-shortcut-card">
+                    <i class="bi bi-person-lines-fill"></i>
+                    <span>
+                        <strong>My Profile</strong>
+                        <small>Personal, work, emergency, and payroll foundation details.</small>
+                    </span>
+                </a>
+                <a href="{% url 'employee_my_documents' %}" class="staff-shortcut-card">
+                    <i class="bi bi-folder2-open"></i>
+                    <span>
+                        <strong>My Documents</strong>
+                        <small>Employment documents, certificates, and uploaded files.</small>
+                    </span>
+                </a>
             </div>
 
             <div class="card border-0 mb-4">
@@ -94,7 +158,12 @@
 
             <div class="card border-0 mb-4">
                 <div class="card-header bg-white border-0 pt-4 px-4">
-                    <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Recent Attendance</h5>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Recent Attendance</h5>
+                        {% if user_has_hr_access %}
+                        <a href="{% url 'attendance_reports' %}" class="btn btn-outline-secondary btn-sm">Open Attendance</a>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -126,7 +195,10 @@
 
             <div class="card border-0">
                 <div class="card-header bg-white border-0 pt-4 px-4">
-                    <h5 class="mb-0"><i class="bi bi-calendar2-week me-2"></i>My Leave Requests</h5>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <h5 class="mb-0"><i class="bi bi-calendar2-week me-2"></i>My Leave Requests</h5>
+                        <a href="{% url 'employee_leave_request_create' %}" class="btn btn-outline-primary btn-sm">New Request</a>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -150,7 +222,45 @@
                                     <td>{{ leave_request.get_status_display }}</td>
                                 </tr>
                                 {% empty %}
-                                <tr><td colspan="4" class="text-center py-4 text-muted">No leave requests yet.</td></tr>
+                                <tr><td colspan="5" class="text-center py-4 text-muted">No leave requests yet.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 mt-4">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>My Payslips</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Status</th>
+                                    <th>Gross</th>
+                                    <th>Deductions</th>
+                                    <th>Net</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payslip in payslips %}
+                                <tr>
+                                    <td>{{ payslip.payroll_run.payroll_month|date:"F Y" }}</td>
+                                    <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ payslip.payroll_run.get_status_display }}</span></td>
+                                    <td>{{ payslip.gross_pay }}</td>
+                                    <td>{{ payslip.total_deductions }}</td>
+                                    <td><strong>{{ payslip.net_pay }}</strong></td>
+                                    <td class="text-end">
+                                        <a href="{% url 'payslip_detail' payslip.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="6" class="text-center py-4 text-muted">No payslips have been released yet.</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -180,11 +290,115 @@
         object-fit: cover;
     }
 
+    .employee-avatar-sm {
+        width: 58px;
+        height: 58px;
+        font-size: 1.7rem;
+        flex: 0 0 auto;
+    }
+
+    .profile-badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .profile-detail-list {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .profile-detail-list div {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.95);
+    }
+
+    .profile-detail-list span {
+        color: #64748b;
+    }
+
+    .profile-detail-list strong {
+        text-align: right;
+    }
+
+    .staff-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .staff-shortcuts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .staff-shortcut-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.85rem;
+        padding: 1rem;
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        border-radius: 0.5rem;
+        background: rgba(248, 250, 252, 0.86);
+        color: #0f172a;
+        text-decoration: none;
+    }
+
+    .staff-shortcut-card:hover {
+        color: #0f172a;
+        border-color: rgba(2, 6, 23, 0.25);
+        background: #fff;
+    }
+
+    .staff-shortcut-card i {
+        font-size: 1.35rem;
+    }
+
+    .staff-shortcut-card strong,
+    .staff-shortcut-card small {
+        display: block;
+    }
+
+    .staff-shortcut-card small {
+        margin-top: 0.2rem;
+        color: #64748b;
+    }
+
     .balance-card {
         padding: 1rem;
-        border-radius: 0.9rem;
+        border-radius: 0.5rem;
         border: 1px solid rgba(226, 232, 240, 0.95);
         background: #f8fafc;
+    }
+
+    @media (max-width: 1199.98px) {
+        .staff-metrics-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .staff-metrics-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .staff-shortcuts-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-detail-list div {
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .profile-detail-list strong {
+            text-align: left;
+        }
     }
 </style>
 {% endblock %}

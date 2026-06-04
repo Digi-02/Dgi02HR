@@ -1,0 +1,135 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}My Team | HR Management{% endblock %}
+{% block page_title %}My Team{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="portal-hero card border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <p class="text-uppercase small fw-semibold text-muted mb-1">Manager Workspace</p>
+                    <h5 class="mb-1"><i class="bi bi-people me-2"></i>Team Directory</h5>
+                    <small class="text-muted">Review direct reports, today attendance, role assignment, and reporting lines.</small>
+                </div>
+                <div class="responsive-actions">
+                    <a href="{% url 'manager_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                    </a>
+                    <a href="{% url 'manager_leave_requests' %}" class="btn btn-primary">
+                        <i class="bi bi-calendar2-check me-1"></i> Leave Queue
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="team-metrics-grid mb-4">
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Team Members</small>
+                <h3 class="mt-2 mb-0">{{ team_count }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Checked In</small>
+                <h3 class="mt-2 mb-0 text-success">{{ checked_in_count }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Completed</small>
+                <h3 class="mt-2 mb-0 text-primary">{{ completed_count }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Not In</small>
+                <h3 class="mt-2 mb-0 text-secondary">{{ not_in_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h5 class="mb-1"><i class="bi bi-person-lines-fill me-2"></i>Team Members</h5>
+                    <small class="text-muted">Managers only see assigned direct reports unless they also have HR access.</small>
+                </div>
+                {% if user_has_hr_access %}
+                <a href="{% url 'employee_list' %}" class="btn btn-outline-primary btn-sm">Open Employee Directory</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Category</th>
+                            <th>Department</th>
+                            <th>Position</th>
+                            <th>Today</th>
+                            <th>Check In</th>
+                            <th>Check Out</th>
+                            {% if user_has_hr_access %}<th class="text-end">Action</th>{% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in team_rows %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ row.member.display_name }}</div>
+                                <small class="text-muted">{{ row.member.employee_id }}</small>
+                            </td>
+                            <td>{{ row.member.category.name|default:"-" }}</td>
+                            <td>{{ row.member.department|default:"-" }}</td>
+                            <td>{{ row.member.position|default:"Team Member" }}</td>
+                            <td><span class="badge bg-{{ row.status_color }} bg-opacity-10 text-{{ row.status_color }}">{{ row.status }}</span></td>
+                            <td>{% if row.today_record %}{{ row.today_record.check_in_time|time:"H:i" }}{% else %}-{% endif %}</td>
+                            <td>{% if row.today_record.check_out_time %}{{ row.today_record.check_out_time|time:"H:i" }}{% else %}-{% endif %}</td>
+                            {% if user_has_hr_access %}
+                            <td class="text-end">
+                                <a href="{% url 'employee_detail' row.member.pk %}" class="btn btn-sm btn-outline-primary">Open</a>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="{% if user_has_hr_access %}8{% else %}7{% endif %}" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                No team members assigned yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .team-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    @media (max-width: 1199.98px) {
+        .team-metrics-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .team-metrics-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

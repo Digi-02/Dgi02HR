@@ -1,0 +1,104 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}{{ page_title }} | HR Management{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="card border-0">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                <div>
+                    <h5 class="mb-1"><i class="bi bi-folder-plus me-2"></i>{{ page_title }}</h5>
+                    <small class="text-muted">
+                        {% if employee %}For {{ employee.display_name }}{% else %}Select an employee and attach the document file.{% endif %}
+                    </small>
+                </div>
+                <a href="{% url 'employee_documents' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Documents
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div class="document-form-grid">
+                    {% if not employee and not document %}
+                    <div class="form-field">
+                        <label class="form-label">Employee</label>
+                        <select name="employee" class="form-select" required>
+                            <option value="">Select employee</option>
+                            {% for employee_option in employees %}
+                            <option value="{{ employee_option.pk }}">{{ employee_option.display_name }} - {{ employee_option.employee_id }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    <div class="form-field">
+                        <label class="form-label" for="{{ form.document_type.id_for_label }}">Document Type</label>
+                        {{ form.document_type }}
+                        {% if form.document_type.errors %}<div class="text-danger small mt-1">{{ form.document_type.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="{{ form.title.id_for_label }}">Title</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="{{ form.file.id_for_label }}">File</label>
+                        {{ form.file }}
+                        {% if form.file.errors %}<div class="text-danger small mt-1">{{ form.file.errors.0 }}</div>{% endif %}
+                        {% if document and document.file %}
+                        <small class="text-muted d-block mt-2">Current file: <a href="{{ document.file.url }}" target="_blank" rel="noopener">Open file</a></small>
+                        {% endif %}
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="{{ form.issue_date.id_for_label }}">Issue Date</label>
+                        {{ form.issue_date }}
+                        {% if form.issue_date.errors %}<div class="text-danger small mt-1">{{ form.issue_date.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="{{ form.expiry_date.id_for_label }}">Expiry Date</label>
+                        {{ form.expiry_date }}
+                        {% if form.expiry_date.errors %}<div class="text-danger small mt-1">{{ form.expiry_date.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-field document-notes-field">
+                        <label class="form-label" for="{{ form.notes.id_for_label }}">Notes</label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}<div class="text-danger small mt-1">{{ form.notes.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="responsive-actions mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check2 me-1"></i> Save Document
+                    </button>
+                    <a href="{% url 'employee_documents' %}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .document-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .document-notes-field {
+        grid-column: 1 / -1;
+    }
+
+    @media (max-width: 767.98px) {
+        .document-form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

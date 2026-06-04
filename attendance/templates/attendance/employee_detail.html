@@ -40,7 +40,7 @@
                         <div class="detail-line"><span>Today's Status</span><strong>{% if employee.is_checked_in_today %}Checked In{% else %}Not Present{% endif %}</strong></div>
                     </div>
 
-                    <div class="d-flex gap-2 mt-4">
+                    <div class="responsive-actions mt-4">
                         <a href="{% url 'employee_edit' employee.pk %}" class="btn btn-outline-secondary flex-grow-1">
                             <i class="bi bi-pencil"></i> Edit
                         </a>
@@ -67,6 +67,9 @@
                         <div class="col-md-6">
                             <div class="detail-card h-100">
                                 <small class="detail-label">Basic Information</small>
+                                <div class="detail-line"><span>Surname</span><strong>{{ employee.last_name|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>First Name</span><strong>{{ employee.first_name|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Middle Name</span><strong>{{ employee.middle_name|default:"-" }}</strong></div>
                                 <div class="detail-line"><span>Gender</span><strong>{{ employee.get_gender_display|default:"-" }}</strong></div>
                                 <div class="detail-line"><span>Date of Birth</span><strong>{% if employee.date_of_birth %}{{ employee.date_of_birth|date:"F j, Y" }}{% else %}-{% endif %}</strong></div>
                                 <div class="detail-line"><span>Nationality</span><strong>{{ employee.nationality|default:"-" }}</strong></div>
@@ -166,13 +169,52 @@
                             <div class="detail-card h-100">
                                 <small class="detail-label">Education Snapshot</small>
                                 <div class="detail-line"><span>Institution</span><strong>{{ employee.institution|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Faculty / School</span><strong>{{ employee.faculty|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Academic Department</span><strong>{{ employee.academic_department|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Course of Study</span><strong>{{ employee.field_of_study|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Matric / Student ID</span><strong>{{ employee.student_id|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Current Level</span><strong>{{ employee.current_level|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Expected Graduation</span><strong>{{ employee.expected_graduation_date|date:"M j, Y"|default:"-" }}</strong></div>
                                 <div class="detail-line"><span>Qualification</span><strong>{{ employee.qualification_obtained|default:"-" }}</strong></div>
-                                <div class="detail-line"><span>Field of Study</span><strong>{{ employee.field_of_study|default:"-" }}</strong></div>
                                 <div class="detail-line"><span>Graduation Year</span><strong>{{ employee.year_of_graduation|default:"-" }}</strong></div>
                                 <div class="detail-line"><span>Class of Degree</span><strong>{{ employee.class_of_degree|default:"-" }}</strong></div>
-                                <div class="detail-line"><span>Student ID</span><strong>{{ employee.student_id|default:"-" }}</strong></div>
                             </div>
                         </div>
+
+                        {% if employee.is_intern %}
+                        <div class="col-md-6">
+                            <div class="detail-card h-100">
+                                <small class="detail-label">SIWES / IT Biodata</small>
+                                <div class="detail-line"><span>Internship Type</span><strong>{{ employee.get_internship_type_display|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Other Type</span><strong>{{ employee.internship_type_other|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Preferred Department</span><strong>{{ employee.preferred_department|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Area of Interest</span><strong>{{ employee.area_of_interest|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Other Interest</span><strong>{{ employee.area_of_interest_other|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Academic Supervisor</span><strong>{{ employee.academic_supervisor_name|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Supervisor Phone</span><strong>{{ employee.academic_supervisor_phone|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Supervisor Email</span><strong>{{ employee.academic_supervisor_email|default:"-" }}</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="detail-card h-100">
+                                <small class="detail-label">Technical Skills</small>
+                                <div class="detail-line"><span>HTML/CSS</span><strong>{{ employee.get_skill_html_css_display|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>JavaScript</span><strong>{{ employee.get_skill_javascript_display|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Python</span><strong>{{ employee.get_skill_python_display|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Java</span><strong>{{ employee.get_skill_java_display|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>C/C++</span><strong>{{ employee.get_skill_c_cpp_display|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Django</span><strong>{{ employee.get_skill_django_display|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>React</span><strong>{{ employee.get_skill_react_display|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Node.js</span><strong>{{ employee.get_skill_nodejs_display|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>UI/UX Design</span><strong>{{ employee.get_skill_ui_ux_display|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Networking</span><strong>{{ employee.get_skill_networking_display|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>Cybersecurity</span><strong>{{ employee.get_skill_cybersecurity_display|default:"-" }}</strong></div>
+                                <div class="detail-line"><span>{{ employee.other_technical_skill|default:"Other" }}</span><strong>{{ employee.get_skill_other_display|default:"-" }}</strong></div>
+                                <div class="detail-block"><span>Other Skills / Projects</span><strong>{{ employee.relevant_skills_projects|linebreaksbr|default:"-" }}</strong></div>
+                            </div>
+                        </div>
+                        {% endif %}
 
                         <div class="col-md-6">
                             <div class="detail-card h-100">
@@ -279,7 +321,12 @@
 
             <div class="card border-0 mb-4">
                 <div class="card-header bg-white border-0 pt-4 px-4">
-                    <h5 class="mb-0"><i class="bi bi-folder2-open me-2"></i>Employee Documents</h5>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <h5 class="mb-0"><i class="bi bi-folder2-open me-2"></i>Employee Documents</h5>
+                        <a href="{% url 'employee_document_upload_for_employee' employee.pk %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-cloud-arrow-up me-1"></i> Upload
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -290,7 +337,7 @@
                                     <th>Type</th>
                                     <th>Issue Date</th>
                                     <th>Expiry Date</th>
-                                    <th>File</th>
+                                    <th class="text-end">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -303,10 +350,14 @@
                                     <td>{{ document.get_document_type_display }}</td>
                                     <td>{% if document.issue_date %}{{ document.issue_date|date:"M d, Y" }}{% else %}-{% endif %}</td>
                                     <td>{% if document.expiry_date %}{{ document.expiry_date|date:"M d, Y" }}{% else %}-{% endif %}</td>
-                                    <td>
-                                        <a href="{{ document.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
-                                            <i class="bi bi-box-arrow-up-right me-1"></i> Open
-                                        </a>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                            <a href="{{ document.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener">
+                                                <i class="bi bi-box-arrow-up-right me-1"></i> Open
+                                            </a>
+                                            <a href="{% url 'employee_document_edit' document.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                            <a href="{% url 'employee_document_delete' document.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% empty %}
@@ -314,6 +365,65 @@
                                     <td colspan="5" class="text-center py-5 text-muted">
                                         <i class="bi bi-folder fs-1 d-block mb-3"></i>
                                         No documents uploaded yet.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Onboarding Tasks</h5>
+                        <a href="{% url 'onboarding_task_create_for_employee' employee.pk %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-plus-lg me-1"></i> Add Task
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>Category</th>
+                                    <th>Owner</th>
+                                    <th>Due</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in employee.onboarding_tasks.all %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ task.title }}</strong>
+                                        {% if task.notes %}<br><small class="text-muted">{{ task.notes }}</small>{% endif %}
+                                    </td>
+                                    <td>{{ task.get_category_display }}</td>
+                                    <td>{{ task.assigned_to.get_full_name|default:task.assigned_to.username|default:"-" }}</td>
+                                    <td>{% if task.due_date %}<span class="{% if task.is_overdue %}text-danger fw-semibold{% endif %}">{{ task.due_date|date:"M d, Y" }}</span>{% else %}-{% endif %}</td>
+                                    <td>{{ task.get_status_display }}</td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                            {% if task.status != "completed" and task.status != "waived" %}
+                                            <form method="post" action="{% url 'onboarding_task_complete' task.pk %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-success">Complete</button>
+                                            </form>
+                                            {% endif %}
+                                            <a href="{% url 'onboarding_task_edit' task.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                        No onboarding tasks yet.
                                     </td>
                                 </tr>
                                 {% endfor %}

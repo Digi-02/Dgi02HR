@@ -110,14 +110,19 @@
                                             {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
                                         </div>
                                         <div class="col-md-4">
+                                            <label class="form-label">Surname</label>
+                                            {{ form.last_name }}
+                                            {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
                                             <label class="form-label">First Name</label>
                                             {{ form.first_name }}
                                             {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>{% endif %}
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label">Last Name</label>
-                                            {{ form.last_name }}
-                                            {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>{% endif %}
+                                            <label class="form-label">Middle Name</label>
+                                            {{ form.middle_name }}
+                                            {% if form.middle_name.errors %}<div class="text-danger small mt-1">{{ form.middle_name.errors.0 }}</div>{% endif %}
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label">Gender</label>
@@ -420,46 +425,133 @@
                             </div>
 
                             <div class="tab-pane fade" id="education-pane" role="tabpanel" aria-labelledby="education-tab" tabindex="0">
-                                <div class="form-section-card" id="intern-student-section">
-                                    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
-                                        <h6 class="form-section-title mb-0"><i class="bi bi-mortarboard me-2"></i>Education & Placement</h6>
-                                        <small class="text-muted">Use the employee fields for school placement details, and the repeatable cards below for full qualification history.</small>
+                                <div id="intern-biodata-section">
+                                    <div class="form-section-card intern-form-intro">
+                                        <p class="text-uppercase small fw-semibold text-muted mb-1">Digi02 Technologies Limited</p>
+                                        <h6 class="form-section-title mb-1"><i class="bi bi-mortarboard me-2"></i>Intern (SIWES/IT) Biodata</h6>
+                                        <p class="text-muted mb-0">Use this section for SIWES, Industrial Training, student internship, and graduate internship records.</p>
                                     </div>
-                                    <div class="row g-3 mt-1">
-                                        <div class="col-md-6" id="institution-field">
-                                            <label class="form-label">Institution</label>
-                                            {{ form.institution }}
-                                            {% if form.institution.errors %}<div class="text-danger small mt-1">{{ form.institution.errors.0 }}</div>{% endif %}
+
+                                    <div class="form-section-card intern-only-block">
+                                        <h6 class="form-section-title"><i class="bi bi-bank me-2"></i>Section C: Educational Information</h6>
+                                        <div class="row g-3">
+                                            <div class="col-md-6" id="institution-field">
+                                                <label class="form-label">Institution Name</label>
+                                                {{ form.institution }}
+                                                {% if form.institution.errors %}<div class="text-danger small mt-1">{{ form.institution.errors.0 }}</div>{% endif %}
+                                            </div>
+                                            <div class="col-md-6" id="faculty-field">
+                                                <label class="form-label">Faculty / School</label>
+                                                {{ form.faculty }}
+                                                {% if form.faculty.errors %}<div class="text-danger small mt-1">{{ form.faculty.errors.0 }}</div>{% endif %}
+                                            </div>
+                                            <div class="col-md-6" id="academic-department-field">
+                                                <label class="form-label">Academic Department</label>
+                                                {{ form.academic_department }}
+                                                {% if form.academic_department.errors %}<div class="text-danger small mt-1">{{ form.academic_department.errors.0 }}</div>{% endif %}
+                                            </div>
+                                            <div class="col-md-6" id="field-of-study-field">
+                                                <label class="form-label">Course of Study</label>
+                                                {{ form.field_of_study }}
+                                                {% if form.field_of_study.errors %}<div class="text-danger small mt-1">{{ form.field_of_study.errors.0 }}</div>{% endif %}
+                                            </div>
+                                            <div class="col-md-4" id="student-id-field">
+                                                <label class="form-label">Matriculation Number</label>
+                                                {{ form.student_id }}
+                                                {% if form.student_id.errors %}<div class="text-danger small mt-1">{{ form.student_id.errors.0 }}</div>{% endif %}
+                                            </div>
+                                            <div class="col-md-4" id="current-level-field">
+                                                <label class="form-label">Current Level</label>
+                                                {{ form.current_level }}
+                                                {% if form.current_level.errors %}<div class="text-danger small mt-1">{{ form.current_level.errors.0 }}</div>{% endif %}
+                                            </div>
+                                            <div class="col-md-4" id="expected-graduation-date-field">
+                                                <label class="form-label">Expected Graduation Date</label>
+                                                {{ form.expected_graduation_date }}
+                                                {% if form.expected_graduation_date.errors %}<div class="text-danger small mt-1">{{ form.expected_graduation_date.errors.0 }}</div>{% endif %}
+                                            </div>
+                                            <div class="col-md-4" id="academic-supervisor-name-field">
+                                                <label class="form-label">Academic Supervisor Name</label>
+                                                {{ form.academic_supervisor_name }}
+                                                {% if form.academic_supervisor_name.errors %}<div class="text-danger small mt-1">{{ form.academic_supervisor_name.errors.0 }}</div>{% endif %}
+                                            </div>
+                                            <div class="col-md-4" id="academic-supervisor-phone-field">
+                                                <label class="form-label">Academic Supervisor Phone</label>
+                                                {{ form.academic_supervisor_phone }}
+                                                {% if form.academic_supervisor_phone.errors %}<div class="text-danger small mt-1">{{ form.academic_supervisor_phone.errors.0 }}</div>{% endif %}
+                                            </div>
+                                            <div class="col-md-4" id="academic-supervisor-email-field">
+                                                <label class="form-label">Academic Supervisor Email</label>
+                                                {{ form.academic_supervisor_email }}
+                                                {% if form.academic_supervisor_email.errors %}<div class="text-danger small mt-1">{{ form.academic_supervisor_email.errors.0 }}</div>{% endif %}
+                                            </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Qualification Obtained</label>
-                                            {{ form.qualification_obtained }}
-                                            {% if form.qualification_obtained.errors %}<div class="text-danger small mt-1">{{ form.qualification_obtained.errors.0 }}</div>{% endif %}
+                                    </div>
+
+                                    <div class="form-section-card intern-only-block">
+                                        <h6 class="form-section-title"><i class="bi bi-briefcase me-2"></i>Section D: SIWES / Industrial Training Information</h6>
+                                        <div class="row g-3">
+                                            <div class="col-md-4" id="internship-type-field">
+                                                <label class="form-label">Internship Type</label>
+                                                {{ form.internship_type }}
+                                                {% if form.internship_type.errors %}<div class="text-danger small mt-1">{{ form.internship_type.errors.0 }}</div>{% endif %}
+                                            </div>
+                                            <div class="col-md-4" id="internship-type-other-field">
+                                                <label class="form-label">Other Internship Type</label>
+                                                {{ form.internship_type_other }}
+                                                {% if form.internship_type_other.errors %}<div class="text-danger small mt-1">{{ form.internship_type_other.errors.0 }}</div>{% endif %}
+                                            </div>
+                                            <div class="col-md-4" id="preferred-department-field">
+                                                <label class="form-label">Preferred Department</label>
+                                                {{ form.preferred_department }}
+                                                {% if form.preferred_department.errors %}<div class="text-danger small mt-1">{{ form.preferred_department.errors.0 }}</div>{% endif %}
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="alert alert-info py-2 mb-0">
+                                                    <i class="bi bi-calendar-range me-1"></i>
+                                                    Capture the internship start and end dates in the Employment tab.
+                                                </div>
+                                            </div>
+                                            <div class="col-12" id="area-of-interest-field">
+                                                <label class="form-label">Area of Interest</label>
+                                                <div class="intern-checkbox-grid">
+                                                    {{ form.area_of_interest }}
+                                                </div>
+                                                {% if form.area_of_interest.errors %}<div class="text-danger small mt-1">{{ form.area_of_interest.errors.0 }}</div>{% endif %}
+                                            </div>
+                                            <div class="col-12" id="area-of-interest-other-field">
+                                                <label class="form-label">Other Area of Interest</label>
+                                                {{ form.area_of_interest_other }}
+                                                {% if form.area_of_interest_other.errors %}<div class="text-danger small mt-1">{{ form.area_of_interest_other.errors.0 }}</div>{% endif %}
+                                            </div>
+                                            <div class="col-12" id="supervisor-field">
+                                                <label class="form-label">Company Supervisor</label>
+                                                {{ form.supervisor }}
+                                                {% if form.supervisor.errors %}<div class="text-danger small mt-1">{{ form.supervisor.errors.0 }}</div>{% endif %}
+                                            </div>
                                         </div>
-                                        <div class="col-md-6" id="field-of-study-field">
-                                            <label class="form-label">Field of Study</label>
-                                            {{ form.field_of_study }}
-                                            {% if form.field_of_study.errors %}<div class="text-danger small mt-1">{{ form.field_of_study.errors.0 }}</div>{% endif %}
+                                    </div>
+
+                                    <div class="form-section-card">
+                                        <h6 class="form-section-title"><i class="bi bi-tools me-2"></i>Section E: Technical Skills</h6>
+                                        <div class="intern-skills-grid">
+                                            <div class="intern-skill-row"><span>HTML/CSS</span>{{ form.skill_html_css }}</div>
+                                            <div class="intern-skill-row"><span>JavaScript</span>{{ form.skill_javascript }}</div>
+                                            <div class="intern-skill-row"><span>Python</span>{{ form.skill_python }}</div>
+                                            <div class="intern-skill-row"><span>Java</span>{{ form.skill_java }}</div>
+                                            <div class="intern-skill-row"><span>C/C++</span>{{ form.skill_c_cpp }}</div>
+                                            <div class="intern-skill-row"><span>Django</span>{{ form.skill_django }}</div>
+                                            <div class="intern-skill-row"><span>React</span>{{ form.skill_react }}</div>
+                                            <div class="intern-skill-row"><span>Node.js</span>{{ form.skill_nodejs }}</div>
+                                            <div class="intern-skill-row"><span>UI/UX Design</span>{{ form.skill_ui_ux }}</div>
+                                            <div class="intern-skill-row"><span>Networking</span>{{ form.skill_networking }}</div>
+                                            <div class="intern-skill-row"><span>Cybersecurity</span>{{ form.skill_cybersecurity }}</div>
+                                            <div class="intern-skill-row"><span>{{ form.other_technical_skill }}</span>{{ form.skill_other }}</div>
                                         </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label">Year of Graduation</label>
-                                            {{ form.year_of_graduation }}
-                                            {% if form.year_of_graduation.errors %}<div class="text-danger small mt-1">{{ form.year_of_graduation.errors.0 }}</div>{% endif %}
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label">Class of Degree</label>
-                                            {{ form.class_of_degree }}
-                                            {% if form.class_of_degree.errors %}<div class="text-danger small mt-1">{{ form.class_of_degree.errors.0 }}</div>{% endif %}
-                                        </div>
-                                        <div class="col-md-6" id="student-id-field">
-                                            <label class="form-label">Student ID</label>
-                                            {{ form.student_id }}
-                                            {% if form.student_id.errors %}<div class="text-danger small mt-1">{{ form.student_id.errors.0 }}</div>{% endif %}
-                                        </div>
-                                        <div class="col-md-6" id="supervisor-field">
-                                            <label class="form-label">Supervisor</label>
-                                            {{ form.supervisor }}
-                                            {% if form.supervisor.errors %}<div class="text-danger small mt-1">{{ form.supervisor.errors.0 }}</div>{% endif %}
+                                        <div class="mt-3">
+                                            <label class="form-label">Other Relevant Skills, Certifications, or Projects</label>
+                                            {{ form.relevant_skills_projects }}
+                                            {% if form.relevant_skills_projects.errors %}<div class="text-danger small mt-1">{{ form.relevant_skills_projects.errors.0 }}</div>{% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -776,7 +868,7 @@
                         <hr class="my-4">
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                             <small class="text-muted">Save the profile now, then we can add repeatable qualifications, certifications, work history, payroll, and profile photo next.</small>
-                            <div class="d-flex gap-2">
+                            <div class="responsive-actions">
                                 <button type="submit" class="btn btn-primary px-4">
                                     <i class="bi bi-check-lg"></i> {{ action }} Person
                                 </button>
@@ -1004,9 +1096,67 @@
         padding: 0.75rem 0 0;
     }
 
+    .intern-form-intro {
+        background: #f8fafc;
+    }
+
+    .intern-checkbox-grid ul {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 0.75rem;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    .intern-checkbox-grid label {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        min-height: 42px;
+        padding: 0.65rem 0.75rem;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 0.65rem;
+        background: #f8fafc;
+        font-weight: 600;
+        color: #334155;
+    }
+
+    .intern-checkbox-grid input {
+        flex: 0 0 auto;
+    }
+
+    .intern-skills-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .intern-skill-row {
+        display: grid;
+        grid-template-columns: minmax(120px, 1fr) minmax(150px, 0.9fr);
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        border-radius: 0.75rem;
+        background: #f8fafc;
+    }
+
+    .intern-skill-row > span:first-child {
+        font-weight: 700;
+        color: #334155;
+        min-width: 0;
+    }
+
     @media (max-width: 767.98px) {
         .form-section-card {
             padding: 1rem;
+        }
+
+        .intern-skills-grid,
+        .intern-skill-row {
+            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -1022,7 +1172,11 @@
         const fieldOfStudyField = document.getElementById('field-of-study-field');
         const studentIdField = document.getElementById('student-id-field');
         const supervisorField = document.getElementById('supervisor-field');
-        const internStudentSection = document.getElementById('intern-student-section');
+        const internBiodataSection = document.getElementById('intern-biodata-section');
+        const internOnlyBlocks = document.querySelectorAll('.intern-only-block');
+        const internshipTypeField = document.getElementById('internship-type-field');
+        const internshipTypeOtherField = document.getElementById('internship-type-other-field');
+        const areaOfInterestOtherField = document.getElementById('area-of-interest-other-field');
         const formsetButtons = document.querySelectorAll('.add-formset-row');
 
         employeeTabs.forEach((tab) => {
@@ -1082,32 +1236,54 @@
             }
 
             const isAcademic = categoryCode === 'INTERN' || categoryCode === 'STUDENT';
+            const isIntern = categoryCode === 'INTERN';
+            const isStaffLike = categoryCode === 'STAFF' || categoryCode === 'MANAGEMENT';
+            const internshipTypeInput = document.getElementById('{{ form.internship_type.id_for_label }}');
+            const internshipTypeOtherInput = document.getElementById('{{ form.internship_type_other.id_for_label }}');
+            const areaOtherInput = document.getElementById('{{ form.area_of_interest_other.id_for_label }}');
+            const selectedAreas = Array.from(document.querySelectorAll('input[name="{{ form.area_of_interest.html_name }}"]:checked')).map((input) => input.value);
 
-            toggleBlock(departmentField, categoryCode === 'STAFF');
+            toggleBlock(departmentField, isStaffLike);
             toggleBlock(endDateField, isAcademic);
             toggleBlock(institutionField, isAcademic);
             toggleBlock(fieldOfStudyField, isAcademic);
             toggleBlock(supervisorField, isAcademic);
-            toggleBlock(studentIdField, categoryCode === 'STUDENT');
-            toggleBlock(internStudentSection, isAcademic);
+            toggleBlock(studentIdField, isAcademic);
+            toggleBlock(internBiodataSection, isAcademic);
+            toggleBlock(internshipTypeField, isIntern);
+            toggleBlock(internshipTypeOtherField, isIntern && internshipTypeInput && internshipTypeInput.value === 'other');
+            toggleBlock(areaOfInterestOtherField, isIntern && selectedAreas.includes('other'));
+            internOnlyBlocks.forEach((block) => toggleBlock(block, isIntern));
 
             if (hireDateLabel) {
-                hireDateLabel.textContent = categoryCode === 'STAFF' ? 'Hire Date' : 'Start Date';
+                hireDateLabel.textContent = isStaffLike ? 'Hire Date' : 'Start Date';
             }
 
             const deptInput = document.getElementById('{{ form.department.id_for_label }}');
             const endDateInput = document.getElementById('{{ form.end_date.id_for_label }}');
             const institutionInput = document.getElementById('{{ form.institution.id_for_label }}');
             const studentIdInput = document.getElementById('{{ form.student_id.id_for_label }}');
+            const fieldOfStudyInput = document.getElementById('{{ form.field_of_study.id_for_label }}');
 
-            if (deptInput) deptInput.required = categoryCode === 'STAFF';
+            if (deptInput) deptInput.required = isStaffLike;
             if (endDateInput) endDateInput.required = isAcademic;
             if (institutionInput) institutionInput.required = isAcademic;
-            if (studentIdInput) studentIdInput.required = categoryCode === 'STUDENT';
+            if (studentIdInput) studentIdInput.required = isAcademic;
+            if (fieldOfStudyInput) fieldOfStudyInput.required = isIntern;
+            if (internshipTypeInput) internshipTypeInput.required = isIntern;
+            if (internshipTypeOtherInput) internshipTypeOtherInput.required = isIntern && internshipTypeInput && internshipTypeInput.value === 'other';
+            if (areaOtherInput) areaOtherInput.required = isIntern && selectedAreas.includes('other');
         }
 
         updateFieldVisibility();
         categorySelect.addEventListener('change', updateFieldVisibility);
+        const internshipTypeInput = document.getElementById('{{ form.internship_type.id_for_label }}');
+        if (internshipTypeInput) {
+            internshipTypeInput.addEventListener('change', updateFieldVisibility);
+        }
+        document.querySelectorAll('input[name="{{ form.area_of_interest.html_name }}"]').forEach((input) => {
+            input.addEventListener('change', updateFieldVisibility);
+        });
     });
 </script>
 {% endblock %}

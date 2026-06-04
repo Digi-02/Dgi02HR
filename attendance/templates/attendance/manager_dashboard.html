@@ -1,0 +1,321 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Manager Dashboard | HR Management{% endblock %}
+{% block page_title %}Manager Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="portal-hero card border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <p class="text-uppercase small fw-semibold text-muted mb-1">Team Workspace</p>
+                    <h5 class="mb-1"><i class="bi bi-person-check me-2"></i>{% if manager %}{{ manager.display_name }}{% else %}Manager{% endif %}</h5>
+                    <small class="text-muted">Track team availability, pending approvals, and direct report activity.</small>
+                </div>
+                <div class="responsive-actions">
+                    <a href="{% url 'manager_team' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-people me-1"></i> My Team
+                    </a>
+                    <a href="{% url 'manager_leave_requests' %}" class="btn btn-primary">
+                        <i class="bi bi-calendar2-check me-1"></i> Review Leave
+                    </a>
+                    {% if user_has_hr_access %}
+                    <a href="{% url 'employee_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-people me-1"></i> All Employees
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="portal-metrics-grid mb-4">
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Team Members</small>
+                <h3 class="mt-2 mb-0">{{ team_count }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Present Today</small>
+                <h3 class="mt-2 mb-0 text-success">{{ present_today }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Late Today</small>
+                <h3 class="mt-2 mb-0 text-warning">{{ late_today }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Pending Leave</small>
+                <h3 class="mt-2 mb-0 text-primary">{{ pending_leave_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-7">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                        <div>
+                            <h5 class="mb-1"><i class="bi bi-calendar2-week me-2"></i>Pending Leave Approvals</h5>
+                            <small class="text-muted">Requests waiting for manager review.</small>
+                        </div>
+                        <a href="{% url 'manager_leave_requests' %}" class="btn btn-outline-primary btn-sm">Open Queue</a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Leave Type</th>
+                                    <th>Period</th>
+                                    <th>Days</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for leave_request in pending_leave_requests %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ leave_request.employee.display_name }}</div>
+                                        <small class="text-muted">{{ leave_request.employee.employee_id }}</small>
+                                    </td>
+                                    <td>{{ leave_request.leave_type.name }}</td>
+                                    <td>{{ leave_request.start_date }} to {{ leave_request.end_date }}</td>
+                                    <td>{{ leave_request.day_count }}</td>
+                                    <td class="text-end">
+                                        <a href="{% url 'manager_leave_request_approve' leave_request.pk %}" class="btn btn-sm btn-outline-success">Review</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                        No pending team leave requests.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-5">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <h5 class="mb-1"><i class="bi bi-people me-2"></i>Team Snapshot</h5>
+                            <small class="text-muted">{{ absent_today }} absent or not checked in today. {{ open_attendance_count }} currently checked in.</small>
+                        </div>
+                        <a href="{% url 'manager_team' %}" class="btn btn-outline-primary btn-sm">View Team</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="team-readiness-grid mb-3">
+                        <div>
+                            <span class="text-muted">Checked In</span>
+                            <strong class="text-success">{{ open_attendance_count }}</strong>
+                        </div>
+                        <div>
+                            <span class="text-muted">Completed</span>
+                            <strong class="text-primary">{{ completed_attendance_count }}</strong>
+                        </div>
+                        <div>
+                            <span class="text-muted">Absent</span>
+                            <strong class="text-danger">{{ absent_today }}</strong>
+                        </div>
+                    </div>
+                    <div class="team-list">
+                        {% for member in team_members %}
+                        <div class="team-list-item">
+                            <div>
+                                <strong>{{ member.display_name }}</strong>
+                                <span class="d-block small text-muted">{{ member.position|default:"Team Member" }}</span>
+                            </div>
+                            <span class="badge bg-{% if member.is_checked_in_today %}success{% else %}secondary{% endif %} bg-opacity-10 text-{% if member.is_checked_in_today %}success{% else %}secondary{% endif %}">
+                                {% if member.is_checked_in_today %}Present{% else %}Not In{% endif %}
+                            </span>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4 text-muted">No team members assigned yet.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-0">
+        <div class="col-lg-6">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1"><i class="bi bi-diagram-3 me-2"></i>Department Mix</h5>
+                    <small class="text-muted">Direct reports grouped by department.</small>
+                </div>
+                <div class="card-body">
+                    <div class="distribution-list">
+                        {% for row in team_by_department %}
+                        <div class="distribution-item">
+                            <span>{{ row.department__name|default:"Unassigned" }}</span>
+                            <strong>{{ row.total }}</strong>
+                        </div>
+                        {% empty %}
+                        <div class="text-muted">No department data yet.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1"><i class="bi bi-tags me-2"></i>Category Mix</h5>
+                    <small class="text-muted">Staff, interns, students, and management in your team.</small>
+                </div>
+                <div class="card-body">
+                    <div class="distribution-list">
+                        {% for row in team_by_category %}
+                        <div class="distribution-item">
+                            <span>{{ row.category__name|default:"Unassigned" }}</span>
+                            <strong>{{ row.total }}</strong>
+                        </div>
+                        {% empty %}
+                        <div class="text-muted">No category data yet.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 mt-4">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <h5 class="mb-1"><i class="bi bi-clock-history me-2"></i>Recent Team Leave Activity</h5>
+            <small class="text-muted">Latest requests from your team.</small>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Leave Type</th>
+                            <th>Manager Review</th>
+                            <th>Final Status</th>
+                            <th>Submitted</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave_request in recent_leave_requests %}
+                        <tr>
+                            <td>{{ leave_request.employee.display_name }}</td>
+                            <td>{{ leave_request.leave_type.name }}</td>
+                            <td>{{ leave_request.get_manager_approval_status_display }}</td>
+                            <td>{{ leave_request.get_status_display }}</td>
+                            <td>{{ leave_request.created_at|date:"M j, Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">No team leave activity yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .portal-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .team-list {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .team-readiness-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .team-readiness-grid div,
+    .distribution-item {
+        padding: 0.85rem;
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        border-radius: 0.5rem;
+        background: #f8fafc;
+    }
+
+    .team-readiness-grid span,
+    .team-readiness-grid strong {
+        display: block;
+    }
+
+    .team-list-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.85rem;
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        border-radius: 0.5rem;
+        background: #f8fafc;
+    }
+
+    .distribution-list {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .distribution-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    @media (max-width: 1199.98px) {
+        .portal-metrics-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .portal-metrics-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .team-list-item {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .team-readiness-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .distribution-item {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+    }
+</style>
+{% endblock %}

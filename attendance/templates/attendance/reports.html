@@ -14,7 +14,7 @@
                     <h2 class="h3 mb-2">Attendance analytics with live filters</h2>
                     <p class="text-muted mb-0">Use one filter set for on-screen insights, trend displays, and exports.</p>
                 </div>
-                <div class="d-flex flex-wrap gap-2">
+                <div class="responsive-actions">
                     <a href="{% url 'attendance_reports' %}?{{ request.GET.urlencode }}" class="btn btn-outline-secondary">
                         <i class="bi bi-table me-1"></i> Open Attendance Table
                     </a>
@@ -39,7 +39,7 @@
                 </div>
                 <div class="col-6 col-lg-3">
                     <label class="form-label">Date Range</label>
-                    <div class="d-flex gap-2">
+                    <div class="date-range-inline">
                         {{ date_form.start_date }}
                         {{ date_form.end_date }}
                     </div>
@@ -61,7 +61,7 @@
                     {{ date_form.employment_status }}
                 </div>
                 <div class="col-12 col-lg-6">
-                    <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                    <div class="responsive-actions justify-content-lg-end">
                         <button type="submit" class="btn btn-primary flex-fill flex-lg-grow-0">
                             <i class="bi bi-funnel-fill"></i> Apply Filters
                         </button>

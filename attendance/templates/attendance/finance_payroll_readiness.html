@@ -1,0 +1,219 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Payroll Readiness | HR Management{% endblock %}
+{% block page_title %}Payroll Readiness{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="portal-hero card border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <p class="text-uppercase small fw-semibold text-muted mb-1">Finance Workspace</p>
+                    <h5 class="mb-1"><i class="bi bi-clipboard2-check me-2"></i>Payroll Readiness</h5>
+                    <small class="text-muted">Resolve salary, bank, and workflow issues before payroll is paid.</small>
+                </div>
+                <div class="responsive-actions">
+                    <a href="{% url 'finance_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                    </a>
+                    <a href="{% url 'payroll_run_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i> New Payroll Run
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="readiness-metrics-grid mb-4">
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Active People</small>
+                <h3 class="mt-2 mb-0">{{ active_people_count }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Missing Salary</small>
+                <h3 class="mt-2 mb-0 text-warning">{{ employees_missing_salary_count }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Missing Bank</small>
+                <h3 class="mt-2 mb-0 text-danger">{{ employees_missing_bank_count }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Approved Unpaid</small>
+                <h3 class="mt-2 mb-0 text-primary">{{ approved_unpaid_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-6">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1"><i class="bi bi-wallet2 me-2"></i>Employees Missing Salary</h5>
+                    <small class="text-muted">No basic, housing, transport, or other allowance has been set.</small>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Department</th>
+                                    <th>Category</th>
+                                    {% if user_has_hr_access %}<th class="text-end">Action</th>{% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for employee in employees_missing_salary %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ employee.display_name }}</div>
+                                        <small class="text-muted">{{ employee.employee_id }}</small>
+                                    </td>
+                                    <td>{{ employee.department|default:"-" }}</td>
+                                    <td>{{ employee.category.name|default:"-" }}</td>
+                                    {% if user_has_hr_access %}
+                                    <td class="text-end">
+                                        <a href="{% url 'employee_edit' employee.pk %}" class="btn btn-sm btn-outline-primary">Update</a>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="{% if user_has_hr_access %}4{% else %}3{% endif %}" class="text-center py-4 text-muted">All active employees have salary values.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1"><i class="bi bi-bank me-2"></i>Employees Missing Bank Details</h5>
+                    <small class="text-muted">Bank name, account name, and account number are required for payment readiness.</small>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Bank</th>
+                                    <th>Account</th>
+                                    {% if user_has_hr_access %}<th class="text-end">Action</th>{% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for employee in employees_missing_bank %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ employee.display_name }}</div>
+                                        <small class="text-muted">{{ employee.employee_id }}</small>
+                                    </td>
+                                    <td>{{ employee.bank_name|default:"Missing" }}</td>
+                                    <td>{{ employee.bank_account_number|default:"Missing" }}</td>
+                                    {% if user_has_hr_access %}
+                                    <td class="text-end">
+                                        <a href="{% url 'employee_edit' employee.pk %}" class="btn btn-sm btn-outline-primary">Update</a>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="{% if user_has_hr_access %}4{% else %}3{% endif %}" class="text-center py-4 text-muted">All active employees have bank details.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 mt-4">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <h5 class="mb-1"><i class="bi bi-kanban me-2"></i>Payroll Runs Requiring Action</h5>
+            <small class="text-muted">Draft, processed, and approved unpaid payroll runs.</small>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Run</th>
+                            <th>Month</th>
+                            <th>Status</th>
+                            <th>Payslips</th>
+                            <th>Next Action</th>
+                            <th class="text-end">Open</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payroll_run in draft_runs %}
+                        <tr>
+                            <td class="fw-semibold">{{ payroll_run.title }}</td>
+                            <td>{{ payroll_run.payroll_month|date:"F Y" }}</td>
+                            <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ payroll_run.get_status_display }}</span></td>
+                            <td>{{ payroll_run.payslips.count }}</td>
+                            <td>Generate payslips</td>
+                            <td class="text-end"><a href="{% url 'payroll_run_detail' payroll_run.pk %}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                        </tr>
+                        {% endfor %}
+                        {% for payroll_run in processed_runs %}
+                        <tr>
+                            <td class="fw-semibold">{{ payroll_run.title }}</td>
+                            <td>{{ payroll_run.payroll_month|date:"F Y" }}</td>
+                            <td><span class="badge bg-warning bg-opacity-10 text-warning">{{ payroll_run.get_status_display }}</span></td>
+                            <td>{{ payroll_run.payslips.count }}</td>
+                            <td>Approve payroll</td>
+                            <td class="text-end"><a href="{% url 'payroll_run_detail' payroll_run.pk %}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                        </tr>
+                        {% endfor %}
+                        {% for payroll_run in approved_unpaid_runs %}
+                        <tr>
+                            <td class="fw-semibold">{{ payroll_run.title }}</td>
+                            <td>{{ payroll_run.payroll_month|date:"F Y" }}</td>
+                            <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ payroll_run.get_status_display }}</span></td>
+                            <td>{{ payroll_run.payslips.count }}</td>
+                            <td>Mark as paid</td>
+                            <td class="text-end"><a href="{% url 'payroll_run_detail' payroll_run.pk %}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                        </tr>
+                        {% endfor %}
+                        {% if not draft_runs_count and not processed_runs_count and not approved_unpaid_count %}
+                        <tr><td colspan="6" class="text-center py-4 text-muted">No payroll runs need action right now.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .readiness-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    @media (max-width: 1199.98px) {
+        .readiness-metrics-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .readiness-metrics-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

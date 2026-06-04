@@ -1,0 +1,56 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Delete Onboarding Task | HR Management{% endblock %}
+{% block page_title %}Delete Onboarding Task{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1 text-danger"><i class="bi bi-trash me-2"></i>Delete Onboarding Task</h5>
+                    <small class="text-muted">This removes the task from the onboarding checklist.</small>
+                </div>
+                <div class="card-body p-4">
+                    <div class="delete-summary mb-4">
+                        <div>
+                            <small class="text-muted d-block">Task</small>
+                            <strong>{{ task.title }}</strong>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Employee</small>
+                            <strong>{{ employee.display_name }} · {{ employee.employee_id }}</strong>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Status</small>
+                            <strong>{{ task.get_status_display }}</strong>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="responsive-actions">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-1"></i> Delete Task
+                            </button>
+                            <a href="{% url 'onboarding_tasks' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .delete-summary {
+        display: grid;
+        gap: 0.75rem;
+        padding: 1rem;
+        border: 1px solid rgba(239, 68, 68, 0.25);
+        border-radius: 0.5rem;
+        background: rgba(254, 242, 242, 0.8);
+    }
+</style>
+{% endblock %}

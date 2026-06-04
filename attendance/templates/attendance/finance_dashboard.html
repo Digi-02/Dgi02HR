@@ -1,0 +1,297 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Finance Dashboard | HR Management{% endblock %}
+{% block page_title %}Finance Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="portal-hero card border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <p class="text-uppercase small fw-semibold text-muted mb-1">Payroll Workspace</p>
+                    <h5 class="mb-1"><i class="bi bi-cash-stack me-2"></i>{{ organization.name }} Finance</h5>
+                    <small class="text-muted">Review salary basis, payroll runs, approvals, and payment readiness.</small>
+                </div>
+                <div class="responsive-actions">
+                    <a href="{% url 'finance_payroll_readiness' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-clipboard2-check me-1"></i> Readiness
+                    </a>
+                    <a href="{% url 'payroll_run_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i> New Payroll Run
+                    </a>
+                    <a href="{% url 'payroll_runs' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-receipt me-1"></i> Payroll Runs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="portal-metrics-grid mb-4">
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Payroll People</small>
+                <h3 class="mt-2 mb-0">{{ active_payroll_people }}</h3>
+                <span class="small text-muted">{{ employees_with_salary }} with salary records</span>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Monthly Gross Basis</small>
+                <h3 class="mt-2 mb-0">{{ monthly_gross_basis }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Monthly Deductions</small>
+                <h3 class="mt-2 mb-0">{{ monthly_deduction_basis }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Monthly Net Basis</small>
+                <h3 class="mt-2 mb-0">{{ monthly_net_basis }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-4">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1"><i class="bi bi-calendar2-check me-2"></i>Current Month</h5>
+                    <small class="text-muted">{{ current_month|date:"F Y" }}</small>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    {% if current_run %}
+                        <div class="finance-status-panel">
+                            <small class="text-muted d-block">Payroll Status</small>
+                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 my-2">{{ current_run.get_status_display }}</span>
+                            <h6 class="mb-1">{{ current_run.title }}</h6>
+                            <p class="text-muted small mb-3">{{ current_run.payslips.count }} payslip{{ current_run.payslips.count|pluralize }} generated.</p>
+                            <a href="{% url 'payroll_run_detail' current_run.pk %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-box-arrow-up-right me-1"></i> Open Current Run
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                            No payroll run exists for {{ current_month|date:"F Y" }}.
+                        </div>
+                        <a href="{% url 'payroll_run_create' %}" class="btn btn-primary w-100 mt-3">
+                            <i class="bi bi-plus-lg me-1"></i> Create Payroll Run
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-8">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                        <div>
+                            <h5 class="mb-1"><i class="bi bi-clock-history me-2"></i>Recent Payroll Runs</h5>
+                            <small class="text-muted">{{ approved_unpaid_count }} approved unpaid, {{ paid_runs_count }} paid.</small>
+                        </div>
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2">{{ total_payroll_runs }} total</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Run</th>
+                                    <th>Month</th>
+                                    <th>Status</th>
+                                    <th>Payslips</th>
+                                    <th>Net</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payroll_run in latest_runs %}
+                                <tr>
+                                    <td class="fw-semibold">{{ payroll_run.title }}</td>
+                                    <td>{{ payroll_run.payroll_month|date:"F Y" }}</td>
+                                    <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ payroll_run.get_status_display }}</span></td>
+                                    <td>{{ payroll_run.payslips.count }}</td>
+                                    <td>{{ payroll_run.total_net }}</td>
+                                    <td class="text-end">
+                                        <a href="{% url 'payroll_run_detail' payroll_run.pk %}" class="btn btn-sm btn-outline-primary">Open</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">No payroll runs yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-0">
+        <div class="col-xl-5">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <h5 class="mb-1"><i class="bi bi-clipboard2-check me-2"></i>Payroll Readiness</h5>
+                            <small class="text-muted">Data finance should resolve before generating payslips.</small>
+                        </div>
+                        <a href="{% url 'finance_payroll_readiness' %}" class="btn btn-outline-primary btn-sm">Open Readiness</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="finance-readiness-list">
+                        <div class="finance-readiness-item">
+                            <div>
+                                <strong>Salary Records</strong>
+                                <span>{{ employees_with_salary }} of {{ active_payroll_people }} active people have pay configured.</span>
+                            </div>
+                            <span class="badge bg-success bg-opacity-10 text-success">{{ employees_with_salary }}</span>
+                        </div>
+                        <div class="finance-readiness-item">
+                            <div>
+                                <strong>Missing Bank Details</strong>
+                                <span>Employees with incomplete bank name, account name, or account number.</span>
+                            </div>
+                            <span class="badge bg-{% if employees_missing_bank %}warning{% else %}success{% endif %} bg-opacity-10 text-{% if employees_missing_bank %}warning{% else %}success{% endif %}">{{ employees_missing_bank }}</span>
+                        </div>
+                        <div class="finance-readiness-item">
+                            <div>
+                                <strong>Approved Unpaid Runs</strong>
+                                <span>Payroll already approved and waiting to be marked paid.</span>
+                            </div>
+                            <span class="badge bg-primary bg-opacity-10 text-primary">{{ approved_unpaid_count }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-7">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1"><i class="bi bi-kanban me-2"></i>Run Status</h5>
+                    <small class="text-muted">Payroll batches grouped by workflow stage.</small>
+                </div>
+                <div class="card-body">
+                    <div class="payroll-status-grid">
+                        <div>
+                            <span>Draft</span>
+                            <strong>{{ payroll_status_counts.draft }}</strong>
+                        </div>
+                        <div>
+                            <span>Processed</span>
+                            <strong>{{ payroll_status_counts.processed }}</strong>
+                        </div>
+                        <div>
+                            <span>Approved</span>
+                            <strong>{{ payroll_status_counts.approved }}</strong>
+                        </div>
+                        <div>
+                            <span>Paid</span>
+                            <strong>{{ payroll_status_counts.paid }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .portal-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .finance-status-panel {
+        padding: 1rem;
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        border-radius: 0.5rem;
+        background: #f8fafc;
+    }
+
+    .finance-readiness-list {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .finance-readiness-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.9rem;
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        border-radius: 0.5rem;
+        background: #f8fafc;
+    }
+
+    .finance-readiness-item span:not(.badge) {
+        display: block;
+        color: #64748b;
+        font-size: 0.875rem;
+        margin-top: 0.15rem;
+    }
+
+    .payroll-status-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .payroll-status-grid div {
+        padding: 1rem;
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        border-radius: 0.5rem;
+        background: #f8fafc;
+    }
+
+    .payroll-status-grid span,
+    .payroll-status-grid strong {
+        display: block;
+    }
+
+    .payroll-status-grid span {
+        color: #64748b;
+    }
+
+    .payroll-status-grid strong {
+        margin-top: 0.25rem;
+        font-size: 1.5rem;
+    }
+
+    @media (max-width: 1199.98px) {
+        .portal-metrics-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .payroll-status-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .portal-metrics-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .payroll-status-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .finance-readiness-item {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}

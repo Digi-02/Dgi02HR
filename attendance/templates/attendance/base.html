@@ -318,8 +318,89 @@
             font-weight: 500;
             white-space: nowrap;
         }
+
+        .toolbar-card .card-body {
+            padding: 18px;
+        }
+
+        .responsive-toolbar {
+            display: grid;
+            grid-template-columns: minmax(240px, 1.05fr) minmax(320px, 1.45fr) auto;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .responsive-toolbar form {
+            min-width: 0;
+        }
+
+        .search-control .input-group {
+            flex-wrap: nowrap;
+        }
+
+        .search-control .form-control {
+            min-width: 0;
+        }
+
+        .search-control .btn {
+            flex: 0 0 auto;
+        }
+
+        .filter-controls {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(135px, 1fr)) auto auto;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .category-directory-toolbar {
+            grid-template-columns: minmax(240px, 1fr) minmax(320px, 1.35fr);
+        }
+
+        .category-filter-controls {
+            grid-template-columns: repeat(2, minmax(135px, 1fr)) auto auto;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            min-width: max-content;
+        }
+
+        .responsive-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .responsive-actions .btn {
+            margin-bottom: 0;
+        }
+
+        .date-range-inline {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
         
         /* Responsive Breakpoints */
+        @media (max-width: 1199.98px) {
+            .responsive-toolbar {
+                grid-template-columns: 1fr;
+                align-items: stretch;
+            }
+
+            .toolbar-actions {
+                justify-content: stretch;
+                min-width: 0;
+            }
+
+            .toolbar-actions .btn {
+                width: 100%;
+            }
+        }
+
         @media (max-width: 992px) {
             .main-content {
                 padding: 20px 16px;
@@ -383,30 +464,48 @@
                 margin-bottom: 12px;
             }
             
-            .btn {
-                width: 100%;
-                margin-bottom: 8px;
-            }
-            
             .d-flex.gap-2 {
                 flex-wrap: wrap;
             }
-            
-            .d-flex.gap-2 .btn {
+
+            .responsive-actions .btn,
+            .filter-controls .btn {
                 width: 100%;
             }
             
-            .input-group {
-                flex-wrap: wrap;
+            .filter-controls {
+                grid-template-columns: 1fr;
             }
-            
-            .input-group .form-control,
-            .input-group .btn {
+
+            .category-directory-toolbar {
+                grid-template-columns: 1fr;
+            }
+
+            .date-range-inline {
+                grid-template-columns: 1fr;
+            }
+
+            .search-control .input-group {
+                display: grid;
+                grid-template-columns: auto minmax(0, 1fr);
+            }
+
+            .search-control .input-group .btn {
+                grid-column: 1 / -1;
                 width: 100%;
                 border-radius: 8px !important;
-                margin-bottom: 8px;
             }
-            
+
+            .search-control .input-group-text {
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+
+            .search-control .form-control {
+                border-top-right-radius: 8px !important;
+                border-bottom-right-radius: 8px !important;
+            }
+
             .table td, .table th {
                 padding: 12px 8px;
                 font-size: 0.875rem;
@@ -525,10 +624,16 @@
             <a href="{% url 'employee_self_service_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'employee_self_service_dashboard' %}active{% endif %}">
                 <i class="bi bi-person-vcard"></i> <span>My Dashboard</span>
             </a>
+            <a href="{% url 'employee_my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'employee_my_profile' %}active{% endif %}">
+                <i class="bi bi-person-lines-fill"></i> <span>My Profile</span>
+            </a>
+            <a href="{% url 'employee_my_documents' %}" class="nav-link {% if request.resolver_match.url_name == 'employee_my_documents' %}active{% endif %}">
+                <i class="bi bi-folder2-open"></i> <span>My Documents</span>
+            </a>
             {% endif %}
             {% if user_has_manager_access %}
-            <a href="{% url 'manager_leave_requests' %}" class="nav-link {% if request.resolver_match.url_name == 'manager_leave_requests' or request.resolver_match.url_name == 'manager_leave_request_approve' or request.resolver_match.url_name == 'manager_leave_request_reject' %}active{% endif %}">
-                <i class="bi bi-person-check"></i> <span>Manager Approvals</span>
+            <a href="{% url 'manager_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'manager_dashboard' or request.resolver_match.url_name == 'manager_team' or request.resolver_match.url_name == 'manager_leave_requests' or request.resolver_match.url_name == 'manager_leave_request_approve' or request.resolver_match.url_name == 'manager_leave_request_reject' %}active{% endif %}">
+                <i class="bi bi-person-check"></i> <span>Manager</span>
             </a>
             {% endif %}
             {% if user_has_hr_access %}
@@ -538,20 +643,33 @@
             <a href="{% url 'employee_list' %}" class="nav-link {% if request.resolver_match.url_name == 'employee_list' %}active{% endif %}">
                 <i class="bi bi-people"></i> <span>Employees</span>
             </a>
+            <a href="{% url 'employee_documents' %}" class="nav-link {% if request.resolver_match.url_name == 'employee_documents' or request.resolver_match.url_name == 'employee_document_upload' or request.resolver_match.url_name == 'employee_document_upload_for_employee' or request.resolver_match.url_name == 'employee_document_edit' or request.resolver_match.url_name == 'employee_document_delete' %}active{% endif %}">
+                <i class="bi bi-folder2-open"></i> <span>Documents</span>
+            </a>
+            <a href="{% url 'onboarding_tasks' %}" class="nav-link {% if request.resolver_match.url_name == 'onboarding_tasks' or request.resolver_match.url_name == 'onboarding_task_create' or request.resolver_match.url_name == 'onboarding_task_create_for_employee' or request.resolver_match.url_name == 'onboarding_task_edit' or request.resolver_match.url_name == 'onboarding_task_delete' %}active{% endif %}">
+                <i class="bi bi-list-check"></i> <span>Onboarding</span>
+            </a>
             <a href="{% url 'attendance_reports' %}" class="nav-link {% if request.resolver_match.url_name == 'attendance_reports' %}active{% endif %}">
                 <i class="bi bi-calendar-check"></i> <span>Attendance</span>
             </a>
             <a href="{% url 'leave_requests' %}" class="nav-link {% if request.resolver_match.url_name == 'leave_requests' or request.resolver_match.url_name == 'leave_request_create' or request.resolver_match.url_name == 'leave_request_approve' or request.resolver_match.url_name == 'leave_request_reject' %}active{% endif %}">
                 <i class="bi bi-calendar2-week"></i> <span>Leave</span>
             </a>
-            <a href="{% url 'reports' %}" class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
-                <i class="bi bi-file-spreadsheet"></i> <span>Reports</span>
-            </a>
             <a href="{% url 'organization_list' %}" class="nav-link {% if request.resolver_match.url_name == 'organization_list' or request.resolver_match.url_name == 'organization_create' or request.resolver_match.url_name == 'organization_edit' %}active{% endif %}">
                 <i class="bi bi-buildings"></i> <span>Organizations</span>
             </a>
             <a href="{% url 'organization_settings' %}" class="nav-link {% if request.resolver_match.url_name == 'organization_settings' or request.resolver_match.url_name == 'organization_departments' or request.resolver_match.url_name == 'organization_categories' or request.resolver_match.url_name == 'organization_attendance_settings' or request.resolver_match.url_name == 'organization_leave_types' or request.resolver_match.url_name == 'attendance_exception_types' %}active{% endif %}">
                 <i class="bi bi-sliders"></i> <span>Settings</span>
+            </a>
+            {% endif %}
+            {% if user_has_payroll_access %}
+            <a href="{% url 'finance_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'finance_dashboard' or request.resolver_match.url_name == 'finance_payroll_readiness' or request.resolver_match.url_name == 'payroll_runs' or request.resolver_match.url_name == 'payroll_run_create' or request.resolver_match.url_name == 'payroll_run_detail' or request.resolver_match.url_name == 'payroll_run_generate' or request.resolver_match.url_name == 'payroll_run_approve' or request.resolver_match.url_name == 'payroll_run_mark_paid' %}active{% endif %}">
+                <i class="bi bi-cash-stack"></i> <span>Finance</span>
+            </a>
+            {% endif %}
+            {% if user_has_hr_access %}
+            <a href="{% url 'reports' %}" class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+                <i class="bi bi-file-spreadsheet"></i> <span>Reports</span>
             </a>
             {% endif %}
             <hr class="my-3">

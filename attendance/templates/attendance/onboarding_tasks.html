@@ -1,0 +1,185 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Onboarding | HR Management{% endblock %}
+{% block page_title %}Onboarding{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="portal-hero card border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <p class="text-uppercase small fw-semibold text-muted mb-1">HR Lifecycle</p>
+                    <h5 class="mb-1"><i class="bi bi-list-check me-2"></i>Onboarding Tasks</h5>
+                    <small class="text-muted">Track tasks required to prepare new staff, interns, and students.</small>
+                </div>
+                <div class="responsive-actions">
+                    <a href="{% url 'onboarding_task_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i> Add Task
+                    </a>
+                    <a href="{% url 'employee_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-people me-1"></i> Employees
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="onboarding-metrics-grid mb-4">
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Matching Tasks</small>
+                <h3 class="mt-2 mb-0">{{ total_tasks }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Pending</small>
+                <h3 class="mt-2 mb-0 text-warning">{{ pending_count }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">In Progress</small>
+                <h3 class="mt-2 mb-0 text-primary">{{ in_progress_count }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Overdue</small>
+                <h3 class="mt-2 mb-0 text-danger">{{ overdue_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 toolbar-card mb-4">
+        <div class="card-body">
+            <form method="get" class="onboarding-filter-grid">
+                <div class="search-control">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search task, employee, ID, notes">
+                    </div>
+                </div>
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for value, label in category_choices %}
+                    <option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i> Filter</button>
+                <a href="{% url 'onboarding_tasks' %}" class="btn btn-outline-secondary">Reset</a>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th>Employee</th>
+                            <th>Category</th>
+                            <th>Owner</th>
+                            <th>Due</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ task.title }}</div>
+                                {% if task.notes %}<small class="text-muted">{{ task.notes }}</small>{% endif %}
+                            </td>
+                            <td>
+                                <div class="fw-semibold">{{ task.employee.display_name }}</div>
+                                <small class="text-muted">{{ task.employee.employee_id }}</small>
+                            </td>
+                            <td>{{ task.get_category_display }}</td>
+                            <td>{{ task.assigned_to.get_full_name|default:task.assigned_to.username|default:"-" }}</td>
+                            <td>
+                                {% if task.due_date %}
+                                    <span class="{% if task.is_overdue %}text-danger fw-semibold{% endif %}">{{ task.due_date|date:"M j, Y" }}</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ task.get_status_display }}</span></td>
+                            <td class="text-end">
+                                <div class="task-actions">
+                                    {% if task.status != "completed" and task.status != "waived" %}
+                                    <form method="post" action="{% url 'onboarding_task_complete' task.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-success">Complete</button>
+                                    </form>
+                                    {% endif %}
+                                    <a href="{% url 'onboarding_task_edit' task.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <a href="{% url 'onboarding_task_delete' task.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                No onboarding tasks match this view.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .onboarding-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .onboarding-filter-grid {
+        display: grid;
+        grid-template-columns: minmax(220px, 1.4fr) minmax(150px, 0.7fr) minmax(150px, 0.7fr) auto auto;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .task-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.45rem;
+    }
+
+    @media (max-width: 1199.98px) {
+        .onboarding-metrics-grid,
+        .onboarding-filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .onboarding-metrics-grid,
+        .onboarding-filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .task-actions {
+            align-items: stretch;
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}

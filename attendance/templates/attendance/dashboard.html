@@ -9,150 +9,103 @@
 <div class="container-fluid p-0">
     
     <!-- Overall Stats Cards -->
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-6 g-4 mb-4">
-        <div class="col">
-            <div class="card metric-card h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
-                        <div>
-                            <div class="metric-label">Total People</div>
-                            <div class="metric-value">{{ total_employees }}</div>
-                        </div>
-                        <div class="metric-icon bg-primary bg-opacity-10 text-primary">
-                            <i class="bi bi-people-fill"></i>
-                        </div>
+    <div class="dashboard-metrics-grid mb-4">
+        <div class="card metric-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="metric-copy">
+                        <div class="metric-label">Total People</div>
+                        <div class="metric-value">{{ total_employees }}</div>
+                    </div>
+                    <div class="metric-icon bg-primary bg-opacity-10 text-primary">
+                        <i class="bi bi-people-fill"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col">
-            <div class="card metric-card h-100 metric-accent-success">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
-                        <div>
-                            <div class="metric-label">Present</div>
-                            <div class="metric-value text-success">{{ present_count }}</div>
-                        </div>
-                        <div class="metric-icon bg-success bg-opacity-10 text-success">
-                            <i class="bi bi-box-arrow-in-right"></i>
-                        </div>
+        <div class="card metric-card h-100 metric-accent-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="metric-copy">
+                        <div class="metric-label">Present</div>
+                        <div class="metric-value text-success">{{ present_count }}</div>
+                    </div>
+                    <div class="metric-icon bg-success bg-opacity-10 text-success">
+                        <i class="bi bi-box-arrow-in-right"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col">
-            <div class="card metric-card h-100 metric-accent-warning">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
-                        <div>
-                            <div class="metric-label">Late Today</div>
-                            <div class="metric-value text-warning">{{ late_count }}</div>
-                            <small class="text-muted">Starts {{ workday_start|time:"H:i" }} &middot; late after {{ late_threshold|time:"H:i" }}</small>
-                        </div>
-                        <div class="metric-icon bg-warning bg-opacity-10 text-warning">
-                            <i class="bi bi-clock-history"></i>
-                        </div>
+        <div class="card metric-card h-100 metric-accent-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="metric-copy">
+                        <div class="metric-label">Late Today</div>
+                        <div class="metric-value text-warning">{{ late_count }}</div>
+                        <small class="text-muted metric-note">Starts {{ workday_start|time:"H:i" }} &middot; late after {{ late_threshold|time:"H:i" }}</small>
+                    </div>
+                    <div class="metric-icon bg-warning bg-opacity-10 text-warning">
+                        <i class="bi bi-clock-history"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col">
-            <div class="card metric-card h-100 metric-accent-info">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
-                        <div>
-                            <div class="metric-label">Completed</div>
-                            <div class="metric-value text-info">{{ checked_out_count }}</div>
-                        </div>
-                        <div class="metric-icon bg-info bg-opacity-10 text-info">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
+        <div class="card metric-card h-100 metric-accent-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="metric-copy">
+                        <div class="metric-label">Absent</div>
+                        <div class="metric-value text-danger">{{ absent_count }}</div>
+                    </div>
+                    <div class="metric-icon bg-danger bg-opacity-10 text-danger">
+                        <i class="bi bi-person-x"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col">
-            <div class="card metric-card h-100 metric-accent-danger">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
-                        <div>
-                            <div class="metric-label">Absent</div>
-                            <div class="metric-value text-danger">{{ absent_count }}</div>
-                        </div>
-                        <div class="metric-icon bg-danger bg-opacity-10 text-danger">
-                            <i class="bi bi-person-x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="card metric-card h-100 metric-accent-primary">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
-                        <div>
-                            <div class="metric-label">Attendance</div>
-                            <div class="metric-value">
-                                {% if total_employees > 0 %}
-                                    {% widthratio present_count total_employees 100 %}%
-                                {% else %}
-                                    0%
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="metric-icon bg-primary bg-opacity-10 text-primary">
-                            <i class="bi bi-pie-chart"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
     
     <!-- Category Breakdown Cards -->
-    <div class="row g-4 mb-4">
+    <div class="category-grid mb-4">
         {% for stat in category_stats %}
-        <div class="col-lg-4 col-md-6">
-            <a href="{% url 'category_dashboard' stat.category.code %}" class="text-decoration-none text-reset category-card-link d-block h-100">
+        <a href="{% url 'category_dashboard' stat.category.code %}" class="text-decoration-none text-reset category-card-link d-block h-100">
             <div class="card border-0 h-100 category-card">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-{{ stat.category.color }} bg-opacity-10 p-3 rounded me-3">
+                    <div class="category-card-header">
+                        <div class="category-card-title">
+                            <div class="category-icon bg-{{ stat.category.color }} bg-opacity-10">
                                 <i class="bi {{ stat.category.icon }} fs-4 text-{{ stat.category.color }}"></i>
                             </div>
-                            <div>
+                            <div class="category-title-copy">
                                 <h6 class="mb-0">{{ stat.category.name }}</h6>
                                 <small class="text-muted">Total: {{ stat.total }}</small>
                             </div>
                         </div>
                         <i class="bi bi-arrow-up-right-circle text-muted"></i>
                     </div>
-                    <div class="row text-center border-top pt-3">
-                        <div class="col-4">
+                    <div class="category-stats-grid border-top">
+                        <div class="category-stat">
                             <h5 class="text-success mb-0">{{ stat.present }}</h5>
-                            <small class="text-muted text-uppercase">Present</small>
+                            <small class="text-muted">Present</small>
                         </div>
-                        <div class="col-4">
+                        <div class="category-stat">
                             <h5 class="text-warning mb-0">{{ stat.late }}</h5>
-                            <small class="text-muted text-uppercase">Late</small>
+                            <small class="text-muted">Late</small>
                         </div>
-                        <div class="col-4">
+                        <div class="category-stat">
                             <h5 class="text-danger mb-0">{{ stat.absent }}</h5>
-                            <small class="text-muted text-uppercase">Absent</small>
+                            <small class="text-muted">Absent</small>
                         </div>
                     </div>
                 </div>
             </div>
-            </a>
-        </div>
+        </a>
         {% empty %}
-        <div class="col-12">
+        <div>
             <div class="alert alert-info">
                 <i class="bi bi-info-circle me-2"></i>No categories defined. Please run <code>python manage.py init_data</code>
             </div>
@@ -403,8 +356,19 @@
 </div>
 
 <style>
+    .dashboard-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1.5rem;
+        align-items: stretch;
+    }
+
     .metric-card {
         overflow: hidden;
+        min-height: 168px;
+    }
+    .metric-card .card-body {
+        height: 100%;
     }
     .metric-card::before {
         content: "";
@@ -428,16 +392,24 @@
         color: rgba(2, 6, 23, 0.55);
         font-weight: 700;
     }
+    .metric-copy {
+        min-width: 0;
+    }
     .metric-value {
-        font-size: 2.6rem;
+        font-size: clamp(2rem, 3vw, 2.6rem);
         font-weight: 750;
         margin-top: 10px;
         line-height: 1.1;
     }
+    .metric-note {
+        display: block;
+        max-width: 13rem;
+        line-height: 1.55;
+    }
     .metric-icon {
         width: 56px;
         height: 56px;
-        border-radius: 14px;
+        border-radius: 12px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -462,8 +434,21 @@
     .category-card-link {
         transition: transform 0.2s ease;
     }
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1.5rem;
+        align-items: stretch;
+    }
     .category-card {
+        min-height: 190px;
         transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .category-card .card-body {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 1.25rem;
     }
     .category-card-link:hover .category-card,
     .category-card-link:focus .category-card {
@@ -474,11 +459,113 @@
     .category-card-link:focus h6 {
         color: var(--bs-primary);
     }
+    .category-card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        min-width: 0;
+    }
+    .category-card-title {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        min-width: 0;
+    }
+    .category-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+    }
+    .category-title-copy {
+        min-width: 0;
+    }
+    .category-card h6 {
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .category-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(58px, 1fr));
+        gap: 0.5rem;
+        margin-top: auto;
+        padding-top: 1rem;
+        text-align: center;
+    }
+    .category-stat {
+        min-width: 0;
+    }
+    .category-stat h5 {
+        font-size: 1.25rem;
+        font-weight: 750;
+        line-height: 1.1;
+    }
+    .category-stat small {
+        display: block;
+        margin-top: 0.45rem;
+        font-size: 0.74rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        line-height: 1.1;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
     code {
         background: #f1f5f9;
         padding: 2px 6px;
         border-radius: 4px;
         font-size: 12px;
+    }
+
+    @media (max-width: 1199.98px) {
+        .dashboard-metrics-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .category-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .category-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        .category-card {
+            min-height: auto;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .dashboard-metrics-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        .metric-card {
+            min-height: auto;
+        }
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+        }
+        .category-card .card-body {
+            padding: 1rem;
+        }
+        .category-icon {
+            width: 56px;
+            height: 56px;
+        }
+        .category-stat small {
+            font-size: 0.7rem;
+        }
     }
 </style>
 {% endblock %}

@@ -1,0 +1,260 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}My Profile | HR Management{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="portal-hero card border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="profile-avatar-sm">
+                        {% if employee.profile_photo %}
+                            <img src="{{ employee.profile_photo.url }}" alt="{{ employee.full_name }}">
+                        {% else %}
+                            <i class="bi bi-person-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="text-uppercase small fw-semibold text-muted mb-1">Staff Workspace</p>
+                        <h5 class="mb-1">{{ employee.display_name }}</h5>
+                        <small class="text-muted">{{ employee.employee_id }} · {{ employee.category.name|default:"Employee" }}</small>
+                    </div>
+                </div>
+                <div class="responsive-actions">
+                    <a href="{% url 'employee_self_service_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                    </a>
+                    <a href="{% url 'employee_my_documents' %}" class="btn btn-primary">
+                        <i class="bi bi-folder2-open me-1"></i> Documents
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-4">
+            <div class="card border-0 h-100">
+                <div class="card-body p-4 text-center">
+                    <div class="profile-avatar-lg mx-auto mb-3">
+                        {% if employee.profile_photo %}
+                            <img src="{{ employee.profile_photo.url }}" alt="{{ employee.full_name }}">
+                        {% else %}
+                            <i class="bi bi-person-circle"></i>
+                        {% endif %}
+                    </div>
+                    <h4 class="mb-1">{{ employee.full_name }}</h4>
+                    <p class="text-muted mb-3">{{ employee.position|default:"Employee" }}</p>
+                    <div class="profile-badges">
+                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">{{ employee.employee_id }}</span>
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2">{{ employee.get_employment_status_display }}</span>
+                    </div>
+                    <div class="profile-summary-list text-start mt-4">
+                        <div><span>Department</span><strong>{{ employee.department|default:"-" }}</strong></div>
+                        <div><span>Line Manager</span><strong>{{ employee.line_manager.full_name|default:"-" }}</strong></div>
+                        <div><span>Hire / Start Date</span><strong>{% if employee.hire_date %}{{ employee.hire_date|date:"M j, Y" }}{% else %}-{% endif %}</strong></div>
+                        <div><span>End Date</span><strong>{% if employee.end_date %}{{ employee.end_date|date:"M j, Y" }}{% else %}-{% endif %}</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-8">
+            <div class="profile-section-grid">
+                <div class="profile-panel">
+                    <small class="panel-label">Personal Information</small>
+                    <div class="detail-line"><span>Surname</span><strong>{{ employee.last_name|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>First Name</span><strong>{{ employee.first_name|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Middle Name</span><strong>{{ employee.middle_name|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Gender</span><strong>{{ employee.get_gender_display|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Date of Birth</span><strong>{% if employee.date_of_birth %}{{ employee.date_of_birth|date:"M j, Y" }}{% else %}-{% endif %}</strong></div>
+                    <div class="detail-line"><span>Nationality</span><strong>{{ employee.nationality|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>State of Origin</span><strong>{{ employee.state|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>LGA</span><strong>{{ employee.local_government|default:"-" }}</strong></div>
+                </div>
+
+                <div class="profile-panel">
+                    <small class="panel-label">Contact</small>
+                    <div class="detail-line"><span>Email</span><strong>{{ employee.email|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Personal Email</span><strong>{{ employee.personal_email|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Phone</span><strong>{{ employee.phone|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Alternative Phone</span><strong>{{ employee.alternative_phone|default:"-" }}</strong></div>
+                    <div class="detail-block"><span>Residential Address</span><strong>{{ employee.residential_address|default:"-"|linebreaksbr }}</strong></div>
+                </div>
+
+                <div class="profile-panel">
+                    <small class="panel-label">Emergency / Next of Kin</small>
+                    <div class="detail-line"><span>Emergency Contact</span><strong>{{ employee.emergency_contact_name|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Relationship</span><strong>{{ employee.emergency_contact_relationship|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Phone</span><strong>{{ employee.emergency_contact_phone|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Next of Kin</span><strong>{{ employee.next_of_kin_name|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Relationship</span><strong>{{ employee.next_of_kin_relationship|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Phone</span><strong>{{ employee.next_of_kin_phone|default:"-" }}</strong></div>
+                </div>
+
+                <div class="profile-panel">
+                    <small class="panel-label">Work Information</small>
+                    <div class="detail-line"><span>Organization</span><strong>{{ organization.name }}</strong></div>
+                    <div class="detail-line"><span>Category</span><strong>{{ employee.category.name|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Department</span><strong>{{ employee.department|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Position</span><strong>{{ employee.position|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Supervisor</span><strong>{{ employee.supervisor.full_name|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Status</span><strong>{{ employee.get_employment_status_display }}</strong></div>
+                </div>
+
+                <div class="profile-panel">
+                    <small class="panel-label">Education</small>
+                    <div class="detail-line"><span>Institution</span><strong>{{ employee.institution|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Faculty / School</span><strong>{{ employee.faculty|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Department</span><strong>{{ employee.academic_department|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Course</span><strong>{{ employee.field_of_study|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Student ID</span><strong>{{ employee.student_id|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Current Level</span><strong>{{ employee.current_level|default:"-" }}</strong></div>
+                </div>
+
+                <div class="profile-panel">
+                    <small class="panel-label">Payroll Foundation</small>
+                    <div class="detail-line"><span>Bank</span><strong>{{ employee.bank_name|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Account Name</span><strong>{{ employee.bank_account_name|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Account Number</span><strong>{{ employee.bank_account_number|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>RSA PIN</span><strong>{{ employee.pension_rsa_pin|default:"-" }}</strong></div>
+                </div>
+
+                {% if employee.is_intern %}
+                <div class="profile-panel">
+                    <small class="panel-label">SIWES / IT</small>
+                    <div class="detail-line"><span>Internship Type</span><strong>{{ employee.get_internship_type_display|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Preferred Department</span><strong>{{ employee.preferred_department|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Area of Interest</span><strong>{{ employee.area_of_interest|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Academic Supervisor</span><strong>{{ employee.academic_supervisor_name|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Supervisor Phone</span><strong>{{ employee.academic_supervisor_phone|default:"-" }}</strong></div>
+                </div>
+
+                <div class="profile-panel">
+                    <small class="panel-label">Technical Skills</small>
+                    <div class="detail-line"><span>HTML/CSS</span><strong>{{ employee.get_skill_html_css_display|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>JavaScript</span><strong>{{ employee.get_skill_javascript_display|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Python</span><strong>{{ employee.get_skill_python_display|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Django</span><strong>{{ employee.get_skill_django_display|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>React</span><strong>{{ employee.get_skill_react_display|default:"-" }}</strong></div>
+                    <div class="detail-block"><span>Projects / Certifications</span><strong>{{ employee.relevant_skills_projects|default:"-"|linebreaksbr }}</strong></div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-avatar-sm,
+    .profile-avatar-lg {
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: rgba(2, 6, 23, 0.06);
+        color: #020617;
+        overflow: hidden;
+    }
+
+    .profile-avatar-sm {
+        width: 58px;
+        height: 58px;
+        font-size: 1.7rem;
+        flex: 0 0 auto;
+    }
+
+    .profile-avatar-lg {
+        width: 112px;
+        height: 112px;
+        font-size: 3rem;
+    }
+
+    .profile-avatar-sm img,
+    .profile-avatar-lg img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .profile-badges {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .profile-summary-list,
+    .profile-section-grid {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .profile-section-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .profile-panel {
+        padding: 1rem;
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        border-radius: 0.5rem;
+        background: rgba(248, 250, 252, 0.82);
+    }
+
+    .panel-label {
+        display: block;
+        margin-bottom: 0.65rem;
+        color: #64748b;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .detail-line,
+    .profile-summary-list div {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.95);
+    }
+
+    .detail-block {
+        display: grid;
+        gap: 0.25rem;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.95);
+    }
+
+    .detail-line span,
+    .detail-block span,
+    .profile-summary-list span {
+        color: #64748b;
+    }
+
+    .detail-line strong,
+    .profile-summary-list strong {
+        text-align: right;
+    }
+
+    @media (max-width: 991.98px) {
+        .profile-section-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .detail-line,
+        .profile-summary-list div {
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .detail-line strong,
+        .profile-summary-list strong {
+            text-align: left;
+        }
+    }
+</style>
+{% endblock %}

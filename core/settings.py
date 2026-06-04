@@ -86,7 +86,7 @@ if not SECRET_KEY:
     else:
         raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is false.")
 
-ALLOWED_HOSTS = _env_list("DJANGO_ALLOWED_HOSTS", default="localhost,127.0.0.1,https://dgi02hr-production.up.railway.app")
+ALLOWED_HOSTS = _env_list("DJANGO_ALLOWED_HOSTS", default="localhost,127.0.0.1,dgi02hr-production.up.railway.app")
 if not DEBUG and not ALLOWED_HOSTS:
     raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS must be set when DJANGO_DEBUG is false.")
 
@@ -160,21 +160,10 @@ DB_HOST = _env_str("DJANGO_DB_HOST")
 DB_PORT = _env_str("DJANGO_DB_PORT")
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': DB_ENGINE,
-    #     'NAME': DB_NAME or (BASE_DIR / 'db.sqlite3'),
-    # }
-
-
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("DJANGO_DB_NAME"),
-        "USER": os.getenv("DJANGO_DB_USER"),
-        "PASSWORD": os.getenv("DJANGO_DB_PASSWORD"),
-        "HOST": os.getenv("DJANGO_DB_HOST"),
-        "PORT": os.getenv("DJANGO_DB_PORT"),
-    },
-
+    'default': {
+        'ENGINE': DB_ENGINE,
+        'NAME': DB_NAME or (BASE_DIR / 'db.sqlite3'),
+    }
 }
 
 

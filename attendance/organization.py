@@ -11,6 +11,16 @@ from .models import (
 
 DEFAULT_ORGANIZATION_NAME = 'Digi02TechSystem'
 DEFAULT_ORGANIZATION_SLUG = 'digi02techsystem'
+HR_ROLES = {'owner', 'hr_admin'}
+PAYROLL_ROLES = {'owner', 'hr_admin', 'payroll_officer'}
+MANAGER_ROLES = {'owner', 'hr_admin', 'manager'}
+VIEWER_ROLES = {'owner', 'hr_admin', 'manager', 'payroll_officer', 'viewer'}
+DEFAULT_CATEGORIES = [
+    {'name': 'Staff', 'code': 'STAFF', 'icon': 'bi-person-badge', 'color': 'primary'},
+    {'name': 'Management', 'code': 'MANAGEMENT', 'icon': 'bi-diagram-3', 'color': 'secondary'},
+    {'name': 'Intern', 'code': 'INTERN', 'icon': 'bi-mortarboard', 'color': 'success'},
+    {'name': 'Student', 'code': 'STUDENT', 'icon': 'bi-backpack', 'color': 'info'},
+]
 
 
 def get_default_organization():
@@ -43,7 +53,30 @@ def user_has_hr_access(user):
         return True
     return user.organization_memberships.filter(
         is_active=True,
-    ).exclude(role='employee').exists()
+        role__in=HR_ROLES,
+    ).exists()
+
+
+def user_has_payroll_access(user):
+    if not user.is_authenticated:
+        return False
+    if user.is_staff or user.is_superuser:
+        return True
+    return user.organization_memberships.filter(
+        is_active=True,
+        role__in=PAYROLL_ROLES,
+    ).exists()
+
+
+def user_has_viewer_access(user):
+    if not user.is_authenticated:
+        return False
+    if user.is_staff or user.is_superuser:
+        return True
+    return user.organization_memberships.filter(
+        is_active=True,
+        role__in=VIEWER_ROLES,
+    ).exists()
 
 
 def user_has_manager_access(user):
@@ -58,7 +91,12 @@ def user_has_manager_access(user):
 def is_employee_self_service_user(user):
     if not user.is_authenticated or not hasattr(user, 'employee_profile'):
         return False
-    return not user_has_hr_access(user)
+    return not (
+        user_has_hr_access(user)
+        or user_has_payroll_access(user)
+        or user_has_manager_access(user)
+        or user_has_viewer_access(user)
+    )
 
 
 def ensure_default_membership(user):
@@ -75,18 +113,17 @@ def ensure_default_membership(user):
     return organization
 
 
-def setup_default_organization_records(organization):
-    categories = [
-        {'name': 'Staff', 'code': 'STAFF', 'icon': 'bi-person-badge', 'color': 'primary'},
-        {'name': 'Intern', 'code': 'INTERN', 'icon': 'bi-mortarboard', 'color': 'success'},
-        {'name': 'Student', 'code': 'STUDENT', 'icon': 'bi-backpack', 'color': 'info'},
-    ]
-    for category_data in categories:
+def ensure_default_categories(organization):
+    for category_data in DEFAULT_CATEGORIES:
         Category.objects.get_or_create(
             organization=organization,
             code=category_data['code'],
             defaults=category_data,
         )
+
+
+def setup_default_organization_records(organization):
+    ensure_default_categories(organization)
 
     departments = [
         {'name': 'Accounting', 'code': 'ACCT'},

@@ -14,8 +14,10 @@ from .models import (
     EmployeeCertification,
     EmployeeWorkExperience,
     EmployeeDocument,
+    OnboardingTask,
     AttendanceException,
     AttendanceExceptionType,
+    AuditLog,
     LeaveType,
     LeaveRequest,
     Organization,
@@ -36,6 +38,28 @@ class OrganizationMembershipAdmin(admin.ModelAdmin):
     list_display = ['user', 'organization', 'role', 'is_active', 'created_at']
     list_filter = ['role', 'is_active', 'organization']
     search_fields = ['user__username', 'user__email', 'organization__name']
+
+
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    list_display = ['created_at', 'organization', 'actor', 'area', 'action', 'target_model', 'target_id']
+    list_filter = ['organization', 'area', 'action', 'created_at']
+    search_fields = ['summary', 'actor__username', 'target_model', 'target_id']
+    readonly_fields = ['organization', 'actor', 'area', 'action', 'target_model', 'target_id', 'summary', 'metadata', 'created_at']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(OnboardingTask)
+class OnboardingTaskAdmin(admin.ModelAdmin):
+    list_display = ['employee', 'title', 'category', 'status', 'assigned_to', 'due_date', 'completed_at']
+    list_filter = ['organization', 'category', 'status', 'due_date']
+    search_fields = ['title', 'employee__first_name', 'employee__last_name', 'employee__employee_id', 'notes']
+    autocomplete_fields = ['employee', 'assigned_to', 'completed_by']
 
 
 @admin.register(Category)
@@ -68,7 +92,7 @@ class EmployeeAdmin(admin.ModelAdmin):
             'fields': ('organization', 'user', 'employee_id', 'category')
         }),
         ('Personal Information', {
-            'fields': ('profile_photo', 'title', 'first_name', 'last_name', 'email', 'personal_email', 
+            'fields': ('profile_photo', 'title', 'first_name', 'middle_name', 'last_name', 'email', 'personal_email', 
                       'phone', 'gender', 'date_of_birth')
         }),
         ('Medical Information', {
@@ -86,7 +110,37 @@ class EmployeeAdmin(admin.ModelAdmin):
             'fields': ('department', 'position', 'hire_date', 'end_date', 'supervisor')
         }),
         ('Intern/Student Information', {
-            'fields': ('institution', 'field_of_study', 'student_id'),
+            'fields': (
+                'institution',
+                'faculty',
+                'academic_department',
+                'field_of_study',
+                'student_id',
+                'current_level',
+                'expected_graduation_date',
+                'academic_supervisor_name',
+                'academic_supervisor_phone',
+                'academic_supervisor_email',
+                'internship_type',
+                'internship_type_other',
+                'area_of_interest',
+                'area_of_interest_other',
+                'preferred_department',
+                'skill_html_css',
+                'skill_javascript',
+                'skill_python',
+                'skill_java',
+                'skill_c_cpp',
+                'skill_django',
+                'skill_react',
+                'skill_nodejs',
+                'skill_ui_ux',
+                'skill_networking',
+                'skill_cybersecurity',
+                'other_technical_skill',
+                'skill_other',
+                'relevant_skills_projects',
+            ),
             'classes': ('collapse',)
         }),
         ('Status', {

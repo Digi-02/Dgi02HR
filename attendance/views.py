@@ -19,6 +19,8 @@ import csv
 
 from .models import (
     Employee,
+    EmployeeDocument,
+    AuditLog,
     AttendanceRecord,
     Category,
     Department,
@@ -27,6 +29,7 @@ from .models import (
     AttendanceExceptionType,
     LeaveType,
     LeaveRequest,
+    OnboardingTask,
     PayrollRun,
     Payslip,
     Organization,
@@ -36,6 +39,7 @@ from .forms import (
     EmployeeForm,
     ManualAttendanceForm,
     DateFilterForm,
+    EmployeeDocumentForm,
     EmployeeEducationFormSet,
     EmployeeCertificationFormSet,
     EmployeeWorkExperienceFormSet,
@@ -48,10 +52,12 @@ from .forms import (
     LeaveTypeForm,
     LeaveRequestForm,
     LeaveReviewForm,
+    OnboardingTaskForm,
     EmployeeAccountForm,
     PayrollRunForm,
 )
 from .organization import (
+    ensure_default_categories,
     get_active_organization,
     get_default_organization,
     get_user_organizations,
@@ -59,10 +65,28 @@ from .organization import (
     setup_default_organization_records,
     user_has_hr_access,
     user_has_manager_access,
+    user_has_payroll_access,
 )
 
 
 # ==================== AUTHENTICATION VIEWS ====================
+
+def write_audit_log(request, *, organization, area, action, summary, target=None, metadata=None):
+    target_model = ''
+    target_id = ''
+    if target is not None:
+        target_model = target.__class__.__name__
+        target_id = str(getattr(target, 'pk', '') or '')
+    AuditLog.objects.create(
+        organization=organization,
+        actor=request.user if request.user.is_authenticated else None,
+        area=area,
+        action=action,
+        target_model=target_model,
+        target_id=target_id,
+        summary=summary,
+        metadata=metadata or {},
+    )
 
 def hr_required(view_func):
     @wraps(view_func)
@@ -87,11 +111,27 @@ def manager_required(view_func):
         return redirect('login')
     return wrapper
 
+
+def payroll_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if user_has_payroll_access(request.user):
+            return view_func(request, *args, **kwargs)
+        messages.warning(request, 'You do not have access to payroll or finance tools.')
+        if hasattr(request.user, 'employee_profile'):
+            return redirect('employee_self_service_dashboard')
+        return redirect('login')
+    return wrapper
+
 def login_view(request):
     """Custom login view"""
     if request.user.is_authenticated:
         if is_employee_self_service_user(request.user):
             return redirect('employee_self_service_dashboard')
+        if user_has_payroll_access(request.user) and not user_has_hr_access(request.user):
+            return redirect('finance_dashboard')
+        if user_has_manager_access(request.user) and not user_has_hr_access(request.user):
+            return redirect('manager_dashboard')
         return redirect('dashboard')
     
     if request.method == 'POST':
@@ -103,6 +143,10 @@ def login_view(request):
             login(request, user)
             if is_employee_self_service_user(user):
                 return redirect('employee_self_service_dashboard')
+            if user_has_payroll_access(user) and not user_has_hr_access(user):
+                return redirect('finance_dashboard')
+            if user_has_manager_access(user) and not user_has_hr_access(user):
+                return redirect('manager_dashboard')
             return redirect('dashboard')
         else:
             messages.error(request, 'Invalid username or password.')
@@ -396,6 +440,7 @@ def dashboard_view(request):
     """Main HR Dashboard"""
     
     organization = get_active_organization(request)
+    ensure_default_categories(organization)
     today = timezone.now().date()
     settings_obj = get_attendance_settings(organization)
     late_threshold = settings_obj.late_threshold
@@ -636,6 +681,15 @@ def employee_create(request):
                 certification_formset.save()
                 work_experience_formset.save()
                 document_formset.save()
+                write_audit_log(
+                    request,
+                    organization=organization,
+                    area='employee',
+                    action='employee_created',
+                    target=employee,
+                    summary=f'Created employee profile for {employee.full_name}.',
+                    metadata={'employee_id': employee.employee_id, 'category': employee.category.code},
+                )
             messages.success(request, f'{employee.full_name} has been added successfully.')
             return redirect('employee_list')
     else:
@@ -681,11 +735,20 @@ def employee_edit(request, pk):
             document_formset.is_valid(),
         ]):
             with transaction.atomic():
-                form.save()
+                employee = form.save()
                 education_formset.save()
                 certification_formset.save()
                 work_experience_formset.save()
                 document_formset.save()
+                write_audit_log(
+                    request,
+                    organization=organization,
+                    area='employee',
+                    action='employee_updated',
+                    target=employee,
+                    summary=f'Updated employee profile for {employee.full_name}.',
+                    metadata={'employee_id': employee.employee_id, 'category': employee.category.code},
+                )
             messages.success(request, f'{employee.full_name} has been updated successfully.')
             return redirect('employee_list')
     else:
@@ -720,6 +783,16 @@ def employee_delete(request, pk):
     
     if request.method == 'POST':
         name = employee.full_name
+        employee_id = employee.employee_id
+        write_audit_log(
+            request,
+            organization=organization,
+            area='employee',
+            action='employee_deleted',
+            target=employee,
+            summary=f'Deleted employee profile for {name}.',
+            metadata={'employee_id': employee_id},
+        )
         employee.delete()
         messages.success(request, f'{name} has been deleted.')
         return redirect('employee_list')
@@ -762,6 +835,15 @@ def employee_account_create(request, pk):
                     organization=employee.organization,
                     defaults={'role': 'employee', 'is_active': True},
                 )
+                write_audit_log(
+                    request,
+                    organization=organization,
+                    area='security',
+                    action='employee_account_created',
+                    target=employee,
+                    summary=f'Created login account for {employee.full_name}.',
+                    metadata={'employee_id': employee.employee_id, 'username': user.username},
+                )
             messages.success(
                 request,
                 f'Login account created for {employee.full_name}. Temporary password: {form.cleaned_data["password"]}'
@@ -787,7 +869,7 @@ def employee_detail(request, pk):
     
     organization = get_active_organization(request)
     employee = get_object_or_404(
-        Employee.objects.filter(organization=organization).prefetch_related('educations', 'certifications', 'work_experiences', 'documents'),
+        Employee.objects.filter(organization=organization).prefetch_related('educations', 'certifications', 'work_experiences', 'documents', 'onboarding_tasks'),
         pk=pk,
     )
     
@@ -805,6 +887,359 @@ def employee_detail(request, pk):
     }
     
     return render(request, 'attendance/employee_detail.html', context)
+
+
+@login_required
+@hr_required
+def employee_documents(request):
+    organization = get_active_organization(request)
+    documents = EmployeeDocument.objects.filter(
+        employee__organization=organization,
+    ).select_related('employee', 'employee__department', 'employee__category')
+
+    search_query = request.GET.get('q', '').strip()
+    document_type = request.GET.get('document_type', '').strip()
+    expiring = request.GET.get('expiring', '').strip()
+    today = timezone.localdate()
+
+    if search_query:
+        documents = documents.filter(
+            Q(title__icontains=search_query)
+            | Q(notes__icontains=search_query)
+            | Q(employee__first_name__icontains=search_query)
+            | Q(employee__last_name__icontains=search_query)
+            | Q(employee__employee_id__icontains=search_query)
+        )
+    if document_type:
+        documents = documents.filter(document_type=document_type)
+    if expiring == 'expired':
+        documents = documents.filter(expiry_date__lt=today)
+    elif expiring == 'soon':
+        documents = documents.filter(expiry_date__gte=today, expiry_date__lte=today + timedelta(days=30))
+    elif expiring == 'none':
+        documents = documents.filter(expiry_date__isnull=True)
+
+    context = {
+        'organization': organization,
+        'documents': documents,
+        'search_query': search_query,
+        'selected_document_type': document_type,
+        'selected_expiring': expiring,
+        'document_type_choices': EmployeeDocument.DOCUMENT_TYPE_CHOICES,
+        'total_documents': documents.count(),
+        'expired_count': EmployeeDocument.objects.filter(employee__organization=organization, expiry_date__lt=today).count(),
+        'expiring_soon_count': EmployeeDocument.objects.filter(
+            employee__organization=organization,
+            expiry_date__gte=today,
+            expiry_date__lte=today + timedelta(days=30),
+        ).count(),
+        'page_title': 'Employee Documents',
+    }
+    return render(request, 'attendance/employee_documents.html', context)
+
+
+@login_required
+@hr_required
+def employee_document_upload(request, employee_pk=None):
+    organization = get_active_organization(request)
+    employee = None
+    if employee_pk:
+        employee = get_object_or_404(Employee, organization=organization, pk=employee_pk)
+
+    if request.method == 'POST':
+        selected_employee = employee
+        if not selected_employee:
+            selected_employee = get_object_or_404(Employee, organization=organization, pk=request.POST.get('employee'))
+        form = EmployeeDocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            document = form.save(commit=False)
+            document.employee = selected_employee
+            document.save()
+            write_audit_log(
+                request,
+                organization=organization,
+                area='employee',
+                action='employee_document_uploaded',
+                target=document,
+                summary=f'Uploaded document {document.title} for {selected_employee.full_name}.',
+                metadata={'employee_id': selected_employee.employee_id, 'document_type': document.document_type},
+            )
+            messages.success(request, f'Document uploaded for {selected_employee.full_name}.')
+            return redirect('employee_documents')
+    else:
+        form = EmployeeDocumentForm()
+
+    context = {
+        'form': form,
+        'employee': employee,
+        'employees': Employee.objects.filter(organization=organization, is_active=True).order_by('first_name', 'last_name'),
+        'organization': organization,
+        'page_title': 'Upload Document',
+    }
+    return render(request, 'attendance/employee_document_form.html', context)
+
+
+@login_required
+@hr_required
+def employee_document_edit(request, pk):
+    organization = get_active_organization(request)
+    document = get_object_or_404(
+        EmployeeDocument.objects.select_related('employee'),
+        employee__organization=organization,
+        pk=pk,
+    )
+
+    if request.method == 'POST':
+        form = EmployeeDocumentForm(request.POST, request.FILES, instance=document)
+        if form.is_valid():
+            document = form.save()
+            write_audit_log(
+                request,
+                organization=organization,
+                area='employee',
+                action='employee_document_updated',
+                target=document,
+                summary=f'Updated document {document.title} for {document.employee.full_name}.',
+                metadata={'employee_id': document.employee.employee_id, 'document_type': document.document_type},
+            )
+            messages.success(request, f'Document updated for {document.employee.full_name}.')
+            return redirect('employee_documents')
+    else:
+        form = EmployeeDocumentForm(instance=document)
+
+    context = {
+        'form': form,
+        'document': document,
+        'employee': document.employee,
+        'organization': organization,
+        'page_title': 'Edit Document',
+    }
+    return render(request, 'attendance/employee_document_form.html', context)
+
+
+@login_required
+@hr_required
+def employee_document_delete(request, pk):
+    organization = get_active_organization(request)
+    document = get_object_or_404(
+        EmployeeDocument.objects.select_related('employee'),
+        employee__organization=organization,
+        pk=pk,
+    )
+
+    if request.method == 'POST':
+        employee_name = document.employee.full_name
+        employee_id = document.employee.employee_id
+        document_title = document.title
+        write_audit_log(
+            request,
+            organization=organization,
+            area='employee',
+            action='employee_document_deleted',
+            target=document,
+            summary=f'Deleted document {document_title} for {employee_name}.',
+            metadata={'employee_id': employee_id, 'document_type': document.document_type},
+        )
+        document.delete()
+        messages.success(request, f'Document deleted for {employee_name}.')
+        return redirect('employee_documents')
+
+    context = {
+        'document': document,
+        'employee': document.employee,
+        'organization': organization,
+        'page_title': 'Delete Document',
+    }
+    return render(request, 'attendance/employee_document_confirm_delete.html', context)
+
+
+@login_required
+@hr_required
+def onboarding_tasks(request):
+    organization = get_active_organization(request)
+    tasks = OnboardingTask.objects.filter(
+        organization=organization,
+    ).select_related('employee', 'employee__department', 'employee__category', 'assigned_to')
+
+    search_query = request.GET.get('q', '').strip()
+    status = request.GET.get('status', '').strip()
+    category = request.GET.get('category', '').strip()
+    today = timezone.localdate()
+
+    if search_query:
+        tasks = tasks.filter(
+            Q(title__icontains=search_query)
+            | Q(notes__icontains=search_query)
+            | Q(employee__first_name__icontains=search_query)
+            | Q(employee__last_name__icontains=search_query)
+            | Q(employee__employee_id__icontains=search_query)
+        )
+    if status:
+        tasks = tasks.filter(status=status)
+    if category:
+        tasks = tasks.filter(category=category)
+
+    base_tasks = OnboardingTask.objects.filter(organization=organization)
+    context = {
+        'organization': organization,
+        'tasks': tasks,
+        'search_query': search_query,
+        'selected_status': status,
+        'selected_category': category,
+        'status_choices': OnboardingTask.STATUS_CHOICES,
+        'category_choices': OnboardingTask.CATEGORY_CHOICES,
+        'total_tasks': tasks.count(),
+        'pending_count': base_tasks.filter(status='pending').count(),
+        'in_progress_count': base_tasks.filter(status='in_progress').count(),
+        'completed_count': base_tasks.filter(status='completed').count(),
+        'overdue_count': base_tasks.filter(
+            due_date__lt=today,
+        ).exclude(status__in=['completed', 'waived']).count(),
+        'page_title': 'Onboarding',
+    }
+    return render(request, 'attendance/onboarding_tasks.html', context)
+
+
+@login_required
+@hr_required
+def onboarding_task_create(request, employee_pk=None):
+    organization = get_active_organization(request)
+    employee = None
+    if employee_pk:
+        employee = get_object_or_404(Employee, organization=organization, pk=employee_pk)
+
+    if request.method == 'POST':
+        form = OnboardingTaskForm(request.POST, organization=organization, employee=employee)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.organization = organization
+            if employee:
+                task.employee = employee
+            task.save()
+            write_audit_log(
+                request,
+                organization=organization,
+                area='employee',
+                action='onboarding_task_created',
+                target=task,
+                summary=f'Created onboarding task {task.title} for {task.employee.full_name}.',
+                metadata={'employee_id': task.employee.employee_id, 'status': task.status},
+            )
+            messages.success(request, f'Onboarding task created for {task.employee.full_name}.')
+            return redirect('onboarding_tasks')
+    else:
+        form = OnboardingTaskForm(organization=organization, employee=employee)
+
+    context = {
+        'form': form,
+        'employee': employee,
+        'organization': organization,
+        'page_title': 'Add Onboarding Task',
+    }
+    return render(request, 'attendance/onboarding_task_form.html', context)
+
+
+@login_required
+@hr_required
+def onboarding_task_edit(request, pk):
+    organization = get_active_organization(request)
+    task = get_object_or_404(
+        OnboardingTask.objects.select_related('employee'),
+        organization=organization,
+        pk=pk,
+    )
+
+    if request.method == 'POST':
+        form = OnboardingTaskForm(request.POST, organization=organization, instance=task)
+        if form.is_valid():
+            task = form.save()
+            if task.status == 'completed' and not task.completed_at:
+                task.completed_by = request.user
+                task.completed_at = timezone.now()
+                task.save(update_fields=['completed_by', 'completed_at', 'updated_at'])
+            write_audit_log(
+                request,
+                organization=organization,
+                area='employee',
+                action='onboarding_task_updated',
+                target=task,
+                summary=f'Updated onboarding task {task.title} for {task.employee.full_name}.',
+                metadata={'employee_id': task.employee.employee_id, 'status': task.status},
+            )
+            messages.success(request, 'Onboarding task updated.')
+            return redirect('onboarding_tasks')
+    else:
+        form = OnboardingTaskForm(organization=organization, instance=task)
+
+    context = {
+        'form': form,
+        'task': task,
+        'employee': task.employee,
+        'organization': organization,
+        'page_title': 'Edit Onboarding Task',
+    }
+    return render(request, 'attendance/onboarding_task_form.html', context)
+
+
+@login_required
+@hr_required
+def onboarding_task_complete(request, pk):
+    organization = get_active_organization(request)
+    task = get_object_or_404(OnboardingTask, organization=organization, pk=pk)
+
+    if request.method == 'POST':
+        action = request.POST.get('action', 'completed')
+        task.status = 'waived' if action == 'waived' else 'completed'
+        task.completed_by = request.user
+        task.completed_at = timezone.now()
+        task.save(update_fields=['status', 'completed_by', 'completed_at', 'updated_at'])
+        write_audit_log(
+            request,
+            organization=organization,
+            area='employee',
+            action='onboarding_task_closed',
+            target=task,
+            summary=f'{task.get_status_display()} onboarding task {task.title} for {task.employee.full_name}.',
+            metadata={'employee_id': task.employee.employee_id, 'status': task.status},
+        )
+        messages.success(request, f'Onboarding task marked {task.get_status_display().lower()}.')
+    return redirect('onboarding_tasks')
+
+
+@login_required
+@hr_required
+def onboarding_task_delete(request, pk):
+    organization = get_active_organization(request)
+    task = get_object_or_404(
+        OnboardingTask.objects.select_related('employee'),
+        organization=organization,
+        pk=pk,
+    )
+
+    if request.method == 'POST':
+        title = task.title
+        employee_name = task.employee.full_name
+        employee_id = task.employee.employee_id
+        write_audit_log(
+            request,
+            organization=organization,
+            area='employee',
+            action='onboarding_task_deleted',
+            target=task,
+            summary=f'Deleted onboarding task {title} for {employee_name}.',
+            metadata={'employee_id': employee_id},
+        )
+        task.delete()
+        messages.success(request, f'Onboarding task deleted for {employee_name}.')
+        return redirect('onboarding_tasks')
+
+    context = {
+        'task': task,
+        'employee': task.employee,
+        'organization': organization,
+        'page_title': 'Delete Onboarding Task',
+    }
+    return render(request, 'attendance/onboarding_task_confirm_delete.html', context)
 
 
 @login_required
@@ -829,6 +1264,17 @@ def employee_self_service_dashboard(request):
         payroll_run__status__in=['approved', 'paid'],
     ).select_related('payroll_run').order_by('-payroll_run__payroll_month')[:6]
     leave_balances = build_leave_balances(employee)
+    today_record = employee.today_attendance
+    pending_leave_count = LeaveRequest.objects.filter(
+        organization=employee.organization,
+        employee=employee,
+        status='pending',
+    ).count()
+    approved_leave_count = LeaveRequest.objects.filter(
+        organization=employee.organization,
+        employee=employee,
+        status='approved',
+    ).count()
     manager_pending_count = LeaveRequest.objects.filter(
         organization=employee.organization,
         employee__line_manager=employee,
@@ -843,10 +1289,60 @@ def employee_self_service_dashboard(request):
         'leave_requests': leave_requests_qs,
         'payslips': payslips,
         'leave_balances': leave_balances,
+        'today_record': today_record,
+        'pending_leave_count': pending_leave_count,
+        'approved_leave_count': approved_leave_count,
+        'latest_payslip': payslips[0] if payslips else None,
         'manager_pending_count': manager_pending_count,
         'page_title': 'My Dashboard',
     }
     return render(request, 'attendance/employee_self_service_dashboard.html', context)
+
+
+@login_required
+def employee_my_profile(request):
+    employee = getattr(request.user, 'employee_profile', None)
+    if not employee:
+        messages.info(request, 'Your account is not linked to an employee profile yet.')
+        return redirect('dashboard')
+
+    employee = Employee.objects.select_related(
+        'organization',
+        'category',
+        'department',
+        'line_manager',
+        'supervisor',
+    ).prefetch_related(
+        'educations',
+        'certifications',
+        'work_experiences',
+        'documents',
+    ).get(pk=employee.pk)
+
+    context = {
+        'employee': employee,
+        'organization': employee.organization,
+        'page_title': 'My Profile',
+    }
+    return render(request, 'attendance/employee_my_profile.html', context)
+
+
+@login_required
+def employee_my_documents(request):
+    employee = getattr(request.user, 'employee_profile', None)
+    if not employee:
+        messages.info(request, 'Your account is not linked to an employee profile yet.')
+        return redirect('dashboard')
+
+    documents = employee.documents.order_by('-uploaded_at', 'title')
+    context = {
+        'employee': employee,
+        'organization': employee.organization,
+        'documents': documents,
+        'document_count': documents.count(),
+        'page_title': 'My Documents',
+    }
+    return render(request, 'attendance/employee_my_documents.html', context)
 
 
 @login_required
@@ -860,6 +1356,15 @@ def employee_leave_request_create(request):
         form = LeaveRequestForm(request.POST, organization=employee.organization, employee=employee)
         if form.is_valid():
             leave_request = form.save()
+            write_audit_log(
+                request,
+                organization=employee.organization,
+                area='leave',
+                action='leave_requested_self_service',
+                target=leave_request,
+                summary=f'{employee.full_name} submitted a leave request.',
+                metadata={'employee_id': employee.employee_id, 'leave_type': leave_request.leave_type.name},
+            )
             messages.success(request, f'{leave_request.leave_type.name} request submitted for review.')
             return redirect('employee_self_service_dashboard')
     else:
@@ -873,6 +1378,130 @@ def employee_leave_request_create(request):
         'is_self_service': True,
     }
     return render(request, 'attendance/leave_request_form.html', context)
+
+
+@login_required
+@manager_required
+def manager_dashboard(request):
+    manager = getattr(request.user, 'employee_profile', None)
+    organization = manager.organization if manager else get_active_organization(request)
+    today = timezone.localdate()
+
+    if manager and not user_has_hr_access(request.user):
+        team_members = Employee.objects.filter(
+            organization=organization,
+            line_manager=manager,
+            is_active=True,
+        ).select_related('department', 'category')
+    else:
+        team_members = Employee.objects.filter(
+            organization=organization,
+            is_active=True,
+        ).select_related('department', 'category')
+
+    team_member_ids = list(team_members.values_list('id', flat=True))
+    pending_leave_requests = LeaveRequest.objects.filter(
+        organization=organization,
+        employee_id__in=team_member_ids,
+        status='pending',
+        manager_approval_status='pending',
+    ).select_related('employee', 'leave_type').order_by('created_at')
+    recent_leave_requests = LeaveRequest.objects.filter(
+        organization=organization,
+        employee_id__in=team_member_ids,
+    ).select_related('employee', 'leave_type').order_by('-created_at')[:8]
+    todays_records = AttendanceRecord.objects.filter(
+        organization=organization,
+        employee_id__in=team_member_ids,
+        check_in_time__date=today,
+    ).select_related('employee')
+    present_today = todays_records.values('employee_id').distinct().count()
+    late_today = count_distinct_late_employees(todays_records)
+    team_by_department = team_members.values('department__name').annotate(total=Count('id')).order_by('department__name')
+    team_by_category = team_members.values('category__name').annotate(total=Count('id')).order_by('category__name')
+    open_attendance_count = todays_records.filter(check_out_time__isnull=True).values('employee_id').distinct().count()
+    completed_attendance_count = todays_records.filter(check_out_time__isnull=False).values('employee_id').distinct().count()
+
+    context = {
+        'organization': organization,
+        'manager': manager,
+        'team_members': team_members.order_by('first_name', 'last_name')[:10],
+        'team_count': len(team_member_ids),
+        'present_today': present_today,
+        'late_today': late_today,
+        'absent_today': max(len(team_member_ids) - present_today, 0),
+        'open_attendance_count': open_attendance_count,
+        'completed_attendance_count': completed_attendance_count,
+        'team_by_department': team_by_department,
+        'team_by_category': team_by_category,
+        'pending_leave_requests': pending_leave_requests[:8],
+        'pending_leave_count': pending_leave_requests.count(),
+        'recent_leave_requests': recent_leave_requests,
+        'page_title': 'Manager Dashboard',
+    }
+    return render(request, 'attendance/manager_dashboard.html', context)
+
+
+@login_required
+@manager_required
+def manager_team(request):
+    manager = getattr(request.user, 'employee_profile', None)
+    organization = manager.organization if manager else get_active_organization(request)
+    today = timezone.localdate()
+
+    if manager and not user_has_hr_access(request.user):
+        team_members = Employee.objects.filter(
+            organization=organization,
+            line_manager=manager,
+            is_active=True,
+        )
+    else:
+        team_members = Employee.objects.filter(
+            organization=organization,
+            is_active=True,
+        )
+
+    team_members = team_members.select_related('department', 'category', 'line_manager').order_by('first_name', 'last_name')
+    team_member_ids = list(team_members.values_list('id', flat=True))
+    todays_records = AttendanceRecord.objects.filter(
+        organization=organization,
+        employee_id__in=team_member_ids,
+        check_in_time__date=today,
+    ).select_related('employee').order_by('employee_id', '-check_in_time')
+    todays_record_by_employee = {}
+    for record in todays_records:
+        todays_record_by_employee.setdefault(record.employee_id, record)
+
+    team_rows = []
+    for member in team_members:
+        record = todays_record_by_employee.get(member.id)
+        if record and record.check_out_time:
+            status = 'Completed'
+            status_color = 'primary'
+        elif record:
+            status = 'Checked In'
+            status_color = 'success'
+        else:
+            status = 'Not In'
+            status_color = 'secondary'
+        team_rows.append({
+            'member': member,
+            'today_record': record,
+            'status': status,
+            'status_color': status_color,
+        })
+
+    context = {
+        'organization': organization,
+        'manager': manager,
+        'team_rows': team_rows,
+        'team_count': len(team_rows),
+        'checked_in_count': sum(1 for row in team_rows if row['status'] == 'Checked In'),
+        'completed_count': sum(1 for row in team_rows if row['status'] == 'Completed'),
+        'not_in_count': sum(1 for row in team_rows if row['status'] == 'Not In'),
+        'page_title': 'My Team',
+    }
+    return render(request, 'attendance/manager_team.html', context)
 
 
 @login_required
@@ -909,6 +1538,15 @@ def manager_leave_request_approve(request, pk):
             leave_request.manager_reviewed_at = timezone.now()
             leave_request.manager_review_note = form.cleaned_data['review_note']
             leave_request.save()
+            write_audit_log(
+                request,
+                organization=leave_request.organization,
+                area='leave',
+                action='leave_manager_approved',
+                target=leave_request,
+                summary=f'Manager approved leave for {leave_request.employee.full_name}.',
+                metadata={'employee_id': leave_request.employee.employee_id},
+            )
             messages.success(request, f'Manager approval recorded for {leave_request.employee.full_name}.')
             return redirect('manager_leave_requests')
     else:
@@ -941,6 +1579,15 @@ def manager_leave_request_reject(request, pk):
             leave_request.reviewed_at = timezone.now()
             leave_request.review_note = form.cleaned_data['review_note']
             leave_request.save()
+            write_audit_log(
+                request,
+                organization=leave_request.organization,
+                area='leave',
+                action='leave_manager_rejected',
+                target=leave_request,
+                summary=f'Manager rejected leave for {leave_request.employee.full_name}.',
+                metadata={'employee_id': leave_request.employee.employee_id},
+            )
             messages.success(request, f'Leave rejected for {leave_request.employee.full_name}.')
             return redirect('manager_leave_requests')
     else:
@@ -1014,11 +1661,20 @@ def manual_attendance_add(request):
             if entry_type == 'work_session':
                 check_in = form.cleaned_data['check_in_time']
                 check_out = form.cleaned_data['check_out_time']
-                AttendanceRecord.objects.create(
+                attendance_record = AttendanceRecord.objects.create(
                     organization=organization,
                     employee=employee,
                     check_in_time=check_in,
                     check_out_time=check_out
+                )
+                write_audit_log(
+                    request,
+                    organization=organization,
+                    area='attendance',
+                    action='manual_attendance_created',
+                    target=attendance_record,
+                    summary=f'Manual attendance recorded for {employee.full_name}.',
+                    metadata={'employee_id': employee.employee_id, 'check_in': check_in.isoformat()},
                 )
                 messages.success(request, f'Attendance recorded for {employee.full_name}')
             else:
@@ -1029,6 +1685,15 @@ def manual_attendance_add(request):
                     start_date=form.cleaned_data['exception_start_date'],
                     end_date=form.cleaned_data['exception_end_date'],
                     notes=form.cleaned_data['notes'],
+                )
+                write_audit_log(
+                    request,
+                    organization=organization,
+                    area='attendance',
+                    action='attendance_exception_created',
+                    target=attendance_exception,
+                    summary=f'{attendance_exception.get_exception_type_display()} recorded for {employee.full_name}.',
+                    metadata={'employee_id': employee.employee_id, 'exception_type': attendance_exception.exception_type},
                 )
                 messages.success(
                     request,
@@ -1117,6 +1782,15 @@ def leave_request_create(request):
         form = LeaveRequestForm(request.POST, organization=organization)
         if form.is_valid():
             leave_request = form.save()
+            write_audit_log(
+                request,
+                organization=organization,
+                area='leave',
+                action='leave_requested_by_hr',
+                target=leave_request,
+                summary=f'HR submitted leave request for {leave_request.employee.full_name}.',
+                metadata={'employee_id': leave_request.employee.employee_id, 'leave_type': leave_request.leave_type.name},
+            )
             messages.success(request, f'Leave request for {leave_request.employee.full_name} has been submitted.')
             return redirect('leave_requests')
     else:
@@ -1153,6 +1827,15 @@ def leave_request_approve(request, pk):
             leave_request.review_note = form.cleaned_data['review_note']
             leave_request.save()
             sync_leave_attendance_exception(leave_request)
+            write_audit_log(
+                request,
+                organization=organization,
+                area='leave',
+                action='leave_hr_approved',
+                target=leave_request,
+                summary=f'HR approved leave for {leave_request.employee.full_name}.',
+                metadata={'employee_id': leave_request.employee.employee_id},
+            )
             messages.success(request, f'Leave approved for {leave_request.employee.full_name}.')
             return redirect('leave_requests')
     else:
@@ -1186,6 +1869,15 @@ def leave_request_reject(request, pk):
             leave_request.reviewed_at = timezone.now()
             leave_request.review_note = form.cleaned_data['review_note']
             leave_request.save()
+            write_audit_log(
+                request,
+                organization=organization,
+                area='leave',
+                action='leave_hr_rejected',
+                target=leave_request,
+                summary=f'HR rejected leave for {leave_request.employee.full_name}.',
+                metadata={'employee_id': leave_request.employee.employee_id},
+            )
             messages.success(request, f'Leave rejected for {leave_request.employee.full_name}.')
             return redirect('leave_requests')
     else:
@@ -1204,7 +1896,7 @@ def leave_request_reject(request, pk):
 # ==================== PAYROLL VIEWS ====================
 
 @login_required
-@hr_required
+@payroll_required
 def payroll_runs(request):
     organization = get_active_organization(request)
     runs = PayrollRun.objects.filter(organization=organization).prefetch_related('payslips')
@@ -1218,7 +1910,92 @@ def payroll_runs(request):
 
 
 @login_required
-@hr_required
+@payroll_required
+def finance_dashboard(request):
+    organization = get_active_organization(request)
+    today = timezone.localdate()
+    current_month = today.replace(day=1)
+    payroll_runs_qs = PayrollRun.objects.filter(organization=organization).prefetch_related('payslips')
+    latest_runs = payroll_runs_qs[:5]
+    current_run = payroll_runs_qs.filter(payroll_month=current_month).first()
+    approved_unpaid_runs = payroll_runs_qs.filter(status='approved')
+    paid_runs = payroll_runs_qs.filter(status='paid')
+    active_employees = Employee.objects.filter(organization=organization, is_active=True)
+    payroll_status_counts = {
+        status: payroll_runs_qs.filter(status=status).count()
+        for status, _ in PayrollRun.STATUS_CHOICES
+    }
+    employees_with_salary = active_employees.filter(
+        Q(basic_salary__gt=0)
+        | Q(housing_allowance__gt=0)
+        | Q(transport_allowance__gt=0)
+        | Q(other_allowances__gt=0)
+    ).count()
+    employees_missing_bank = active_employees.filter(
+        Q(bank_name='') | Q(bank_account_name='') | Q(bank_account_number='')
+    ).count()
+
+    context = {
+        'organization': organization,
+        'current_month': current_month,
+        'current_run': current_run,
+        'latest_runs': latest_runs,
+        'total_payroll_runs': payroll_runs_qs.count(),
+        'payroll_status_counts': payroll_status_counts,
+        'approved_unpaid_count': approved_unpaid_runs.count(),
+        'paid_runs_count': paid_runs.count(),
+        'active_payroll_people': active_employees.count(),
+        'employees_with_salary': employees_with_salary,
+        'employees_missing_bank': employees_missing_bank,
+        'monthly_gross_basis': sum((employee.gross_pay for employee in active_employees), 0),
+        'monthly_deduction_basis': sum((employee.total_deductions for employee in active_employees), 0),
+        'monthly_net_basis': sum((employee.net_pay for employee in active_employees), 0),
+        'page_title': 'Finance Dashboard',
+    }
+    return render(request, 'attendance/finance_dashboard.html', context)
+
+
+@login_required
+@payroll_required
+def finance_payroll_readiness(request):
+    organization = get_active_organization(request)
+    active_employees = Employee.objects.filter(
+        organization=organization,
+        is_active=True,
+    ).select_related('department', 'category').order_by('first_name', 'last_name')
+    employees_missing_salary = active_employees.filter(
+        basic_salary=0,
+        housing_allowance=0,
+        transport_allowance=0,
+        other_allowances=0,
+    )
+    employees_missing_bank = active_employees.filter(
+        Q(bank_name='') | Q(bank_account_name='') | Q(bank_account_number='')
+    )
+    draft_runs = PayrollRun.objects.filter(organization=organization, status='draft')
+    processed_runs = PayrollRun.objects.filter(organization=organization, status='processed')
+    approved_unpaid_runs = PayrollRun.objects.filter(organization=organization, status='approved')
+
+    context = {
+        'organization': organization,
+        'active_people_count': active_employees.count(),
+        'employees_missing_salary': employees_missing_salary,
+        'employees_missing_salary_count': employees_missing_salary.count(),
+        'employees_missing_bank': employees_missing_bank,
+        'employees_missing_bank_count': employees_missing_bank.count(),
+        'draft_runs': draft_runs,
+        'draft_runs_count': draft_runs.count(),
+        'processed_runs': processed_runs,
+        'processed_runs_count': processed_runs.count(),
+        'approved_unpaid_runs': approved_unpaid_runs,
+        'approved_unpaid_count': approved_unpaid_runs.count(),
+        'page_title': 'Payroll Readiness',
+    }
+    return render(request, 'attendance/finance_payroll_readiness.html', context)
+
+
+@login_required
+@payroll_required
 def payroll_run_create(request):
     organization = get_active_organization(request)
 
@@ -1228,6 +2005,15 @@ def payroll_run_create(request):
             payroll_run = form.save(commit=False)
             payroll_run.created_by = request.user
             payroll_run.save()
+            write_audit_log(
+                request,
+                organization=organization,
+                area='payroll',
+                action='payroll_run_created',
+                target=payroll_run,
+                summary=f'Created payroll run {payroll_run.title}.',
+                metadata={'payroll_month': payroll_run.payroll_month.isoformat()},
+            )
             messages.success(request, f'{payroll_run.title} has been created.')
             return redirect('payroll_run_detail', pk=payroll_run.pk)
     else:
@@ -1249,7 +2035,7 @@ def payroll_run_create(request):
 
 
 @login_required
-@hr_required
+@payroll_required
 def payroll_run_detail(request, pk):
     organization = get_active_organization(request)
     payroll_run = get_object_or_404(
@@ -1267,7 +2053,7 @@ def payroll_run_detail(request, pk):
 
 
 @login_required
-@hr_required
+@payroll_required
 def payroll_run_generate(request, pk):
     organization = get_active_organization(request)
     payroll_run = get_object_or_404(PayrollRun, organization=organization, pk=pk)
@@ -1302,13 +2088,22 @@ def payroll_run_generate(request, pk):
             generated += 1
         payroll_run.status = 'processed'
         payroll_run.save(update_fields=['status', 'updated_at'])
+        write_audit_log(
+            request,
+            organization=organization,
+            area='payroll',
+            action='payslips_generated',
+            target=payroll_run,
+            summary=f'Generated {generated} payslips for {payroll_run.title}.',
+            metadata={'generated_count': generated},
+        )
 
     messages.success(request, f'{generated} payslips generated for {payroll_run.title}.')
     return redirect('payroll_run_detail', pk=payroll_run.pk)
 
 
 @login_required
-@hr_required
+@payroll_required
 def payroll_run_approve(request, pk):
     organization = get_active_organization(request)
     payroll_run = get_object_or_404(PayrollRun, organization=organization, pk=pk)
@@ -1321,12 +2116,21 @@ def payroll_run_approve(request, pk):
     payroll_run.approved_by = request.user
     payroll_run.approved_at = timezone.now()
     payroll_run.save(update_fields=['status', 'approved_by', 'approved_at', 'updated_at'])
+    write_audit_log(
+        request,
+        organization=organization,
+        area='payroll',
+        action='payroll_run_approved',
+        target=payroll_run,
+        summary=f'Approved payroll run {payroll_run.title}.',
+        metadata={'payroll_month': payroll_run.payroll_month.isoformat()},
+    )
     messages.success(request, f'{payroll_run.title} has been approved.')
     return redirect('payroll_run_detail', pk=payroll_run.pk)
 
 
 @login_required
-@hr_required
+@payroll_required
 def payroll_run_mark_paid(request, pk):
     organization = get_active_organization(request)
     payroll_run = get_object_or_404(PayrollRun, organization=organization, pk=pk)
@@ -1337,6 +2141,15 @@ def payroll_run_mark_paid(request, pk):
 
     payroll_run.status = 'paid'
     payroll_run.save(update_fields=['status', 'updated_at'])
+    write_audit_log(
+        request,
+        organization=organization,
+        area='payroll',
+        action='payroll_run_marked_paid',
+        target=payroll_run,
+        summary=f'Marked payroll run {payroll_run.title} as paid.',
+        metadata={'payroll_month': payroll_run.payroll_month.isoformat()},
+    )
     messages.success(request, f'{payroll_run.title} has been marked as paid.')
     return redirect('payroll_run_detail', pk=payroll_run.pk)
 
@@ -1346,7 +2159,7 @@ def payslip_detail(request, pk):
     payslip = get_object_or_404(Payslip.objects.select_related('payroll_run', 'employee'), pk=pk)
     employee = getattr(request.user, 'employee_profile', None)
 
-    if user_has_hr_access(request.user):
+    if user_has_payroll_access(request.user):
         active_organization = get_active_organization(request)
         if payslip.payroll_run.organization_id != active_organization.pk:
             raise PermissionDenied('This payslip belongs to another organization.')
