@@ -1,0 +1,103 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}{{ page_title }} | HR Management{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row">
+        <div class="col-xl-9 mx-auto">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                        <div>
+                            <h5 class="mb-1"><i class="bi bi-journal-plus me-2"></i>{{ page_title }}</h5>
+                            <p class="text-muted mb-0">Record feedback, event notes, staff observations, or admin follow-up.</p>
+                        </div>
+                        <a href="{% url 'admin_reports' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Admin Reports
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+                        <div class="admin-report-form-grid">
+                            <div class="wide-field">
+                                <label class="form-label" for="{{ form.title.id_for_label }}">Title</label>
+                                {{ form.title }}
+                                {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div>
+                                <label class="form-label" for="{{ form.report_type.id_for_label }}">Report Type</label>
+                                {{ form.report_type }}
+                                {% if form.report_type.errors %}<div class="text-danger small mt-1">{{ form.report_type.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div>
+                                <label class="form-label" for="{{ form.tone.id_for_label }}">Tone</label>
+                                {{ form.tone }}
+                                {% if form.tone.errors %}<div class="text-danger small mt-1">{{ form.tone.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div>
+                                <label class="form-label" for="{{ form.event_date.id_for_label }}">Event Date</label>
+                                {{ form.event_date }}
+                                {% if form.event_date.errors %}<div class="text-danger small mt-1">{{ form.event_date.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div>
+                                <label class="form-label" for="{{ form.status.id_for_label }}">Status</label>
+                                {{ form.status }}
+                                {% if form.status.errors %}<div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div>
+                                <label class="form-label" for="{{ form.related_employee.id_for_label }}">Related Staff</label>
+                                {{ form.related_employee }}
+                                {% if form.related_employee.errors %}<div class="text-danger small mt-1">{{ form.related_employee.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div>
+                                <label class="form-label" for="{{ form.related_department.id_for_label }}">Related Department</label>
+                                {{ form.related_department }}
+                                {% if form.related_department.errors %}<div class="text-danger small mt-1">{{ form.related_department.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="wide-field">
+                                <label class="form-label" for="{{ form.body.id_for_label }}">Report</label>
+                                {{ form.body }}
+                                {% if form.body.errors %}<div class="text-danger small mt-1">{{ form.body.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="wide-field">
+                                <label class="form-label" for="{{ form.action_taken.id_for_label }}">Action Taken / Follow-up</label>
+                                {{ form.action_taken }}
+                                {% if form.action_taken.errors %}<div class="text-danger small mt-1">{{ form.action_taken.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+                        <div class="responsive-actions justify-content-end mt-4">
+                            <a href="{% url 'admin_reports' %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check2 me-1"></i> {{ action }} Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .admin-report-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .wide-field {
+        grid-column: 1 / -1;
+    }
+
+    @media (max-width: 767.98px) {
+        .admin-report-form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Delete Onboarding Stage | HR Management{% endblock %}
+{% block page_title %}Delete Onboarding Stage{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row">
+        <div class="col-xl-7 mx-auto">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1"><i class="bi bi-trash me-2 text-danger"></i>Delete Stage</h5>
+                    <p class="text-muted mb-0">{{ stage.title }}</p>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    {% if participant_count %}
+                    <div class="alert alert-warning">
+                        <div class="fw-semibold">This stage still has {{ participant_count }} person{{ participant_count|pluralize }} in it.</div>
+                        <div class="mt-1">Move everyone to another stage before deleting this one.</div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-danger">
+                        <div class="fw-semibold">Are you sure you want to delete this onboarding stage?</div>
+                        <div class="mt-1">Any tasks attached to it will remain, but their stage will be cleared.</div>
+                    </div>
+                    {% endif %}
+
+                    <dl class="stage-delete-summary">
+                        <div><dt>Stage</dt><dd>{{ stage.title }}</dd></div>
+                        <div><dt>Code</dt><dd>{{ stage.code }}</dd></div>
+                        <div><dt>People</dt><dd>{{ participant_count }}</dd></div>
+                        <div><dt>Tasks</dt><dd>{{ task_count }}</dd></div>
+                    </dl>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="responsive-actions justify-content-end">
+                            <a href="{% url 'onboarding_tasks' %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-danger" {% if participant_count %}disabled{% endif %}>
+                                <i class="bi bi-trash me-1"></i> Delete Stage
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stage-delete-summary {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.85rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stage-delete-summary div {
+        padding: 0.85rem;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: 8px;
+        background: #f8fafc;
+    }
+
+    .stage-delete-summary dt {
+        color: #64748b;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+
+    .stage-delete-summary dd {
+        margin: 0.25rem 0 0;
+        font-weight: 700;
+        color: #0f172a;
+        word-break: break-word;
+    }
+
+    @media (max-width: 767.98px) {
+        .stage-delete-summary {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

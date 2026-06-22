@@ -81,6 +81,7 @@
                                     <th>Entitlement</th>
                                     <th>Rules</th>
                                     <th>Status</th>
+                                    <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -104,10 +105,16 @@
                                             <span class="badge bg-secondary bg-opacity-10 text-secondary">Inactive</span>
                                         {% endif %}
                                     </td>
+                                    <td class="text-end">
+                                        <div class="leave-type-actions">
+                                            <a href="{% url 'organization_leave_type_edit' leave_type.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                            <a href="{% url 'organization_leave_type_delete' leave_type.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                        </div>
+                                    </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="5" class="text-center py-5 text-muted">No leave types configured yet</td>
+                                    <td colspan="6" class="text-center py-5 text-muted">No leave types configured yet</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -118,4 +125,18 @@
         </div>
     </div>
 </div>
+
+<style>
+    .leave-type-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.45rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .leave-type-actions {
+            flex-direction: column;
+        }
+    }
+</style>
 {% endblock %}

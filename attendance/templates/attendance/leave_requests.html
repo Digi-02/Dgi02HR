@@ -6,80 +6,146 @@
 
 {% block content %}
 <div class="container-fluid p-0">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-        <div>
-            <h5 class="mb-1"><i class="bi bi-calendar2-week me-2"></i>{{ organization.name }} Leave Requests</h5>
-            <small class="text-muted">Track requests, approvals, and attendance coverage from one place.</small>
-        </div>
-        <div class="responsive-actions">
-            <a href="{% url 'organization_leave_types' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-sliders me-1"></i> Leave Types
-            </a>
-            <a href="{% url 'leave_request_create' %}" class="btn btn-primary">
-                <i class="bi bi-plus-lg me-1"></i> New Request
-            </a>
+    <div class="leave-hero card border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <p class="text-uppercase small fw-semibold text-muted mb-1">Leave Overview</p>
+                    <h5 class="mb-1"><i class="bi bi-calendar2-week me-2"></i>{{ organization.name }} Leave Management</h5>
+                    <small class="text-muted">Monitor balances, current absences, upcoming leave, and request approvals.</small>
+                </div>
+                <div class="responsive-actions">
+                    <a href="{% url 'organization_leave_types' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-sliders me-1"></i> Leave Types
+                    </a>
+                    <a href="{% url 'leave_request_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i> New Request
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-6">
-            <div class="card border-0">
-                <div class="card-body">
-                    <small class="text-muted">Pending Requests</small>
-                    <h3 class="mb-0">{{ pending_count }}</h3>
-                </div>
+    <div class="leave-metrics-grid mb-4">
+        <div class="card border-0 h-100 metric-card">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Pending Review</small>
+                <h3 class="mt-2 mb-0 text-warning">{{ pending_count }}</h3>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card border-0">
-                <div class="card-body">
-                    <small class="text-muted">Approved Requests</small>
-                    <h3 class="mb-0">{{ approved_count }}</h3>
-                </div>
+        <div class="card border-0 h-100 metric-card">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">On Leave Today</small>
+                <h3 class="mt-2 mb-0 text-primary">{{ on_leave_today_count }}</h3>
             </div>
+        </div>
+        <div class="card border-0 h-100 metric-card">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Upcoming 30 Days</small>
+                <h3 class="mt-2 mb-0 text-info">{{ upcoming_leave_count }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100 metric-card">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Low Balance</small>
+                <h3 class="mt-2 mb-0 text-danger">{{ low_balance_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 toolbar-card mb-4">
+        <div class="card-body">
+            <form method="GET" class="leave-filter-grid">
+                <div class="search-control">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search employee, ID, department, or leave type">
+                    </div>
+                </div>
+                <select name="status" class="form-select">
+                    <option value="">All Request Statuses</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i> Filter</button>
+                <a href="{% url 'leave_requests' %}" class="btn btn-outline-secondary">Reset</a>
+            </form>
         </div>
     </div>
 
     <div class="card border-0 mb-4">
         <div class="card-header bg-white border-0 pt-4 px-4">
-            <h5 class="mb-1"><i class="bi bi-pie-chart me-2"></i>Leave Balances</h5>
-            <small class="text-muted">Current year entitlement, used, pending, and remaining days.</small>
+            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                <div>
+                    <h5 class="mb-1"><i class="bi bi-people me-2"></i>Employee Leave Table</h5>
+                    <small class="text-muted">Click an employee to open their leave profile, balances, and request history.</small>
+                </div>
+                <span class="badge bg-primary bg-opacity-10 text-primary">{{ leave_employee_rows|length }} employees</span>
+            </div>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0 leave-employee-table">
                     <thead>
                         <tr>
                             <th>Employee</th>
-                            <th>Leave Balances</th>
-                            <th>Total Remaining</th>
+                            <th>Department</th>
+                            <th>Entitlement</th>
+                            <th>Used</th>
+                            <th>Pending</th>
+                            <th>Remaining</th>
+                            <th>Current / Next Leave</th>
+                            <th class="text-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for row in leave_balances %}
-                        <tr>
+                        {% for row in leave_employee_rows %}
+                        <tr class="clickable-row" data-href="{% url 'employee_leave_detail' row.employee.pk %}">
                             <td>
                                 <div class="fw-semibold">{{ row.employee.display_name }}</div>
-                                <small class="text-muted">{{ row.employee.employee_id }}</small>
+                                <small class="text-muted">{{ row.employee.employee_id }} · {{ row.employee.category.name }}</small>
+                            </td>
+                            <td>{{ row.employee.department.name|default:"-" }}</td>
+                            <td>{{ row.total_entitlement }}</td>
+                            <td>{{ row.total_used }}</td>
+                            <td>
+                                {% if row.total_pending %}
+                                    <span class="badge bg-warning bg-opacity-10 text-warning">{{ row.total_pending }}</span>
+                                {% else %}
+                                    0
+                                {% endif %}
                             </td>
                             <td>
-                                <div class="d-flex gap-2 flex-wrap">
-                                    {% for balance in row.balances %}
-                                    <span class="badge bg-{{ balance.leave_type.color }} bg-opacity-10 text-{{ balance.leave_type.color }} px-3 py-2">
-                                        {{ balance.leave_type.name }}:
-                                        {{ balance.remaining }} left
-                                        <span class="text-muted">({{ balance.used }} used, {{ balance.pending }} pending)</span>
-                                    </span>
-                                    {% empty %}
-                                    <span class="text-muted">No leave types configured</span>
-                                    {% endfor %}
-                                </div>
+                                <strong class="{% if row.total_remaining <= 3 %}text-danger{% else %}text-success{% endif %}">
+                                    {{ row.total_remaining }}
+                                </strong>
                             </td>
-                            <td><strong>{{ row.total_remaining }}</strong></td>
+                            <td>
+                                {% if row.current_leave %}
+                                    <span class="badge bg-primary bg-opacity-10 text-primary">
+                                        On {{ row.current_leave.leave_type.name }}
+                                    </span>
+                                    <small class="d-block text-muted">Until {{ row.current_leave.end_date|date:"M j" }}</small>
+                                {% elif row.next_leave %}
+                                    <span class="badge bg-info bg-opacity-10 text-info">
+                                        {{ row.next_leave.leave_type.name }}
+                                    </span>
+                                    <small class="d-block text-muted">Starts {{ row.next_leave.start_date|date:"M j" }}</small>
+                                {% else %}
+                                    <span class="text-muted">No scheduled leave</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'employee_leave_detail' row.employee.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="3" class="text-center py-5 text-muted">No employees available for leave balance tracking.</td>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="bi bi-calendar2-x fs-1 d-block mb-3"></i>
+                                No employees match this leave view.
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -90,26 +156,8 @@
 
     <div class="card border-0">
         <div class="card-header bg-white border-0 pt-4 px-4">
-            <form method="GET" class="row g-2 align-items-end">
-                <div class="col-md-5">
-                    <label class="form-label">Search</label>
-                    <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Employee, ID, or leave type">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-select">
-                        <option value="">All Statuses</option>
-                        {% for value, label in status_choices %}
-                            <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-outline-primary w-100">
-                        <i class="bi bi-search me-1"></i> Filter
-                    </button>
-                </div>
-            </form>
+            <h5 class="mb-1"><i class="bi bi-inbox me-2"></i>Recent Leave Requests</h5>
+            <small class="text-muted">Latest requests matching your filters.</small>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -120,14 +168,13 @@
                             <th>Leave Type</th>
                             <th>Period</th>
                             <th>Days</th>
-                            <th>Manager Review</th>
                             <th>Status</th>
                             <th>Reviewed By</th>
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for leave_request in leave_requests %}
+                        {% for leave_request in recent_leave_requests %}
                         <tr>
                             <td>
                                 <div class="fw-semibold">{{ leave_request.employee.display_name }}</div>
@@ -138,22 +185,8 @@
                                     {{ leave_request.leave_type.name }}
                                 </span>
                             </td>
-                            <td>{{ leave_request.start_date }} to {{ leave_request.end_date }}</td>
+                            <td>{{ leave_request.start_date|date:"M j" }} to {{ leave_request.end_date|date:"M j, Y" }}</td>
                             <td>{{ leave_request.day_count }}</td>
-                            <td>
-                                {% if leave_request.employee.line_manager %}
-                                    {% if leave_request.manager_approval_status == 'approved' %}
-                                        <span class="badge bg-success bg-opacity-10 text-success">Approved</span>
-                                    {% elif leave_request.manager_approval_status == 'rejected' %}
-                                        <span class="badge bg-danger bg-opacity-10 text-danger">Rejected</span>
-                                    {% else %}
-                                        <span class="badge bg-warning bg-opacity-10 text-warning">Pending</span>
-                                    {% endif %}
-                                    <br><small class="text-muted">{{ leave_request.employee.line_manager.full_name }}</small>
-                                {% else %}
-                                    <span class="badge bg-secondary bg-opacity-10 text-secondary">Not Required</span>
-                                {% endif %}
-                            </td>
                             <td>
                                 {% if leave_request.status == 'approved' %}
                                     <span class="badge bg-success bg-opacity-10 text-success">Approved</span>
@@ -167,21 +200,14 @@
                             </td>
                             <td>{{ leave_request.reviewed_by|default:"-" }}</td>
                             <td class="text-end">
-                                {% if leave_request.status == 'pending' %}
-                                    {% if not leave_request.employee.line_manager or leave_request.manager_approval_status == 'approved' %}
-                                        <a href="{% url 'leave_request_approve' leave_request.pk %}" class="btn btn-sm btn-outline-success">Approve</a>
-                                    {% endif %}
-                                    <a href="{% url 'leave_request_reject' leave_request.pk %}" class="btn btn-sm btn-outline-danger">Reject</a>
-                                {% else %}
-                                    <span class="text-muted small">Reviewed</span>
-                                {% endif %}
+                                <a href="{% url 'leave_request_detail' leave_request.pk %}" class="btn btn-sm btn-outline-primary">Open</a>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
                             <td colspan="7" class="text-center py-5 text-muted">
-                                <i class="bi bi-calendar2-x fs-1 d-block mb-3"></i>
-                                No leave requests found
+                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                No leave requests found.
                             </td>
                         </tr>
                         {% endfor %}
@@ -191,4 +217,54 @@
         </div>
     </div>
 </div>
+
+<style>
+    .leave-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .leave-filter-grid {
+        display: grid;
+        grid-template-columns: minmax(260px, 1fr) minmax(180px, 0.45fr) auto auto;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .leave-employee-table tbody tr.clickable-row {
+        cursor: pointer;
+    }
+
+    .leave-employee-table tbody tr.clickable-row:hover {
+        background: rgba(59, 130, 246, 0.04);
+    }
+
+    @media (max-width: 1199.98px) {
+        .leave-metrics-grid,
+        .leave-filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .leave-metrics-grid,
+        .leave-filter-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.clickable-row[data-href]').forEach(function(row) {
+            row.addEventListener('click', function(event) {
+                if (event.target.closest('a, button, form, input, select, textarea')) {
+                    return;
+                }
+                window.location.href = row.dataset.href;
+            });
+        });
+    });
+</script>
 {% endblock %}

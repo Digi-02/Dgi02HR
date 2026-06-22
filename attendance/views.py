@@ -9,10 +9,13 @@ from django.contrib.auth.models import User
 from django.db.models import Q, Count
 from django.db import transaction
 from django.db.models.functions import TruncDate
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import PermissionDenied
+from django.core.mail import send_mail
+from django.conf import settings
 from django.urls import reverse
 from django.utils.crypto import get_random_string
+from django.db.models.deletion import ProtectedError
 from datetime import timedelta, date
 from functools import wraps
 import csv
@@ -20,6 +23,8 @@ import csv
 from .models import (
     Employee,
     EmployeeDocument,
+    Applicant,
+    AdminReport,
     AuditLog,
     AttendanceRecord,
     Category,
@@ -29,7 +34,10 @@ from .models import (
     AttendanceExceptionType,
     LeaveType,
     LeaveRequest,
+    OnboardingStage,
+    OnboardingParticipant,
     OnboardingTask,
+    OnboardingInvitation,
     PayrollRun,
     Payslip,
     Organization,
@@ -52,8 +60,14 @@ from .forms import (
     LeaveTypeForm,
     LeaveRequestForm,
     LeaveReviewForm,
+    OnboardingStageForm,
     OnboardingTaskForm,
     EmployeeAccountForm,
+    ApplicantInvitationForm,
+    ExistingEmployeeOnboardingInviteForm,
+    ApplicantApplicationForm,
+    EmployeeOnboardingSetupForm,
+    AdminReportForm,
     PayrollRunForm,
 )
 from .organization import (
@@ -87,6 +101,202 @@ def write_audit_log(request, *, organization, area, action, summary, target=None
         summary=summary,
         metadata=metadata or {},
     )
+
+
+def send_onboarding_invitation_email(request, invitation):
+    invite_url = request.build_absolute_uri(
+        reverse('public_onboarding_invitation', kwargs={'token': invitation.token})
+    )
+    subject = f"{invitation.organization.name} onboarding invitation"
+    if invitation.invitation_type == 'application':
+        subject = f"{invitation.organization.name} application invitation"
+        action_text = 'submit your application'
+    else:
+        action_text = 'set up your employee profile'
+
+    message_lines = [
+        f"Hello {invitation.recipient_name},",
+        "",
+        f"{invitation.organization.name} has invited you to {action_text}.",
+    ]
+    if invitation.message:
+        message_lines.extend(["", invitation.message])
+    message_lines.extend([
+        "",
+        f"Open this secure link: {invite_url}",
+        "",
+        "This link is personal to you. Please do not forward it.",
+    ])
+    send_mail(
+        subject,
+        "\n".join(message_lines),
+        getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@example.com'),
+        [invitation.email],
+        fail_silently=False,
+    )
+    invitation.status = 'sent'
+    invitation.sent_at = timezone.now()
+    invitation.save(update_fields=['status', 'sent_at', 'updated_at'])
+
+
+DEFAULT_ONBOARDING_STAGES = [
+    {'code': 'invitation_sent', 'title': 'Invitation Sent', 'order': 10, 'color': 'secondary'},
+    {'code': 'application_submitted', 'title': 'Application Submitted', 'order': 20, 'color': 'warning'},
+    {'code': 'hr_review', 'title': 'HR Review', 'order': 30, 'color': 'info'},
+    {'code': 'profile_setup', 'title': 'Profile Setup', 'order': 40, 'color': 'primary'},
+    {'code': 'pre_arrival', 'title': 'Pre Arrival', 'order': 50, 'color': 'success'},
+    {'code': 'first_day', 'title': 'First Day', 'order': 60, 'color': 'dark'},
+    {'code': 'documents_training', 'title': 'Documents & Training', 'order': 70, 'color': 'primary'},
+    {'code': 'completed', 'title': 'Completed', 'order': 80, 'color': 'success'},
+    {'code': 'rejected', 'title': 'Rejected', 'order': 90, 'color': 'danger'},
+]
+
+
+def ensure_default_onboarding_stages(organization):
+    for stage_data in DEFAULT_ONBOARDING_STAGES:
+        OnboardingStage.objects.get_or_create(
+            organization=organization,
+            code=stage_data['code'],
+            defaults={
+                'title': stage_data['title'],
+                'order': stage_data['order'],
+                'color': stage_data['color'],
+                'is_active': True,
+            },
+        )
+    return OnboardingStage.objects.filter(
+        organization=organization,
+        is_active=True,
+    ).order_by('order', 'title')
+
+
+def get_onboarding_stage(organization, code):
+    ensure_default_onboarding_stages(organization)
+    return OnboardingStage.objects.get(organization=organization, code=code)
+
+
+def participant_status_for_stage(stage):
+    if stage.code == 'completed':
+        return 'completed'
+    if stage.code == 'rejected':
+        return 'rejected'
+    return 'active'
+
+
+def sync_onboarding_participant(
+    organization,
+    *,
+    stage_code,
+    applicant=None,
+    employee=None,
+    invitation=None,
+    joining_date=None,
+    note='',
+    update_existing=True,
+):
+    if not applicant and not employee:
+        return None
+
+    stage = get_onboarding_stage(organization, stage_code)
+    participant_type = 'employee' if employee else 'applicant'
+    lookup = {'organization': organization, 'applicant': applicant} if applicant else {'organization': organization, 'employee': employee}
+    participant, created = OnboardingParticipant.objects.get_or_create(
+        **lookup,
+        defaults={
+            'stage': stage,
+            'employee': employee,
+            'invitation': invitation,
+            'participant_type': participant_type,
+            'joining_date': joining_date,
+            'note': note,
+            'status': participant_status_for_stage(stage),
+            'completed_at': timezone.now() if stage.code == 'completed' else None,
+        },
+    )
+
+    if not created and update_existing:
+        participant.stage = stage
+        participant.participant_type = participant_type
+        if employee and not participant.employee:
+            participant.employee = employee
+        if invitation:
+            participant.invitation = invitation
+        if joining_date:
+            participant.joining_date = joining_date
+        if note:
+            participant.note = note
+        participant.status = participant_status_for_stage(stage)
+        participant.moved_at = timezone.now()
+        participant.completed_at = timezone.now() if stage.code == 'completed' else None
+        participant.save(update_fields=[
+            'stage',
+            'employee',
+            'invitation',
+            'participant_type',
+            'joining_date',
+            'note',
+            'status',
+            'moved_at',
+            'completed_at',
+            'updated_at',
+        ])
+    return participant
+
+
+def applicant_stage_code(applicant):
+    return {
+        'invited': 'invitation_sent',
+        'submitted': 'application_submitted',
+        'under_review': 'hr_review',
+        'approved': 'profile_setup',
+        'converted': 'pre_arrival',
+        'rejected': 'rejected',
+    }.get(applicant.status, 'invitation_sent')
+
+
+def invitation_stage_code(invitation):
+    if invitation.status == 'accepted':
+        return 'pre_arrival'
+    if invitation.status == 'submitted':
+        return 'application_submitted'
+    if invitation.status in ['expired', 'cancelled']:
+        return 'rejected'
+    return 'profile_setup' if invitation.invitation_type == 'employee_setup' else 'invitation_sent'
+
+
+def sync_existing_onboarding_participants(organization):
+    stages = ensure_default_onboarding_stages(organization)
+    applicants = Applicant.objects.filter(
+        organization=organization,
+    ).select_related('employee').prefetch_related('invitations')
+    for applicant in applicants:
+        invitation = applicant.invitations.order_by('-created_at').first()
+        sync_onboarding_participant(
+            organization,
+            stage_code=applicant_stage_code(applicant),
+            applicant=applicant,
+            employee=applicant.employee,
+            invitation=invitation,
+            joining_date=applicant.employee.hire_date if applicant.employee else None,
+            update_existing=False,
+        )
+
+    employee_invitations = OnboardingInvitation.objects.filter(
+        organization=organization,
+        invitation_type='employee_setup',
+        employee__isnull=False,
+    ).select_related('employee')
+    for invitation in employee_invitations:
+        sync_onboarding_participant(
+            organization,
+            stage_code=invitation_stage_code(invitation),
+            employee=invitation.employee,
+            invitation=invitation,
+            joining_date=invitation.employee.hire_date,
+            update_existing=False,
+        )
+    return stages
+
 
 def hr_required(view_func):
     @wraps(view_func)
@@ -354,6 +564,60 @@ def organization_leave_types(request):
         'page_title': 'Leave Types',
     }
     return render(request, 'attendance/leave_types.html', context)
+
+
+@login_required
+@hr_required
+def organization_leave_type_edit(request, pk):
+    organization = get_active_organization(request)
+    leave_type = get_object_or_404(LeaveType, organization=organization, pk=pk)
+
+    if request.method == 'POST':
+        form = LeaveTypeForm(request.POST, organization=organization, instance=leave_type)
+        if form.is_valid():
+            leave_type = form.save()
+            messages.success(request, f'{leave_type.name} leave type has been updated.')
+            return redirect('organization_leave_types')
+    else:
+        form = LeaveTypeForm(organization=organization, instance=leave_type)
+
+    context = {
+        'form': form,
+        'organization': organization,
+        'leave_type': leave_type,
+        'page_title': f'Edit Leave Type: {leave_type.name}',
+        'action': 'Update',
+    }
+    return render(request, 'attendance/leave_type_form.html', context)
+
+
+@login_required
+@hr_required
+def organization_leave_type_delete(request, pk):
+    organization = get_active_organization(request)
+    leave_type = get_object_or_404(LeaveType, organization=organization, pk=pk)
+    request_count = LeaveRequest.objects.filter(organization=organization, leave_type=leave_type).count()
+
+    if request.method == 'POST':
+        name = leave_type.name
+        try:
+            leave_type.delete()
+        except ProtectedError:
+            messages.warning(
+                request,
+                f'{name} is already used by leave requests, so it cannot be deleted. You can mark it inactive instead.',
+            )
+            return redirect('organization_leave_types')
+        messages.success(request, f'{name} leave type has been deleted.')
+        return redirect('organization_leave_types')
+
+    context = {
+        'organization': organization,
+        'leave_type': leave_type,
+        'request_count': request_count,
+        'page_title': f'Delete Leave Type: {leave_type.name}',
+    }
+    return render(request, 'attendance/leave_type_confirm_delete.html', context)
 
 
 # ==================== PUBLIC VIEWS ====================
@@ -1057,13 +1321,27 @@ def employee_document_delete(request, pk):
 @hr_required
 def onboarding_tasks(request):
     organization = get_active_organization(request)
+    stages = sync_existing_onboarding_participants(organization)
     tasks = OnboardingTask.objects.filter(
         organization=organization,
-    ).select_related('employee', 'employee__department', 'employee__category', 'assigned_to')
+    ).select_related('employee', 'employee__department', 'employee__category', 'stage', 'assigned_to')
+    participants = OnboardingParticipant.objects.filter(
+        organization=organization,
+    ).select_related(
+        'stage',
+        'applicant',
+        'applicant__category',
+        'applicant__department',
+        'employee',
+        'employee__category',
+        'employee__department',
+        'invitation',
+    )
 
     search_query = request.GET.get('q', '').strip()
     status = request.GET.get('status', '').strip()
     category = request.GET.get('category', '').strip()
+    stage_filter = request.GET.get('stage', '').strip()
     today = timezone.localdate()
 
     if search_query:
@@ -1074,20 +1352,55 @@ def onboarding_tasks(request):
             | Q(employee__last_name__icontains=search_query)
             | Q(employee__employee_id__icontains=search_query)
         )
+        participants = participants.filter(
+            Q(applicant__first_name__icontains=search_query)
+            | Q(applicant__last_name__icontains=search_query)
+            | Q(applicant__email__icontains=search_query)
+            | Q(applicant__phone__icontains=search_query)
+            | Q(applicant__position__icontains=search_query)
+            | Q(employee__first_name__icontains=search_query)
+            | Q(employee__last_name__icontains=search_query)
+            | Q(employee__email__icontains=search_query)
+            | Q(employee__phone__icontains=search_query)
+            | Q(employee__employee_id__icontains=search_query)
+            | Q(employee__position__icontains=search_query)
+        )
     if status:
         tasks = tasks.filter(status=status)
     if category:
         tasks = tasks.filter(category=category)
+    if stage_filter:
+        tasks = tasks.filter(stage_id=stage_filter)
+        participants = participants.filter(stage_id=stage_filter)
+
+    stage_rows = []
+    for stage in stages:
+        stage_rows.append({
+            'stage': stage,
+            'participants': list(participants.filter(stage=stage).order_by('created_at')),
+            'task_count': tasks.filter(stage=stage).count(),
+        })
 
     base_tasks = OnboardingTask.objects.filter(organization=organization)
+    invitations = OnboardingInvitation.objects.filter(
+        organization=organization,
+    ).select_related('applicant', 'employee').order_by('-created_at')[:10]
+    applicant_base = Applicant.objects.filter(organization=organization)
+    invitation_base = OnboardingInvitation.objects.filter(organization=organization)
+    participant_base = OnboardingParticipant.objects.filter(organization=organization)
     context = {
         'organization': organization,
         'tasks': tasks,
+        'stages': stages,
+        'stage_rows': stage_rows,
+        'invitations': invitations,
         'search_query': search_query,
         'selected_status': status,
         'selected_category': category,
+        'selected_stage': stage_filter,
         'status_choices': OnboardingTask.STATUS_CHOICES,
         'category_choices': OnboardingTask.CATEGORY_CHOICES,
+        'stage_choices': stages,
         'total_tasks': tasks.count(),
         'pending_count': base_tasks.filter(status='pending').count(),
         'in_progress_count': base_tasks.filter(status='in_progress').count(),
@@ -1095,6 +1408,12 @@ def onboarding_tasks(request):
         'overdue_count': base_tasks.filter(
             due_date__lt=today,
         ).exclude(status__in=['completed', 'waived']).count(),
+        'applicant_count': applicant_base.count(),
+        'submitted_applicant_count': applicant_base.filter(status='submitted').count(),
+        'converted_applicant_count': applicant_base.filter(status='converted').count(),
+        'active_invitation_count': invitation_base.filter(status__in=['sent', 'opened']).count(),
+        'active_participant_count': participant_base.filter(status='active').count(),
+        'completed_participant_count': participant_base.filter(status='completed').count(),
         'page_title': 'Onboarding',
     }
     return render(request, 'attendance/onboarding_tasks.html', context)
@@ -1104,9 +1423,14 @@ def onboarding_tasks(request):
 @hr_required
 def onboarding_task_create(request, employee_pk=None):
     organization = get_active_organization(request)
+    ensure_default_onboarding_stages(organization)
     employee = None
+    stage = None
     if employee_pk:
         employee = get_object_or_404(Employee, organization=organization, pk=employee_pk)
+    stage_pk = request.GET.get('stage')
+    if stage_pk:
+        stage = get_object_or_404(OnboardingStage, organization=organization, pk=stage_pk, is_active=True)
 
     if request.method == 'POST':
         form = OnboardingTaskForm(request.POST, organization=organization, employee=employee)
@@ -1128,11 +1452,12 @@ def onboarding_task_create(request, employee_pk=None):
             messages.success(request, f'Onboarding task created for {task.employee.full_name}.')
             return redirect('onboarding_tasks')
     else:
-        form = OnboardingTaskForm(organization=organization, employee=employee)
+        form = OnboardingTaskForm(organization=organization, employee=employee, initial={'stage': stage})
 
     context = {
         'form': form,
         'employee': employee,
+        'stage': stage,
         'organization': organization,
         'page_title': 'Add Onboarding Task',
     }
@@ -1240,6 +1565,482 @@ def onboarding_task_delete(request, pk):
         'page_title': 'Delete Onboarding Task',
     }
     return render(request, 'attendance/onboarding_task_confirm_delete.html', context)
+
+
+@login_required
+@hr_required
+def onboarding_stage_create(request):
+    organization = get_active_organization(request)
+    ensure_default_onboarding_stages(organization)
+
+    if request.method == 'POST':
+        form = OnboardingStageForm(request.POST, organization=organization)
+        if form.is_valid():
+            stage = form.save()
+            write_audit_log(
+                request,
+                organization=organization,
+                area='employee',
+                action='onboarding_stage_created',
+                target=stage,
+                summary=f'Created onboarding stage {stage.title}.',
+                metadata={'stage_code': stage.code},
+            )
+            messages.success(request, f'Onboarding stage "{stage.title}" has been created.')
+            return redirect('onboarding_tasks')
+    else:
+        next_order = (OnboardingStage.objects.filter(organization=organization).count() + 1) * 10
+        form = OnboardingStageForm(organization=organization, initial={'order': next_order, 'color': 'primary', 'is_active': True})
+
+    context = {
+        'form': form,
+        'organization': organization,
+        'page_title': 'Create Onboarding Stage',
+        'action': 'Create',
+    }
+    return render(request, 'attendance/onboarding_stage_form.html', context)
+
+
+@login_required
+@hr_required
+def onboarding_stage_edit(request, pk):
+    organization = get_active_organization(request)
+    stage = get_object_or_404(OnboardingStage, organization=organization, pk=pk)
+
+    if request.method == 'POST':
+        form = OnboardingStageForm(request.POST, organization=organization, instance=stage)
+        if form.is_valid():
+            stage = form.save()
+            write_audit_log(
+                request,
+                organization=organization,
+                area='employee',
+                action='onboarding_stage_updated',
+                target=stage,
+                summary=f'Updated onboarding stage {stage.title}.',
+                metadata={'stage_code': stage.code},
+            )
+            messages.success(request, f'Onboarding stage "{stage.title}" has been updated.')
+            return redirect('onboarding_tasks')
+    else:
+        form = OnboardingStageForm(organization=organization, instance=stage)
+
+    context = {
+        'form': form,
+        'stage': stage,
+        'organization': organization,
+        'page_title': 'Edit Onboarding Stage',
+        'action': 'Update',
+    }
+    return render(request, 'attendance/onboarding_stage_form.html', context)
+
+
+@login_required
+@hr_required
+def onboarding_stage_delete(request, pk):
+    organization = get_active_organization(request)
+    stage = get_object_or_404(OnboardingStage, organization=organization, pk=pk)
+    participant_count = stage.participants.count()
+    task_count = stage.tasks.count()
+
+    if request.method == 'POST':
+        if participant_count:
+            messages.warning(request, f'Move everyone out of "{stage.title}" before deleting it.')
+            return redirect('onboarding_tasks')
+
+        stage_title = stage.title
+        stage_code = stage.code
+        write_audit_log(
+            request,
+            organization=organization,
+            area='employee',
+            action='onboarding_stage_deleted',
+            target=stage,
+            summary=f'Deleted onboarding stage {stage_title}.',
+            metadata={'stage_code': stage_code, 'task_count': task_count},
+        )
+        stage.delete()
+        messages.success(request, f'Onboarding stage "{stage_title}" has been deleted.')
+        return redirect('onboarding_tasks')
+
+    context = {
+        'stage': stage,
+        'organization': organization,
+        'participant_count': participant_count,
+        'task_count': task_count,
+        'page_title': 'Delete Onboarding Stage',
+    }
+    return render(request, 'attendance/onboarding_stage_confirm_delete.html', context)
+
+
+@login_required
+@hr_required
+def onboarding_participant_move(request, pk):
+    organization = get_active_organization(request)
+    participant = get_object_or_404(
+        OnboardingParticipant.objects.select_related('stage', 'applicant', 'employee'),
+        organization=organization,
+        pk=pk,
+    )
+
+    wants_json = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
+    if request.method == 'POST':
+        stage = get_object_or_404(
+            OnboardingStage,
+            organization=organization,
+            is_active=True,
+            pk=request.POST.get('stage'),
+        )
+        note = request.POST.get('note', '').strip()
+        participant.stage = stage
+        participant.status = participant_status_for_stage(stage)
+        participant.moved_at = timezone.now()
+        if note:
+            participant.note = note
+        participant.completed_at = timezone.now() if stage.code == 'completed' else None
+        participant.save(update_fields=['stage', 'status', 'moved_at', 'note', 'completed_at', 'updated_at'])
+
+        if participant.applicant and stage.code == 'hr_review' and participant.applicant.status in ['invited', 'submitted']:
+            participant.applicant.status = 'under_review'
+            participant.applicant.save(update_fields=['status', 'updated_at'])
+        if participant.applicant and stage.code == 'rejected':
+            participant.applicant.status = 'rejected'
+            participant.applicant.reviewed_by = request.user
+            participant.applicant.reviewed_at = timezone.now()
+            participant.applicant.save(update_fields=['status', 'reviewed_by', 'reviewed_at', 'updated_at'])
+
+        write_audit_log(
+            request,
+            organization=organization,
+            area='employee',
+            action='onboarding_participant_moved',
+            target=participant,
+            summary=f'Moved {participant.display_name} to {stage.title}.',
+            metadata={'stage_code': stage.code, 'participant_type': participant.participant_type},
+        )
+        if wants_json:
+            return JsonResponse({
+                'ok': True,
+                'participant_id': participant.pk,
+                'stage_id': stage.pk,
+                'stage_title': stage.title,
+                'participant_status': participant.get_status_display(),
+                'source_status': participant.source_status,
+            })
+        messages.success(request, f'{participant.display_name} moved to {stage.title}.')
+    return redirect('onboarding_tasks')
+
+
+@login_required
+@hr_required
+def applicant_invite(request):
+    organization = get_active_organization(request)
+
+    if request.method == 'POST':
+        form = ApplicantInvitationForm(request.POST, organization=organization)
+        if form.is_valid():
+            with transaction.atomic():
+                applicant = form.save(commit=False)
+                applicant.invited_by = request.user
+                applicant.status = 'invited'
+                applicant.save()
+                invitation = OnboardingInvitation.objects.create(
+                    organization=organization,
+                    invitation_type='application',
+                    applicant=applicant,
+                    email=applicant.email,
+                    message=applicant.cover_note,
+                    invited_by=request.user,
+                )
+                send_onboarding_invitation_email(request, invitation)
+                sync_onboarding_participant(
+                    organization,
+                    stage_code='invitation_sent',
+                    applicant=applicant,
+                    invitation=invitation,
+                )
+                write_audit_log(
+                    request,
+                    organization=organization,
+                    area='employee',
+                    action='applicant_invited',
+                    target=applicant,
+                    summary=f'Invited applicant {applicant.full_name}.',
+                    metadata={'email': applicant.email, 'category': applicant.category.code},
+                )
+            messages.success(request, f'Application invitation sent to {applicant.email}.')
+            return redirect('onboarding_tasks')
+    else:
+        form = ApplicantInvitationForm(organization=organization)
+
+    context = {
+        'form': form,
+        'organization': organization,
+        'page_title': 'Invite Applicant',
+    }
+    return render(request, 'attendance/applicant_invite_form.html', context)
+
+
+@login_required
+@hr_required
+def existing_employee_onboarding_invite(request):
+    organization = get_active_organization(request)
+
+    if request.method == 'POST':
+        form = ExistingEmployeeOnboardingInviteForm(request.POST, organization=organization)
+        if form.is_valid():
+            employee = form.cleaned_data['employee']
+            invitation = OnboardingInvitation.objects.create(
+                organization=organization,
+                invitation_type='employee_setup',
+                employee=employee,
+                email=employee.email,
+                message=form.cleaned_data['message'],
+                invited_by=request.user,
+            )
+            send_onboarding_invitation_email(request, invitation)
+            sync_onboarding_participant(
+                organization,
+                stage_code='profile_setup',
+                employee=employee,
+                invitation=invitation,
+                joining_date=employee.hire_date,
+            )
+            write_audit_log(
+                request,
+                organization=organization,
+                area='employee',
+                action='employee_onboarding_invited',
+                target=employee,
+                summary=f'Sent onboarding setup invitation to {employee.full_name}.',
+                metadata={'employee_id': employee.employee_id, 'email': employee.email},
+            )
+            messages.success(request, f'Onboarding setup invitation sent to {employee.email}.')
+            return redirect('onboarding_tasks')
+    else:
+        form = ExistingEmployeeOnboardingInviteForm(organization=organization)
+
+    context = {
+        'form': form,
+        'organization': organization,
+        'page_title': 'Invite Existing Employee',
+    }
+    return render(request, 'attendance/existing_employee_onboarding_invite_form.html', context)
+
+
+def public_onboarding_invitation(request, token):
+    invitation = get_object_or_404(
+        OnboardingInvitation.objects.select_related('organization', 'applicant', 'employee'),
+        token=token,
+    )
+    if invitation.is_expired and invitation.status not in ['accepted', 'submitted']:
+        invitation.status = 'expired'
+        invitation.save(update_fields=['status', 'updated_at'])
+        return render(request, 'attendance/public_onboarding_expired.html', {'invitation': invitation})
+
+    if invitation.status == 'sent':
+        invitation.status = 'opened'
+        invitation.opened_at = timezone.now()
+        invitation.save(update_fields=['status', 'opened_at', 'updated_at'])
+
+    if invitation.invitation_type == 'application':
+        return applicant_application_submit(request, invitation)
+    return employee_onboarding_setup(request, invitation)
+
+
+def applicant_application_submit(request, invitation):
+    applicant = invitation.applicant
+    if request.method == 'POST':
+        form = ApplicantApplicationForm(request.POST, instance=applicant, organization=invitation.organization)
+        if form.is_valid():
+            applicant = form.save(commit=False)
+            applicant.status = 'submitted'
+            applicant.submitted_at = timezone.now()
+            applicant.save()
+            invitation.status = 'submitted'
+            invitation.submitted_at = timezone.now()
+            invitation.save(update_fields=['status', 'submitted_at', 'updated_at'])
+            sync_onboarding_participant(
+                invitation.organization,
+                stage_code='application_submitted',
+                applicant=applicant,
+                invitation=invitation,
+            )
+            messages.success(request, 'Your application has been submitted.')
+            return render(request, 'attendance/public_onboarding_done.html', {
+                'invitation': invitation,
+                'title': 'Application Submitted',
+                'message': 'HR has received your application and will review it.',
+            })
+    else:
+        form = ApplicantApplicationForm(instance=applicant, organization=invitation.organization)
+
+    context = {
+        'form': form,
+        'invitation': invitation,
+        'applicant': applicant,
+        'page_title': 'Submit Application',
+    }
+    return render(request, 'attendance/public_application_form.html', context)
+
+
+def employee_onboarding_setup(request, invitation):
+    employee = invitation.employee
+    if request.method == 'POST':
+        form = EmployeeOnboardingSetupForm(request.POST, employee=employee)
+        if form.is_valid():
+            with transaction.atomic():
+                if employee.user:
+                    user = employee.user
+                    user.set_password(form.cleaned_data['password'])
+                    user.save(update_fields=['password'])
+                else:
+                    user = User.objects.create_user(
+                        username=form.cleaned_data['username'],
+                        email=employee.email,
+                        password=form.cleaned_data['password'],
+                        first_name=employee.first_name,
+                        last_name=employee.last_name,
+                    )
+                    employee.user = user
+                    OrganizationMembership.objects.get_or_create(
+                        user=user,
+                        organization=employee.organization,
+                        defaults={'role': 'employee', 'is_active': True},
+                    )
+                employee.personal_email = form.cleaned_data['personal_email']
+                employee.phone = form.cleaned_data['phone'] or employee.phone
+                employee.residential_address = form.cleaned_data['residential_address']
+                employee.emergency_contact_name = form.cleaned_data['emergency_contact_name']
+                employee.emergency_contact_phone = form.cleaned_data['emergency_contact_phone']
+                employee.save(update_fields=[
+                    'user',
+                    'personal_email',
+                    'phone',
+                    'residential_address',
+                    'emergency_contact_name',
+                    'emergency_contact_phone',
+                    'updated_at',
+                ])
+                invitation.status = 'accepted'
+                invitation.submitted_at = timezone.now()
+                invitation.save(update_fields=['status', 'submitted_at', 'updated_at'])
+                sync_onboarding_participant(
+                    employee.organization,
+                    stage_code='pre_arrival',
+                    employee=employee,
+                    invitation=invitation,
+                    joining_date=employee.hire_date,
+                )
+                login(request, user)
+            messages.success(request, 'Your employee account is ready.')
+            return redirect('employee_self_service_dashboard')
+    else:
+        form = EmployeeOnboardingSetupForm(employee=employee)
+
+    context = {
+        'form': form,
+        'invitation': invitation,
+        'employee': employee,
+        'page_title': 'Set Up Employee Profile',
+    }
+    return render(request, 'attendance/public_employee_setup_form.html', context)
+
+
+@login_required
+@hr_required
+def applicant_approve(request, pk):
+    organization = get_active_organization(request)
+    applicant = get_object_or_404(Applicant, organization=organization, pk=pk)
+
+    if request.method == 'POST':
+        if applicant.status == 'converted':
+            messages.info(request, f'{applicant.full_name} has already been converted.')
+            return redirect('onboarding_tasks')
+        if not applicant.gender:
+            messages.warning(request, 'Applicant must provide gender before conversion to employee.')
+            return redirect('onboarding_tasks')
+        with transaction.atomic():
+            employee = Employee.objects.create(
+                organization=organization,
+                category=applicant.category,
+                first_name=applicant.first_name,
+                middle_name=applicant.middle_name,
+                last_name=applicant.last_name,
+                email=applicant.email,
+                phone=applicant.phone,
+                gender=applicant.gender,
+                department=applicant.department,
+                position=applicant.position,
+                hire_date=timezone.localdate(),
+                employment_status='active',
+                is_active=True,
+            )
+            applicant.status = 'converted'
+            applicant.employee = employee
+            applicant.reviewed_by = request.user
+            applicant.reviewed_at = timezone.now()
+            applicant.save(update_fields=['status', 'employee', 'reviewed_by', 'reviewed_at', 'updated_at'])
+            invitation = OnboardingInvitation.objects.create(
+                organization=organization,
+                invitation_type='employee_setup',
+                employee=employee,
+                email=employee.email,
+                message='Your application has been approved. Please set up your employee profile.',
+                invited_by=request.user,
+            )
+            send_onboarding_invitation_email(request, invitation)
+            sync_onboarding_participant(
+                organization,
+                stage_code='profile_setup',
+                applicant=applicant,
+                employee=employee,
+                invitation=invitation,
+                joining_date=employee.hire_date,
+            )
+            write_audit_log(
+                request,
+                organization=organization,
+                area='employee',
+                action='applicant_converted',
+                target=employee,
+                summary=f'Converted applicant {applicant.full_name} to employee.',
+                metadata={'applicant_id': applicant.pk, 'employee_id': employee.employee_id},
+            )
+        messages.success(request, f'{applicant.full_name} has been converted to employee and sent setup email.')
+    return redirect('onboarding_tasks')
+
+
+@login_required
+@hr_required
+def applicant_reject(request, pk):
+    organization = get_active_organization(request)
+    applicant = get_object_or_404(Applicant, organization=organization, pk=pk)
+    if request.method == 'POST':
+        applicant.status = 'rejected'
+        applicant.reviewed_by = request.user
+        applicant.reviewed_at = timezone.now()
+        applicant.review_note = request.POST.get('review_note', '').strip()
+        applicant.save(update_fields=['status', 'reviewed_by', 'reviewed_at', 'review_note', 'updated_at'])
+        sync_onboarding_participant(
+            organization,
+            stage_code='rejected',
+            applicant=applicant,
+            employee=applicant.employee,
+            note=applicant.review_note,
+        )
+        write_audit_log(
+            request,
+            organization=organization,
+            area='employee',
+            action='applicant_rejected',
+            target=applicant,
+            summary=f'Rejected applicant {applicant.full_name}.',
+            metadata={'email': applicant.email},
+        )
+        messages.success(request, f'{applicant.full_name} has been marked as rejected.')
+    return redirect('onboarding_tasks')
 
 
 @login_required
@@ -1744,10 +2545,13 @@ def leave_requests(request):
     organization = get_active_organization(request)
     status = request.GET.get('status', '')
     search_query = request.GET.get('search', '').strip()
+    today = timezone.localdate()
+    current_month_start = today.replace(day=1)
+    upcoming_limit = today + timedelta(days=30)
 
     requests_qs = LeaveRequest.objects.filter(
         organization=organization
-    ).select_related('employee', 'employee__department', 'leave_type', 'reviewed_by')
+    ).select_related('employee', 'employee__department', 'leave_type', 'reviewed_by').order_by('-created_at')
 
     if status:
         requests_qs = requests_qs.filter(status=status)
@@ -1759,18 +2563,124 @@ def leave_requests(request):
             Q(leave_type__name__icontains=search_query)
         )
 
+    active_employees = Employee.objects.filter(
+        organization=organization,
+        is_active=True,
+    ).select_related('category', 'department').order_by('first_name', 'last_name')
+    if search_query:
+        active_employees = active_employees.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(employee_id__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(department__name__icontains=search_query)
+        )
+
+    leave_employee_rows = [
+        build_employee_leave_overview(employee, year=today.year)
+        for employee in active_employees
+    ]
+
     context = {
         'organization': organization,
         'leave_requests': requests_qs,
-        'leave_balances': build_organization_leave_balances(organization),
+        'leave_employee_rows': leave_employee_rows,
         'selected_status': status,
         'search_query': search_query,
         'status_choices': LeaveRequest.STATUS_CHOICES,
         'pending_count': LeaveRequest.objects.filter(organization=organization, status='pending').count(),
         'approved_count': LeaveRequest.objects.filter(organization=organization, status='approved').count(),
+        'on_leave_today_count': LeaveRequest.objects.filter(
+            organization=organization,
+            status='approved',
+            start_date__lte=today,
+            end_date__gte=today,
+        ).values('employee_id').distinct().count(),
+        'approved_this_month_count': LeaveRequest.objects.filter(
+            organization=organization,
+            status='approved',
+            start_date__gte=current_month_start,
+            start_date__lte=today,
+        ).count(),
+        'upcoming_leave_count': LeaveRequest.objects.filter(
+            organization=organization,
+            status='approved',
+            start_date__gt=today,
+            start_date__lte=upcoming_limit,
+        ).count(),
+        'low_balance_count': sum(1 for row in leave_employee_rows if row['total_remaining'] <= 3),
+        'recent_leave_requests': requests_qs[:8],
+        'today': today,
         'page_title': 'Leave Management',
     }
     return render(request, 'attendance/leave_requests.html', context)
+
+
+@login_required
+@hr_required
+def employee_leave_detail(request, employee_pk):
+    organization = get_active_organization(request)
+    employee = get_object_or_404(
+        Employee.objects.select_related('category', 'department', 'line_manager'),
+        organization=organization,
+        pk=employee_pk,
+    )
+    today = timezone.localdate()
+    overview = build_employee_leave_overview(employee, year=today.year)
+    leave_requests_qs = LeaveRequest.objects.filter(
+        organization=organization,
+        employee=employee,
+    ).select_related('leave_type', 'reviewed_by').order_by('-created_at')
+
+    context = {
+        'organization': organization,
+        'employee': employee,
+        'overview': overview,
+        'leave_requests': leave_requests_qs,
+        'approved_requests': leave_requests_qs.filter(status='approved')[:8],
+        'pending_requests': leave_requests_qs.filter(status='pending'),
+        'page_title': f'Leave: {employee.full_name}',
+        'today': today,
+    }
+    return render(request, 'attendance/employee_leave_detail.html', context)
+
+
+@login_required
+@hr_required
+def leave_request_detail(request, pk):
+    organization = get_active_organization(request)
+    leave_request = get_object_or_404(
+        LeaveRequest.objects.select_related(
+            'employee',
+            'employee__category',
+            'employee__department',
+            'leave_type',
+            'reviewed_by',
+        ),
+        pk=pk,
+        organization=organization,
+    )
+    balances = build_leave_balances(leave_request.employee)
+    selected_balance = next(
+        (balance for balance in balances if balance['leave_type'].pk == leave_request.leave_type_id),
+        None,
+    )
+    overlapping_requests = LeaveRequest.objects.filter(
+        organization=organization,
+        employee=leave_request.employee,
+        start_date__lte=leave_request.end_date,
+        end_date__gte=leave_request.start_date,
+    ).exclude(pk=leave_request.pk).select_related('leave_type').order_by('-created_at')
+
+    context = {
+        'organization': organization,
+        'leave_request': leave_request,
+        'balances': balances,
+        'selected_balance': selected_balance,
+        'overlapping_requests': overlapping_requests,
+        'page_title': f'Leave Request: {leave_request.employee.full_name}',
+    }
+    return render(request, 'attendance/leave_request_detail.html', context)
 
 
 @login_required
@@ -1792,7 +2702,7 @@ def leave_request_create(request):
                 metadata={'employee_id': leave_request.employee.employee_id, 'leave_type': leave_request.leave_type.name},
             )
             messages.success(request, f'Leave request for {leave_request.employee.full_name} has been submitted.')
-            return redirect('leave_requests')
+            return redirect('leave_request_detail', pk=leave_request.pk)
     else:
         form = LeaveRequestForm(organization=organization)
 
@@ -1806,6 +2716,47 @@ def leave_request_create(request):
 
 @login_required
 @hr_required
+def leave_request_edit(request, pk):
+    organization = get_active_organization(request)
+    leave_request = get_object_or_404(
+        LeaveRequest.objects.select_related('employee', 'leave_type'),
+        pk=pk,
+        organization=organization,
+    )
+    if leave_request.status != 'pending':
+        messages.warning(request, 'Only pending leave requests can be edited. Cancel or recreate reviewed requests instead.')
+        return redirect('leave_request_detail', pk=leave_request.pk)
+
+    if request.method == 'POST':
+        form = LeaveRequestForm(request.POST, organization=organization, instance=leave_request)
+        if form.is_valid():
+            leave_request = form.save()
+            write_audit_log(
+                request,
+                organization=organization,
+                area='leave',
+                action='leave_request_updated',
+                target=leave_request,
+                summary=f'Updated leave request for {leave_request.employee.full_name}.',
+                metadata={'employee_id': leave_request.employee.employee_id, 'leave_type': leave_request.leave_type.name},
+            )
+            messages.success(request, 'Leave request has been updated.')
+            return redirect('leave_request_detail', pk=leave_request.pk)
+    else:
+        form = LeaveRequestForm(organization=organization, instance=leave_request)
+
+    context = {
+        'form': form,
+        'organization': organization,
+        'leave_request': leave_request,
+        'page_title': 'Edit Leave Request',
+        'action': 'Update',
+    }
+    return render(request, 'attendance/leave_request_form.html', context)
+
+
+@login_required
+@hr_required
 def leave_request_approve(request, pk):
     organization = get_active_organization(request)
     leave_request = get_object_or_404(
@@ -1813,10 +2764,9 @@ def leave_request_approve(request, pk):
         pk=pk,
         organization=organization,
     )
-    manager_required = leave_request.employee.line_manager_id is not None
-    if manager_required and leave_request.manager_approval_status != 'approved':
-        messages.warning(request, 'This leave request needs line manager approval before HR final approval.')
-        return redirect('leave_requests')
+    if leave_request.status != 'pending':
+        messages.warning(request, 'Only pending leave requests can be approved.')
+        return redirect('leave_request_detail', pk=leave_request.pk)
 
     if request.method == 'POST':
         form = LeaveReviewForm(request.POST)
@@ -1837,7 +2787,7 @@ def leave_request_approve(request, pk):
                 metadata={'employee_id': leave_request.employee.employee_id},
             )
             messages.success(request, f'Leave approved for {leave_request.employee.full_name}.')
-            return redirect('leave_requests')
+            return redirect('leave_request_detail', pk=leave_request.pk)
     else:
         form = LeaveReviewForm()
 
@@ -1860,6 +2810,9 @@ def leave_request_reject(request, pk):
         pk=pk,
         organization=organization,
     )
+    if leave_request.status != 'pending':
+        messages.warning(request, 'Only pending leave requests can be rejected.')
+        return redirect('leave_request_detail', pk=leave_request.pk)
 
     if request.method == 'POST':
         form = LeaveReviewForm(request.POST)
@@ -1879,7 +2832,7 @@ def leave_request_reject(request, pk):
                 metadata={'employee_id': leave_request.employee.employee_id},
             )
             messages.success(request, f'Leave rejected for {leave_request.employee.full_name}.')
-            return redirect('leave_requests')
+            return redirect('leave_request_detail', pk=leave_request.pk)
     else:
         form = LeaveReviewForm()
 
@@ -1891,6 +2844,94 @@ def leave_request_reject(request, pk):
         'page_title': 'Reject Leave',
     }
     return render(request, 'attendance/leave_request_review.html', context)
+
+
+@login_required
+@hr_required
+def leave_request_cancel(request, pk):
+    organization = get_active_organization(request)
+    leave_request = get_object_or_404(
+        LeaveRequest.objects.select_related('employee', 'leave_type'),
+        pk=pk,
+        organization=organization,
+    )
+    if leave_request.status not in ['pending', 'approved']:
+        messages.warning(request, 'Only pending or approved leave requests can be cancelled.')
+        return redirect('leave_request_detail', pk=leave_request.pk)
+
+    if request.method == 'POST':
+        form = LeaveReviewForm(request.POST)
+        if form.is_valid():
+            leave_request.status = 'cancelled'
+            leave_request.reviewed_by = request.user
+            leave_request.reviewed_at = timezone.now()
+            leave_request.review_note = form.cleaned_data['review_note']
+            leave_request.save(update_fields=['status', 'reviewed_by', 'reviewed_at', 'review_note', 'updated_at'])
+            remove_synced_leave_attendance_exception(leave_request)
+            write_audit_log(
+                request,
+                organization=organization,
+                area='leave',
+                action='leave_request_cancelled',
+                target=leave_request,
+                summary=f'Cancelled leave request for {leave_request.employee.full_name}.',
+                metadata={'employee_id': leave_request.employee.employee_id, 'leave_type': leave_request.leave_type.name},
+            )
+            messages.success(request, f'Leave request for {leave_request.employee.full_name} has been cancelled.')
+            return redirect('leave_request_detail', pk=leave_request.pk)
+    else:
+        form = LeaveReviewForm()
+
+    context = {
+        'form': form,
+        'leave_request': leave_request,
+        'organization': organization,
+        'action': 'Cancel',
+        'page_title': 'Cancel Leave',
+    }
+    return render(request, 'attendance/leave_request_review.html', context)
+
+
+@login_required
+@hr_required
+def leave_request_delete(request, pk):
+    organization = get_active_organization(request)
+    leave_request = get_object_or_404(
+        LeaveRequest.objects.select_related('employee', 'leave_type'),
+        pk=pk,
+        organization=organization,
+    )
+
+    if request.method == 'POST':
+        employee = leave_request.employee
+        leave_type_name = leave_request.leave_type.name
+        start_date = leave_request.start_date
+        end_date = leave_request.end_date
+        remove_synced_leave_attendance_exception(leave_request)
+        write_audit_log(
+            request,
+            organization=organization,
+            area='leave',
+            action='leave_request_deleted',
+            target=leave_request,
+            summary=f'Deleted leave request for {employee.full_name}.',
+            metadata={
+                'employee_id': employee.employee_id,
+                'leave_type': leave_type_name,
+                'start_date': start_date.isoformat(),
+                'end_date': end_date.isoformat(),
+            },
+        )
+        leave_request.delete()
+        messages.success(request, f'{leave_type_name} request for {employee.full_name} has been deleted.')
+        return redirect('employee_leave_detail', employee_pk=employee.pk)
+
+    context = {
+        'leave_request': leave_request,
+        'organization': organization,
+        'page_title': 'Delete Leave Request',
+    }
+    return render(request, 'attendance/leave_request_confirm_delete.html', context)
 
 
 # ==================== PAYROLL VIEWS ====================
@@ -2175,6 +3216,204 @@ def payslip_detail(request, pk):
     return render(request, 'attendance/payslip_detail.html', context)
 
 
+# ==================== ADMIN REPORTS ====================
+
+@login_required
+@hr_required
+def admin_reports(request):
+    organization = get_active_organization(request)
+    reports = AdminReport.objects.filter(
+        organization=organization,
+    ).select_related('related_employee', 'related_department', 'created_by', 'reviewed_by')
+
+    search_query = request.GET.get('q', '').strip()
+    report_type = request.GET.get('report_type', '').strip()
+    tone = request.GET.get('tone', '').strip()
+    status = request.GET.get('status', '').strip()
+
+    if search_query:
+        reports = reports.filter(
+            Q(title__icontains=search_query)
+            | Q(body__icontains=search_query)
+            | Q(action_taken__icontains=search_query)
+            | Q(related_employee__first_name__icontains=search_query)
+            | Q(related_employee__last_name__icontains=search_query)
+            | Q(related_employee__employee_id__icontains=search_query)
+            | Q(related_department__name__icontains=search_query)
+        )
+    if report_type:
+        reports = reports.filter(report_type=report_type)
+    if tone:
+        reports = reports.filter(tone=tone)
+    if status:
+        reports = reports.filter(status=status)
+
+    base_reports = AdminReport.objects.filter(organization=organization)
+    context = {
+        'organization': organization,
+        'admin_reports': reports,
+        'search_query': search_query,
+        'selected_report_type': report_type,
+        'selected_tone': tone,
+        'selected_status': status,
+        'report_type_choices': AdminReport.REPORT_TYPE_CHOICES,
+        'tone_choices': AdminReport.TONE_CHOICES,
+        'status_choices': AdminReport.STATUS_CHOICES,
+        'total_reports': reports.count(),
+        'open_count': base_reports.filter(status='open').count(),
+        'reviewed_count': base_reports.filter(status='reviewed').count(),
+        'closed_count': base_reports.filter(status='closed').count(),
+        'urgent_count': base_reports.filter(tone='urgent').count(),
+        'page_title': 'Admin Reports',
+    }
+    return render(request, 'attendance/admin_reports.html', context)
+
+
+@login_required
+@hr_required
+def admin_report_create(request):
+    organization = get_active_organization(request)
+    if request.method == 'POST':
+        form = AdminReportForm(request.POST, organization=organization)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.created_by = request.user
+            if report.status in ['reviewed', 'closed']:
+                report.reviewed_by = request.user
+                report.reviewed_at = timezone.now()
+            report.save()
+            write_audit_log(
+                request,
+                organization=organization,
+                area='admin_report',
+                action='admin_report_created',
+                target=report,
+                summary=f'Created admin report: {report.title}.',
+                metadata={'report_type': report.report_type, 'tone': report.tone, 'status': report.status},
+            )
+            messages.success(request, 'Admin report has been saved.')
+            return redirect('admin_report_detail', pk=report.pk)
+    else:
+        form = AdminReportForm(organization=organization, initial={'event_date': timezone.localdate(), 'status': 'open'})
+
+    context = {
+        'form': form,
+        'organization': organization,
+        'page_title': 'Write Admin Report',
+        'action': 'Create',
+    }
+    return render(request, 'attendance/admin_report_form.html', context)
+
+
+@login_required
+@hr_required
+def admin_report_detail(request, pk):
+    organization = get_active_organization(request)
+    report = get_object_or_404(
+        AdminReport.objects.select_related('related_employee', 'related_department', 'created_by', 'reviewed_by'),
+        organization=organization,
+        pk=pk,
+    )
+    context = {
+        'organization': organization,
+        'report': report,
+        'page_title': report.title,
+    }
+    return render(request, 'attendance/admin_report_detail.html', context)
+
+
+@login_required
+@hr_required
+def admin_report_edit(request, pk):
+    organization = get_active_organization(request)
+    report = get_object_or_404(AdminReport, organization=organization, pk=pk)
+
+    if request.method == 'POST':
+        form = AdminReportForm(request.POST, organization=organization, instance=report)
+        if form.is_valid():
+            report = form.save(commit=False)
+            if report.status in ['reviewed', 'closed'] and not report.reviewed_at:
+                report.reviewed_by = request.user
+                report.reviewed_at = timezone.now()
+            report.save()
+            write_audit_log(
+                request,
+                organization=organization,
+                area='admin_report',
+                action='admin_report_updated',
+                target=report,
+                summary=f'Updated admin report: {report.title}.',
+                metadata={'report_type': report.report_type, 'tone': report.tone, 'status': report.status},
+            )
+            messages.success(request, 'Admin report has been updated.')
+            return redirect('admin_report_detail', pk=report.pk)
+    else:
+        form = AdminReportForm(organization=organization, instance=report)
+
+    context = {
+        'form': form,
+        'organization': organization,
+        'report': report,
+        'page_title': 'Edit Admin Report',
+        'action': 'Update',
+    }
+    return render(request, 'attendance/admin_report_form.html', context)
+
+
+@login_required
+@hr_required
+def admin_report_set_status(request, pk, status):
+    organization = get_active_organization(request)
+    report = get_object_or_404(AdminReport, organization=organization, pk=pk)
+    allowed_statuses = {choice[0] for choice in AdminReport.STATUS_CHOICES}
+    if request.method == 'POST' and status in allowed_statuses:
+        report.status = status
+        if status in ['reviewed', 'closed']:
+            report.reviewed_by = request.user
+            report.reviewed_at = timezone.now()
+        report.save(update_fields=['status', 'reviewed_by', 'reviewed_at', 'updated_at'])
+        write_audit_log(
+            request,
+            organization=organization,
+            area='admin_report',
+            action='admin_report_status_changed',
+            target=report,
+            summary=f'Set admin report {report.title} to {report.get_status_display()}.',
+            metadata={'status': report.status},
+        )
+        messages.success(request, f'Admin report marked {report.get_status_display().lower()}.')
+    return redirect('admin_report_detail', pk=report.pk)
+
+
+@login_required
+@hr_required
+def admin_report_delete(request, pk):
+    organization = get_active_organization(request)
+    report = get_object_or_404(AdminReport, organization=organization, pk=pk)
+
+    if request.method == 'POST':
+        title = report.title
+        write_audit_log(
+            request,
+            organization=organization,
+            area='admin_report',
+            action='admin_report_deleted',
+            target=report,
+            summary=f'Deleted admin report: {title}.',
+            metadata={'report_type': report.report_type, 'tone': report.tone, 'status': report.status},
+        )
+        report.delete()
+        messages.success(request, f'Admin report "{title}" has been deleted.')
+        return redirect('admin_reports')
+
+    context = {
+        'organization': organization,
+        'report': report,
+        'page_title': 'Delete Admin Report',
+    }
+    return render(request, 'attendance/admin_report_confirm_delete.html', context)
+
+
 # ==================== REPORT VIEWS ====================
 
 @login_required
@@ -2239,7 +3478,7 @@ def reports_view(request):
         'has_completed_hours': has_completed_hours,
         'birthdays_this_week': get_upcoming_birthdays(organization=organization),
         'internship_endings': get_upcoming_internship_endings(organization=organization),
-        'page_title': 'Reports & Analytics',
+        'page_title': 'Analytics',
     }
     
     return render(request, 'attendance/reports.html', context)
@@ -2360,6 +3599,25 @@ def sync_leave_attendance_exception(leave_request):
     )
 
 
+def remove_synced_leave_attendance_exception(leave_request):
+    """Remove the attendance exception created by leave approval when leave is cancelled/deleted."""
+
+    exception_code = {
+        'annual_leave': 'leave',
+        'unpaid_leave': 'leave',
+        'sick_leave': 'sick',
+    }.get(leave_request.leave_type.code, leave_request.leave_type.code)
+
+    AttendanceException.objects.filter(
+        organization=leave_request.organization,
+        employee=leave_request.employee,
+        exception_type=exception_code,
+        start_date=leave_request.start_date,
+        end_date=leave_request.end_date,
+        notes__icontains='approved via leave management',
+    ).delete()
+
+
 def build_leave_balances(employee, year=None):
     year = year or timezone.now().year
     year_start = date(year, 1, 1)
@@ -2400,6 +3658,40 @@ def build_leave_balances(employee, year=None):
     return rows
 
 
+def build_employee_leave_overview(employee, year=None):
+    today = timezone.localdate()
+    balances = build_leave_balances(employee, year)
+    approved_requests = LeaveRequest.objects.filter(
+        organization=employee.organization,
+        employee=employee,
+        status='approved',
+    ).select_related('leave_type').order_by('start_date')
+    current_leave = approved_requests.filter(
+        start_date__lte=today,
+        end_date__gte=today,
+    ).first()
+    next_leave = approved_requests.filter(
+        start_date__gt=today,
+    ).first()
+    pending_count = LeaveRequest.objects.filter(
+        organization=employee.organization,
+        employee=employee,
+        status='pending',
+    ).count()
+
+    return {
+        'employee': employee,
+        'balances': balances,
+        'total_entitlement': sum(balance['entitlement'] for balance in balances),
+        'total_used': sum(balance['used'] for balance in balances),
+        'total_pending': sum(balance['pending'] for balance in balances),
+        'total_remaining': sum(balance['remaining'] for balance in balances),
+        'current_leave': current_leave,
+        'next_leave': next_leave,
+        'pending_count': pending_count,
+    }
+
+
 def build_organization_leave_balances(organization, year=None):
     employees = Employee.objects.filter(
         organization=organization,
@@ -2407,12 +3699,7 @@ def build_organization_leave_balances(organization, year=None):
     ).select_related('department', 'category').order_by('first_name', 'last_name')
     rows = []
     for employee in employees:
-        balances = build_leave_balances(employee, year)
-        rows.append({
-            'employee': employee,
-            'balances': balances,
-            'total_remaining': sum(balance['remaining'] for balance in balances),
-        })
+        rows.append(build_employee_leave_overview(employee, year))
     return rows
 
 

@@ -1,0 +1,76 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Delete Admin Report | HR Management{% endblock %}
+{% block page_title %}Delete Admin Report{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row">
+        <div class="col-xl-7 mx-auto">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1"><i class="bi bi-trash me-2 text-danger"></i>Delete Admin Report</h5>
+                    <p class="text-muted mb-0">This action removes the report from the admin report list.</p>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div class="alert alert-warning">
+                        <div class="fw-semibold">Are you sure you want to delete this report?</div>
+                        <div class="mt-1">{{ report.title }}</div>
+                    </div>
+
+                    <dl class="report-delete-summary">
+                        <div><dt>Type</dt><dd>{{ report.get_report_type_display }}</dd></div>
+                        <div><dt>Tone</dt><dd>{{ report.get_tone_display }}</dd></div>
+                        <div><dt>Status</dt><dd>{{ report.get_status_display }}</dd></div>
+                        <div><dt>Date</dt><dd>{{ report.event_date|date:"M j, Y" }}</dd></div>
+                    </dl>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="responsive-actions justify-content-end">
+                            <a href="{% url 'admin_report_detail' report.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-1"></i> Delete Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .report-delete-summary {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.85rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .report-delete-summary div {
+        padding: 0.85rem;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: 8px;
+        background: #f8fafc;
+    }
+
+    .report-delete-summary dt {
+        color: #64748b;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+
+    .report-delete-summary dd {
+        margin: 0.25rem 0 0;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    @media (max-width: 767.98px) {
+        .report-delete-summary {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

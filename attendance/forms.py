@@ -10,12 +10,16 @@ from .models import (
     EmployeeCertification,
     EmployeeWorkExperience,
     EmployeeDocument,
+    Applicant,
+    OnboardingInvitation,
+    AdminReport,
     AttendanceException,
     AttendanceExceptionType,
     Organization,
     AttendanceSettings,
     LeaveType,
     LeaveRequest,
+    OnboardingStage,
     OnboardingTask,
     PayrollRun,
 )
@@ -836,6 +840,7 @@ class LeaveRequestForm(forms.ModelForm):
         instance = super().save(commit=False)
         if self.organization:
             instance.organization = self.organization
+        instance.manager_approval_status = 'not_required'
         if commit:
             instance.save()
         return instance
@@ -884,6 +889,250 @@ class EmployeeAccountForm(forms.Form):
         if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError('A user account already uses this email.')
         return email
+
+
+class ApplicantInvitationForm(forms.ModelForm):
+    class Meta:
+        model = Applicant
+        fields = ['first_name', 'middle_name', 'last_name', 'email', 'phone', 'gender', 'category', 'department', 'position', 'cover_note']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First name'}),
+            'middle_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Middle name'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last name'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'candidate@example.com'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone number'}),
+            'gender': forms.Select(attrs={'class': 'form-select'}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'department': forms.Select(attrs={'class': 'form-select'}),
+            'position': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Role or position'}),
+            'cover_note': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Optional note to the applicant'}),
+        }
+
+    def __init__(self, *args, organization=None, **kwargs):
+        self.organization = organization
+        super().__init__(*args, **kwargs)
+        category_qs = Category.objects.none()
+        department_qs = Department.objects.none()
+        if organization:
+            category_qs = Category.objects.filter(organization=organization).order_by('name')
+            department_qs = Department.objects.filter(organization=organization, is_active=True).order_by('name')
+        self.fields['category'].queryset = category_qs
+        self.fields['department'].queryset = department_qs
+        self.fields['department'].required = False
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip().lower()
+        if self.organization and Employee.objects.filter(organization=self.organization, email__iexact=email).exists():
+            raise forms.ValidationError('An employee already exists with this email. Use existing employee onboarding instead.')
+        if self.organization and Applicant.objects.filter(organization=self.organization, email__iexact=email).exists():
+            raise forms.ValidationError('An applicant already exists with this email.')
+        return email
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.email = instance.email.lower()
+        if self.organization:
+            instance.organization = self.organization
+        if commit:
+            instance.save()
+        return instance
+
+
+class ExistingEmployeeOnboardingInviteForm(forms.Form):
+    employee = forms.ModelChoiceField(
+        queryset=Employee.objects.none(),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        empty_label='Select employee',
+    )
+    message = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 4,
+            'placeholder': 'Optional message to include in the setup email',
+        })
+    )
+
+    def __init__(self, *args, organization=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if organization:
+            self.fields['employee'].queryset = Employee.objects.filter(
+                organization=organization,
+                is_active=True,
+            ).select_related('category', 'department').order_by('first_name', 'last_name')
+
+
+class ApplicantApplicationForm(forms.ModelForm):
+    class Meta:
+        model = Applicant
+        fields = ['first_name', 'middle_name', 'last_name', 'phone', 'gender', 'department', 'position', 'cover_note']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'middle_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone number'}),
+            'gender': forms.Select(attrs={'class': 'form-select'}),
+            'department': forms.Select(attrs={'class': 'form-select'}),
+            'position': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Role or position'}),
+            'cover_note': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Brief application note, skills, or experience summary'}),
+        }
+
+    def __init__(self, *args, organization=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        department_qs = Department.objects.none()
+        if organization:
+            department_qs = Department.objects.filter(organization=organization, is_active=True).order_by('name')
+        self.fields['department'].queryset = department_qs
+        self.fields['department'].required = False
+
+
+class EmployeeOnboardingSetupForm(forms.Form):
+    username = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Choose username'}),
+    )
+    password = forms.CharField(
+        min_length=8,
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Choose password'}),
+    )
+    personal_email = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Personal email'}),
+    )
+    phone = forms.CharField(
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone number'}),
+    )
+    residential_address = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Residential address'}),
+    )
+    emergency_contact_name = forms.CharField(
+        max_length=150,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Emergency contact name'}),
+    )
+    emergency_contact_phone = forms.CharField(
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Emergency contact phone'}),
+    )
+
+    def __init__(self, *args, employee=None, **kwargs):
+        self.employee = employee
+        super().__init__(*args, **kwargs)
+        if employee and not self.is_bound:
+            base_username = employee.email.split('@')[0] if employee.email else employee.employee_id.lower()
+            self.fields['username'].initial = slugify(base_username).replace('-', '_')
+            self.fields['personal_email'].initial = employee.personal_email
+            self.fields['phone'].initial = employee.phone
+            self.fields['residential_address'].initial = employee.residential_address
+            self.fields['emergency_contact_name'].initial = employee.emergency_contact_name
+            self.fields['emergency_contact_phone'].initial = employee.emergency_contact_phone
+        if employee and employee.user:
+            self.fields['username'].initial = employee.user.username
+            self.fields['username'].disabled = True
+            self.fields['password'].label = 'New Password'
+
+    def clean_username(self):
+        username = self.cleaned_data['username'].strip()
+        if self.employee and self.employee.user and username == self.employee.user.username:
+            return username
+        if User.objects.filter(username__iexact=username).exists():
+            raise forms.ValidationError('This username is already taken.')
+        return username
+
+
+class OnboardingStageForm(forms.ModelForm):
+    class Meta:
+        model = OnboardingStage
+        fields = ['title', 'description', 'order', 'color', 'is_active']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Stage title'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Optional stage description'}),
+            'order': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+            'color': forms.Select(
+                attrs={'class': 'form-select'},
+                choices=[
+                    ('primary', 'Primary'),
+                    ('secondary', 'Secondary'),
+                    ('success', 'Success'),
+                    ('danger', 'Danger'),
+                    ('warning', 'Warning'),
+                    ('info', 'Info'),
+                    ('dark', 'Dark'),
+                ],
+            ),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def __init__(self, *args, organization=None, **kwargs):
+        self.organization = organization
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if self.organization:
+            instance.organization = self.organization
+        if commit:
+            instance.save()
+        return instance
+
+
+class AdminReportForm(forms.ModelForm):
+    class Meta:
+        model = AdminReport
+        fields = [
+            'title',
+            'report_type',
+            'tone',
+            'event_date',
+            'related_employee',
+            'related_department',
+            'body',
+            'action_taken',
+            'status',
+        ]
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Short report title'}),
+            'report_type': forms.Select(attrs={'class': 'form-select'}),
+            'tone': forms.Select(attrs={'class': 'form-select'}),
+            'event_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'related_employee': forms.Select(attrs={'class': 'form-select'}),
+            'related_department': forms.Select(attrs={'class': 'form-select'}),
+            'body': forms.Textarea(attrs={'class': 'form-control', 'rows': 8, 'placeholder': 'Write the report, feedback, observation, or event details'}),
+            'action_taken': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Optional action taken, recommendation, or follow-up'}),
+            'status': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+    def __init__(self, *args, organization=None, **kwargs):
+        self.organization = organization
+        super().__init__(*args, **kwargs)
+        employee_qs = Employee.objects.none()
+        department_qs = Department.objects.none()
+        if organization:
+            employee_qs = Employee.objects.filter(
+                organization=organization,
+                is_active=True,
+            ).select_related('category', 'department').order_by('first_name', 'last_name')
+            department_qs = Department.objects.filter(
+                organization=organization,
+                is_active=True,
+            ).order_by('name')
+        self.fields['related_employee'].queryset = employee_qs
+        self.fields['related_employee'].required = False
+        self.fields['related_department'].queryset = department_qs
+        self.fields['related_department'].required = False
+        self.fields['action_taken'].required = False
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if self.organization:
+            instance.organization = self.organization
+        if commit:
+            instance.save()
+        return instance
 
 
 class PayrollRunForm(forms.ModelForm):
@@ -1048,9 +1297,10 @@ class EmployeeDocumentForm(forms.ModelForm):
 class OnboardingTaskForm(forms.ModelForm):
     class Meta:
         model = OnboardingTask
-        fields = ['employee', 'title', 'category', 'status', 'assigned_to', 'due_date', 'notes']
+        fields = ['employee', 'stage', 'title', 'category', 'status', 'assigned_to', 'due_date', 'notes']
         widgets = {
             'employee': forms.Select(attrs={'class': 'form-select'}),
+            'stage': forms.Select(attrs={'class': 'form-select'}),
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Task title'}),
             'category': forms.Select(attrs={'class': 'form-select'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
@@ -1061,11 +1311,18 @@ class OnboardingTaskForm(forms.ModelForm):
 
     def __init__(self, *args, organization=None, employee=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['stage'].queryset = OnboardingStage.objects.none()
+        self.fields['stage'].required = False
         if organization:
             self.fields['employee'].queryset = Employee.objects.filter(
                 organization=organization,
                 is_active=True,
             ).order_by('first_name', 'last_name')
+            self.fields['stage'].queryset = OnboardingStage.objects.filter(
+                organization=organization,
+                is_active=True,
+            ).order_by('order', 'title')
+            self.fields['stage'].required = False
             self.fields['assigned_to'].queryset = User.objects.filter(
                 organization_memberships__organization=organization,
                 organization_memberships__is_active=True,

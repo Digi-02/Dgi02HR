@@ -32,6 +32,8 @@ urlpatterns = [
     path('settings/categories/', views.organization_categories, name='organization_categories'),
     path('settings/attendance/', views.organization_attendance_settings, name='organization_attendance_settings'),
     path('settings/leave-types/', views.organization_leave_types, name='organization_leave_types'),
+    path('settings/leave-types/<int:pk>/edit/', views.organization_leave_type_edit, name='organization_leave_type_edit'),
+    path('settings/leave-types/<int:pk>/delete/', views.organization_leave_type_delete, name='organization_leave_type_delete'),
     
     # Employee Management
     path('employees/', views.employee_list, name='employee_list'),
@@ -46,11 +48,20 @@ urlpatterns = [
     path('documents/<int:pk>/edit/', views.employee_document_edit, name='employee_document_edit'),
     path('documents/<int:pk>/delete/', views.employee_document_delete, name='employee_document_delete'),
     path('onboarding/', views.onboarding_tasks, name='onboarding_tasks'),
+    path('onboarding/invite-applicant/', views.applicant_invite, name='applicant_invite'),
+    path('onboarding/invite-employee/', views.existing_employee_onboarding_invite, name='existing_employee_onboarding_invite'),
+    path('onboarding/applicants/<int:pk>/approve/', views.applicant_approve, name='applicant_approve'),
+    path('onboarding/applicants/<int:pk>/reject/', views.applicant_reject, name='applicant_reject'),
+    path('onboarding/stages/add/', views.onboarding_stage_create, name='onboarding_stage_create'),
+    path('onboarding/stages/<int:pk>/edit/', views.onboarding_stage_edit, name='onboarding_stage_edit'),
+    path('onboarding/stages/<int:pk>/delete/', views.onboarding_stage_delete, name='onboarding_stage_delete'),
+    path('onboarding/participants/<int:pk>/move/', views.onboarding_participant_move, name='onboarding_participant_move'),
     path('onboarding/add/', views.onboarding_task_create, name='onboarding_task_create'),
     path('employees/<int:employee_pk>/onboarding/add/', views.onboarding_task_create, name='onboarding_task_create_for_employee'),
     path('onboarding/<int:pk>/edit/', views.onboarding_task_edit, name='onboarding_task_edit'),
     path('onboarding/<int:pk>/complete/', views.onboarding_task_complete, name='onboarding_task_complete'),
     path('onboarding/<int:pk>/delete/', views.onboarding_task_delete, name='onboarding_task_delete'),
+    path('onboarding/invite/<str:token>/', views.public_onboarding_invitation, name='public_onboarding_invitation'),
 
     # Employee Self-Service
     path('me/', views.employee_self_service_dashboard, name='employee_self_service_dashboard'),
@@ -70,9 +81,14 @@ urlpatterns = [
 
     # Leave Management
     path('leave/', views.leave_requests, name='leave_requests'),
+    path('leave/employees/<int:employee_pk>/', views.employee_leave_detail, name='employee_leave_detail'),
     path('leave/add/', views.leave_request_create, name='leave_request_create'),
+    path('leave/<int:pk>/', views.leave_request_detail, name='leave_request_detail'),
+    path('leave/<int:pk>/edit/', views.leave_request_edit, name='leave_request_edit'),
     path('leave/<int:pk>/approve/', views.leave_request_approve, name='leave_request_approve'),
     path('leave/<int:pk>/reject/', views.leave_request_reject, name='leave_request_reject'),
+    path('leave/<int:pk>/cancel/', views.leave_request_cancel, name='leave_request_cancel'),
+    path('leave/<int:pk>/delete/', views.leave_request_delete, name='leave_request_delete'),
 
     # Payroll
     path('finance/', views.finance_dashboard, name='finance_dashboard'),
@@ -85,8 +101,17 @@ urlpatterns = [
     path('payroll/<int:pk>/mark-paid/', views.payroll_run_mark_paid, name='payroll_run_mark_paid'),
     path('payslips/<int:pk>/', views.payslip_detail, name='payslip_detail'),
     
-    # Reports
+    # Admin Reports
+    path('admin-reports/', views.admin_reports, name='admin_reports'),
+    path('admin-reports/add/', views.admin_report_create, name='admin_report_create'),
+    path('admin-reports/<int:pk>/', views.admin_report_detail, name='admin_report_detail'),
+    path('admin-reports/<int:pk>/edit/', views.admin_report_edit, name='admin_report_edit'),
+    path('admin-reports/<int:pk>/delete/', views.admin_report_delete, name='admin_report_delete'),
+    path('admin-reports/<int:pk>/status/<str:status>/', views.admin_report_set_status, name='admin_report_set_status'),
+
+    # Analytics
     path('reports/', views.reports_view, name='reports'),
+    path('analytics/', views.reports_view, name='analytics'),
     path('reports/export/', views.export_attendance_csv, name='export_attendance_csv'),
 ]
 

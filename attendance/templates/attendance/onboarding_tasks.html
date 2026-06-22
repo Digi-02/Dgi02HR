@@ -10,15 +10,21 @@
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
                 <div>
                     <p class="text-uppercase small fw-semibold text-muted mb-1">HR Lifecycle</p>
-                    <h5 class="mb-1"><i class="bi bi-list-check me-2"></i>Onboarding Tasks</h5>
-                    <small class="text-muted">Track tasks required to prepare new staff, interns, and students.</small>
+                    <h5 class="mb-1"><i class="bi bi-diagram-3 me-2"></i>Onboarding Pipeline</h5>
+                    <small class="text-muted">Move applicants and employees through invitation, profile setup, pre-arrival, first day, documents, and completion.</small>
                 </div>
                 <div class="responsive-actions">
-                    <a href="{% url 'onboarding_task_create' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-lg me-1"></i> Add Task
+                    <a href="{% url 'applicant_invite' %}" class="btn btn-primary">
+                        <i class="bi bi-envelope-plus me-1"></i> Invite Applicant
                     </a>
-                    <a href="{% url 'employee_list' %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-people me-1"></i> Employees
+                    <a href="{% url 'existing_employee_onboarding_invite' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-person-gear me-1"></i> Invite Employee
+                    </a>
+                    <a href="{% url 'onboarding_stage_create' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-plus-square me-1"></i> Stage
+                    </a>
+                    <a href="{% url 'onboarding_task_create' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-plus-lg me-1"></i> Task
                     </a>
                 </div>
             </div>
@@ -28,25 +34,25 @@
     <div class="onboarding-metrics-grid mb-4">
         <div class="card border-0 h-100">
             <div class="card-body">
-                <small class="text-muted text-uppercase fw-semibold">Matching Tasks</small>
-                <h3 class="mt-2 mb-0">{{ total_tasks }}</h3>
+                <small class="text-muted text-uppercase fw-semibold">Active in Flow</small>
+                <h3 class="mt-2 mb-0">{{ active_participant_count }}</h3>
             </div>
         </div>
         <div class="card border-0 h-100">
             <div class="card-body">
-                <small class="text-muted text-uppercase fw-semibold">Pending</small>
-                <h3 class="mt-2 mb-0 text-warning">{{ pending_count }}</h3>
+                <small class="text-muted text-uppercase fw-semibold">Applicants</small>
+                <h3 class="mt-2 mb-0 text-primary">{{ applicant_count }}</h3>
             </div>
         </div>
         <div class="card border-0 h-100">
             <div class="card-body">
-                <small class="text-muted text-uppercase fw-semibold">In Progress</small>
-                <h3 class="mt-2 mb-0 text-primary">{{ in_progress_count }}</h3>
+                <small class="text-muted text-uppercase fw-semibold">Active Invites</small>
+                <h3 class="mt-2 mb-0 text-info">{{ active_invitation_count }}</h3>
             </div>
         </div>
         <div class="card border-0 h-100">
             <div class="card-body">
-                <small class="text-muted text-uppercase fw-semibold">Overdue</small>
+                <small class="text-muted text-uppercase fw-semibold">Task Overdue</small>
                 <h3 class="mt-2 mb-0 text-danger">{{ overdue_count }}</h3>
             </div>
         </div>
@@ -58,17 +64,23 @@
                 <div class="search-control">
                     <div class="input-group">
                         <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                        <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search task, employee, ID, notes">
+                        <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search person, email, phone, employee ID, task, notes">
                     </div>
                 </div>
+                <select name="stage" class="form-select">
+                    <option value="">All Stages</option>
+                    {% for stage in stage_choices %}
+                    <option value="{{ stage.pk }}" {% if selected_stage == stage.pk|stringformat:"s" %}selected{% endif %}>{{ stage.title }}</option>
+                    {% endfor %}
+                </select>
                 <select name="status" class="form-select">
-                    <option value="">All Statuses</option>
+                    <option value="">All Task Statuses</option>
                     {% for value, label in status_choices %}
                     <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
                 <select name="category" class="form-select">
-                    <option value="">All Categories</option>
+                    <option value="">All Task Categories</option>
                     {% for value, label in category_choices %}
                     <option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
@@ -79,65 +91,215 @@
         </div>
     </div>
 
-    <div class="card border-0">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Task</th>
-                            <th>Employee</th>
-                            <th>Category</th>
-                            <th>Owner</th>
-                            <th>Due</th>
-                            <th>Status</th>
-                            <th class="text-end">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for task in tasks %}
-                        <tr>
-                            <td>
-                                <div class="fw-semibold">{{ task.title }}</div>
-                                {% if task.notes %}<small class="text-muted">{{ task.notes }}</small>{% endif %}
-                            </td>
-                            <td>
-                                <div class="fw-semibold">{{ task.employee.display_name }}</div>
-                                <small class="text-muted">{{ task.employee.employee_id }}</small>
-                            </td>
-                            <td>{{ task.get_category_display }}</td>
-                            <td>{{ task.assigned_to.get_full_name|default:task.assigned_to.username|default:"-" }}</td>
-                            <td>
-                                {% if task.due_date %}
-                                    <span class="{% if task.is_overdue %}text-danger fw-semibold{% endif %}">{{ task.due_date|date:"M j, Y" }}</span>
-                                {% else %}
-                                    -
+    <div class="onboarding-board-shell mb-4">
+        <div class="onboarding-board" data-onboarding-board>
+            {% for row in stage_rows %}
+            <section class="stage-lane" data-stage-lane data-stage-id="{{ row.stage.pk }}">
+                <div class="stage-lane-header">
+                    <div class="stage-title-block">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="stage-marker bg-{{ row.stage.color }}"></span>
+                            <h5 class="mb-0">{{ row.stage.title }}</h5>
+                            <span class="badge bg-{{ row.stage.color }} bg-opacity-10 text-{{ row.stage.color }}" data-stage-count>{{ row.participants|length }}</span>
+                        </div>
+                        {% if row.stage.description %}
+                        <small class="text-muted">{{ row.stage.description }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="stage-controls">
+                        <a href="{% url 'onboarding_task_create' %}?stage={{ row.stage.pk }}" class="btn btn-sm btn-outline-primary" title="Add task">
+                            <i class="bi bi-plus-lg"></i>
+                        </a>
+                        <a href="{% url 'onboarding_stage_edit' row.stage.pk %}" class="btn btn-sm btn-outline-secondary" title="Edit stage">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'onboarding_stage_delete' row.stage.pk %}" class="btn btn-sm btn-outline-danger" title="Delete stage">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="stage-card-list" data-dropzone data-stage-id="{{ row.stage.pk }}">
+                    <div class="stage-empty-state" data-empty-state {% if row.participants %}hidden{% endif %}>
+                        No people in this stage.
+                    </div>
+                    {% for participant in row.participants %}
+                    <article
+                        class="participant-card"
+                        draggable="true"
+                        data-participant-card
+                        data-participant-id="{{ participant.pk }}"
+                        data-move-url="{% url 'onboarding_participant_move' participant.pk %}"
+                    >
+                        <div class="participant-card-top">
+                            <span class="person-avatar bg-{{ row.stage.color }}">{{ participant.display_name|slice:":1" }}</span>
+                            <div class="participant-main">
+                                <div class="fw-semibold">{{ participant.display_name }}</div>
+                                <small class="text-muted">
+                                    {{ participant.get_participant_type_display }}
+                                    {% if participant.role %} · {{ participant.role }}{% endif %}
+                                </small>
+                            </div>
+                            <span class="drag-handle" title="Move">
+                                <i class="bi bi-grip-vertical"></i>
+                            </span>
+                        </div>
+
+                        <div class="participant-card-grid">
+                            <div>
+                                <span>Email</span>
+                                <strong>{{ participant.email|default:"-" }}</strong>
+                            </div>
+                            <div>
+                                <span>Mobile</span>
+                                <strong>{{ participant.phone|default:"-" }}</strong>
+                            </div>
+                            <div>
+                                <span>Joining</span>
+                                <strong>
+                                    {% if participant.joining_date %}
+                                        {{ participant.joining_date|date:"M j, Y" }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </strong>
+                            </div>
+                            <div>
+                                <span>Status</span>
+                                <strong><span class="badge bg-secondary bg-opacity-10 text-secondary" data-source-status>{{ participant.source_status }}</span></strong>
+                            </div>
+                        </div>
+
+                        {% if participant.note %}
+                        <div class="participant-note">{{ participant.note }}</div>
+                        {% endif %}
+
+                        <div class="participant-card-actions">
+                            <form method="post" action="{% url 'onboarding_participant_move' participant.pk %}" class="participant-move-form">
+                                {% csrf_token %}
+                                <select name="stage" class="form-select form-select-sm" aria-label="Move stage">
+                                    {% for move_stage in stage_choices %}
+                                    <option value="{{ move_stage.pk }}" {% if participant.stage_id == move_stage.pk %}selected{% endif %}>{{ move_stage.title }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Move</button>
+                            </form>
+
+                            <div class="participant-link-actions">
+                                {% if participant.employee %}
+                                <a href="{% url 'onboarding_task_create_for_employee' participant.employee.pk %}?stage={{ row.stage.pk }}" class="btn btn-sm btn-outline-secondary">Task</a>
+                                <a href="{% url 'employee_detail' participant.employee.pk %}" class="btn btn-sm btn-outline-secondary">Employee</a>
                                 {% endif %}
-                            </td>
-                            <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ task.get_status_display }}</span></td>
-                            <td class="text-end">
-                                <div class="task-actions">
-                                    {% if task.status != "completed" and task.status != "waived" %}
-                                    <form method="post" action="{% url 'onboarding_task_complete' task.pk %}">
+                                {% if participant.applicant %}
+                                    {% if participant.applicant.status == "submitted" or participant.applicant.status == "under_review" or participant.applicant.status == "approved" %}
+                                    <form method="post" action="{% url 'applicant_approve' participant.applicant.pk %}">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-outline-success">Complete</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-success">Approve</button>
+                                    </form>
+                                    <form method="post" action="{% url 'applicant_reject' participant.applicant.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
                                     </form>
                                     {% endif %}
-                                    <a href="{% url 'onboarding_task_edit' task.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                                    <a href="{% url 'onboarding_task_delete' task.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                                No onboarding tasks match this view.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+            {% empty %}
+            <div class="card border-0">
+                <div class="card-body text-center py-5 text-muted">No onboarding stages have been configured.</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-5">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-0"><i class="bi bi-send-check me-2"></i>Recent Invitations</h5>
+                </div>
+                <div class="card-body">
+                    {% for invitation in invitations %}
+                    <div class="invite-row">
+                        <div>
+                            <div class="fw-semibold">{{ invitation.recipient_name }}</div>
+                            <small class="text-muted">{{ invitation.email }} · {{ invitation.get_invitation_type_display }}</small>
+                        </div>
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary">{{ invitation.get_status_display }}</span>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4 text-muted">No invitations sent yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-7">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Onboarding Tasks</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>Employee</th>
+                                    <th>Stage</th>
+                                    <th>Due</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in tasks %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ task.title }}</div>
+                                        {% if task.notes %}<small class="text-muted">{{ task.notes }}</small>{% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">{{ task.employee.display_name }}</div>
+                                        <small class="text-muted">{{ task.employee.employee_id }}</small>
+                                    </td>
+                                    <td>{{ task.stage.title|default:"-" }}</td>
+                                    <td>
+                                        {% if task.due_date %}
+                                            <span class="{% if task.is_overdue %}text-danger fw-semibold{% endif %}">{{ task.due_date|date:"M j, Y" }}</span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ task.get_status_display }}</span></td>
+                                    <td class="text-end">
+                                        <div class="task-actions">
+                                            {% if task.status != "completed" and task.status != "waived" %}
+                                            <form method="post" action="{% url 'onboarding_task_complete' task.pk %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-success">Complete</button>
+                                            </form>
+                                            {% endif %}
+                                            <a href="{% url 'onboarding_task_edit' task.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                            <a href="{% url 'onboarding_task_delete' task.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                        No onboarding tasks match this view.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -152,15 +314,211 @@
 
     .onboarding-filter-grid {
         display: grid;
-        grid-template-columns: minmax(220px, 1.4fr) minmax(150px, 0.7fr) minmax(150px, 0.7fr) auto auto;
+        grid-template-columns: minmax(220px, 1.4fr) minmax(150px, 0.6fr) minmax(150px, 0.6fr) minmax(150px, 0.6fr) auto auto;
         gap: 0.75rem;
         align-items: center;
     }
 
+    .onboarding-board-shell {
+        overflow-x: auto;
+        padding-bottom: 0.35rem;
+    }
+
+    .onboarding-board {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(320px, 380px);
+        gap: 1rem;
+        align-items: start;
+    }
+
+    .stage-lane {
+        background: #fff;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        border-radius: 8px;
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+        min-height: 260px;
+        overflow: hidden;
+    }
+
+    .stage-lane-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.85rem;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+        background: #f8fafc;
+    }
+
+    .stage-title-block {
+        min-width: 0;
+    }
+
+    .stage-marker {
+        width: 0.75rem;
+        height: 0.75rem;
+        border-radius: 999px;
+        display: inline-flex;
+        flex: 0 0 auto;
+    }
+
+    .stage-controls {
+        display: flex;
+        gap: 0.35rem;
+        flex: 0 0 auto;
+    }
+
+    .stage-card-list {
+        display: grid;
+        gap: 0.75rem;
+        min-height: 180px;
+        padding: 0.85rem;
+        transition: background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .stage-card-list.is-drop-target {
+        background: #f1f5f9;
+        box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+    .stage-empty-state {
+        border: 1px dashed rgba(148, 163, 184, 0.45);
+        border-radius: 8px;
+        color: #64748b;
+        padding: 1rem;
+        text-align: center;
+        background: #f8fafc;
+    }
+
+    .participant-card {
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        border-radius: 8px;
+        background: #fff;
+        padding: 0.85rem;
+        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.06);
+        cursor: grab;
+        transition: opacity 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .participant-card:active {
+        cursor: grabbing;
+    }
+
+    .participant-card.is-dragging {
+        opacity: 0.55;
+        transform: scale(0.98);
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+    }
+
+    .participant-card.is-moving {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .participant-card-top {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 0.65rem;
+        align-items: center;
+        margin-bottom: 0.8rem;
+    }
+
+    .person-avatar {
+        width: 2.35rem;
+        height: 2.35rem;
+        border-radius: 999px;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .participant-main {
+        min-width: 0;
+    }
+
+    .participant-main .fw-semibold,
+    .participant-main small,
+    .participant-card-grid strong {
+        overflow-wrap: anywhere;
+    }
+
+    .drag-handle {
+        color: #94a3b8;
+        font-size: 1.1rem;
+        line-height: 1;
+    }
+
+    .participant-card-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.55rem;
+    }
+
+    .participant-card-grid div {
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 8px;
+        padding: 0.55rem;
+        background: #f8fafc;
+        min-width: 0;
+    }
+
+    .participant-card-grid span {
+        display: block;
+        color: #64748b;
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        margin-bottom: 0.18rem;
+    }
+
+    .participant-card-grid strong {
+        display: block;
+        color: #0f172a;
+        font-size: 0.85rem;
+    }
+
+    .participant-note {
+        margin-top: 0.7rem;
+        padding: 0.65rem;
+        border-radius: 8px;
+        background: #fffbeb;
+        color: #92400e;
+        font-size: 0.85rem;
+    }
+
+    .participant-card-actions {
+        display: grid;
+        gap: 0.55rem;
+        margin-top: 0.75rem;
+    }
+
+    .participant-move-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.4rem;
+    }
+
+    .participant-link-actions,
     .task-actions {
         display: flex;
         justify-content: flex-end;
         gap: 0.45rem;
+        flex-wrap: wrap;
+    }
+
+    .invite-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.85rem 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    .invite-row:last-child {
+        border-bottom: 0;
     }
 
     @media (max-width: 1199.98px) {
@@ -176,10 +534,164 @@
             grid-template-columns: 1fr;
         }
 
-        .task-actions {
-            align-items: stretch;
+        .onboarding-board {
+            grid-auto-columns: minmax(280px, 88vw);
+        }
+
+        .stage-lane-header {
             flex-direction: column;
+        }
+
+        .participant-card-grid,
+        .participant-move-form {
+            grid-template-columns: 1fr;
         }
     }
 </style>
+
+<script>
+    (function () {
+        const board = document.querySelector('[data-onboarding-board]');
+        if (!board) {
+            return;
+        }
+
+        let draggedCard = null;
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) {
+                return parts.pop().split(';').shift();
+            }
+            return '';
+        }
+
+        function updateEmptyState(zone) {
+            const emptyState = zone.querySelector('[data-empty-state]');
+            if (!emptyState) {
+                return;
+            }
+            emptyState.hidden = Boolean(zone.querySelector('[data-participant-card]'));
+        }
+
+        function updateStageCount(lane, change) {
+            const countEl = lane.querySelector('[data-stage-count]');
+            if (!countEl) {
+                return;
+            }
+            const current = Number.parseInt(countEl.textContent, 10) || 0;
+            countEl.textContent = Math.max(0, current + change);
+        }
+
+        function syncCardSelect(card, stageId) {
+            const select = card.querySelector('select[name="stage"]');
+            if (select) {
+                select.value = stageId;
+            }
+        }
+
+        board.querySelectorAll('[data-dropzone]').forEach(updateEmptyState);
+
+        board.addEventListener('dragstart', function (event) {
+            const card = event.target.closest('[data-participant-card]');
+            if (!card) {
+                return;
+            }
+            draggedCard = card;
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', card.dataset.participantId);
+            window.setTimeout(function () {
+                card.classList.add('is-dragging');
+            }, 0);
+        });
+
+        board.addEventListener('dragend', function () {
+            if (draggedCard) {
+                draggedCard.classList.remove('is-dragging');
+            }
+            board.querySelectorAll('[data-dropzone]').forEach(function (zone) {
+                zone.classList.remove('is-drop-target');
+            });
+            draggedCard = null;
+        });
+
+        board.querySelectorAll('[data-dropzone]').forEach(function (zone) {
+            zone.addEventListener('dragover', function (event) {
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+            });
+
+            zone.addEventListener('dragenter', function (event) {
+                event.preventDefault();
+                zone.classList.add('is-drop-target');
+            });
+
+            zone.addEventListener('dragleave', function (event) {
+                if (!zone.contains(event.relatedTarget)) {
+                    zone.classList.remove('is-drop-target');
+                }
+            });
+
+            zone.addEventListener('drop', function (event) {
+                event.preventDefault();
+                zone.classList.remove('is-drop-target');
+                if (!draggedCard || draggedCard.classList.contains('is-moving')) {
+                    return;
+                }
+
+                const card = draggedCard;
+                const sourceZone = card.closest('[data-dropzone]');
+                const sourceLane = card.closest('[data-stage-lane]');
+                const targetLane = zone.closest('[data-stage-lane]');
+                const targetStageId = targetLane.dataset.stageId;
+                if (sourceZone === zone) {
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('stage', targetStageId);
+                card.classList.add('is-moving');
+
+                fetch(card.dataset.moveUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: formData,
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Move failed');
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data.ok) {
+                            throw new Error('Move failed');
+                        }
+                        zone.appendChild(card);
+                        syncCardSelect(card, targetStageId);
+                        const statusBadge = card.querySelector('[data-source-status]');
+                        if (statusBadge && data.source_status) {
+                            statusBadge.textContent = data.source_status;
+                        }
+                        if (sourceLane !== targetLane) {
+                            updateStageCount(sourceLane, -1);
+                            updateStageCount(targetLane, 1);
+                        }
+                        updateEmptyState(sourceZone);
+                        updateEmptyState(zone);
+                    })
+                    .catch(function () {
+                        window.alert('The person could not be moved. Please try again.');
+                    })
+                    .finally(function () {
+                        card.classList.remove('is-moving');
+                    });
+            });
+        });
+    })();
+</script>
 {% endblock %}

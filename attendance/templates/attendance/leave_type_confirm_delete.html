@@ -1,0 +1,84 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Delete Leave Type | HR Management{% endblock %}
+{% block page_title %}Delete Leave Type{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row">
+        <div class="col-xl-7 mx-auto">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1"><i class="bi bi-trash me-2 text-danger"></i>Delete Leave Type</h5>
+                    <p class="text-muted mb-0">Remove this leave type if it has not been used by any leave request.</p>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div class="alert {% if request_count %}alert-warning{% else %}alert-danger{% endif %}">
+                        <div class="fw-semibold">{{ leave_type.name }}</div>
+                        {% if request_count %}
+                            <div class="mt-1">This leave type is used by {{ request_count }} leave request(s). It cannot be deleted while those records exist. Mark it inactive instead if you no longer want staff to use it.</div>
+                        {% else %}
+                            <div class="mt-1">This action will permanently delete the leave type.</div>
+                        {% endif %}
+                    </div>
+
+                    <dl class="leave-type-delete-summary">
+                        <div><dt>Code</dt><dd>{{ leave_type.code }}</dd></div>
+                        <div><dt>Entitlement</dt><dd>{{ leave_type.annual_entitlement_days }} days</dd></div>
+                        <div><dt>Paid</dt><dd>{% if leave_type.is_paid %}Yes{% else %}No{% endif %}</dd></div>
+                        <div><dt>Status</dt><dd>{% if leave_type.is_active %}Active{% else %}Inactive{% endif %}</dd></div>
+                    </dl>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="responsive-actions justify-content-end">
+                            <a href="{% url 'organization_leave_types' %}" class="btn btn-outline-secondary">Cancel</a>
+                            {% if request_count %}
+                                <a href="{% url 'organization_leave_type_edit' leave_type.pk %}" class="btn btn-primary">Edit / Mark Inactive</a>
+                            {% else %}
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-trash me-1"></i> Delete Leave Type
+                                </button>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .leave-type-delete-summary {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.85rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .leave-type-delete-summary div {
+        padding: 0.85rem;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: 8px;
+        background: #f8fafc;
+    }
+
+    .leave-type-delete-summary dt {
+        color: #64748b;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+
+    .leave-type-delete-summary dd {
+        margin: 0.25rem 0 0;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    @media (max-width: 767.98px) {
+        .leave-type-delete-summary {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

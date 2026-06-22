@@ -14,7 +14,12 @@ from .models import (
     EmployeeCertification,
     EmployeeWorkExperience,
     EmployeeDocument,
+    OnboardingStage,
+    OnboardingParticipant,
     OnboardingTask,
+    Applicant,
+    OnboardingInvitation,
+    AdminReport,
     AttendanceException,
     AttendanceExceptionType,
     AuditLog,
@@ -56,10 +61,59 @@ class AuditLogAdmin(admin.ModelAdmin):
 
 @admin.register(OnboardingTask)
 class OnboardingTaskAdmin(admin.ModelAdmin):
-    list_display = ['employee', 'title', 'category', 'status', 'assigned_to', 'due_date', 'completed_at']
-    list_filter = ['organization', 'category', 'status', 'due_date']
+    list_display = ['employee', 'stage', 'title', 'category', 'status', 'assigned_to', 'due_date', 'completed_at']
+    list_filter = ['organization', 'stage', 'category', 'status', 'due_date']
     search_fields = ['title', 'employee__first_name', 'employee__last_name', 'employee__employee_id', 'notes']
-    autocomplete_fields = ['employee', 'assigned_to', 'completed_by']
+    autocomplete_fields = ['employee', 'stage', 'assigned_to', 'completed_by']
+
+
+@admin.register(OnboardingStage)
+class OnboardingStageAdmin(admin.ModelAdmin):
+    list_display = ['title', 'organization', 'code', 'order', 'color', 'is_active']
+    list_filter = ['organization', 'is_active']
+    search_fields = ['title', 'code', 'description', 'organization__name']
+    list_editable = ['order', 'color', 'is_active']
+
+
+@admin.register(OnboardingParticipant)
+class OnboardingParticipantAdmin(admin.ModelAdmin):
+    list_display = ['display_name', 'organization', 'participant_type', 'stage', 'status', 'joining_date', 'moved_at']
+    list_filter = ['organization', 'participant_type', 'stage', 'status']
+    search_fields = [
+        'applicant__first_name',
+        'applicant__last_name',
+        'applicant__email',
+        'employee__first_name',
+        'employee__last_name',
+        'employee__email',
+        'employee__employee_id',
+    ]
+    autocomplete_fields = ['organization', 'stage', 'applicant', 'employee', 'invitation']
+
+
+@admin.register(Applicant)
+class ApplicantAdmin(admin.ModelAdmin):
+    list_display = ['full_name', 'email', 'organization', 'category', 'department', 'position', 'status', 'created_at']
+    list_filter = ['organization', 'status', 'category', 'department']
+    search_fields = ['first_name', 'middle_name', 'last_name', 'email', 'phone', 'position']
+    autocomplete_fields = ['organization', 'category', 'department', 'employee', 'invited_by', 'reviewed_by']
+
+
+@admin.register(OnboardingInvitation)
+class OnboardingInvitationAdmin(admin.ModelAdmin):
+    list_display = ['email', 'organization', 'invitation_type', 'status', 'sent_at', 'expires_at']
+    list_filter = ['organization', 'invitation_type', 'status', 'sent_at']
+    search_fields = ['email', 'token', 'applicant__first_name', 'applicant__last_name', 'employee__first_name', 'employee__last_name']
+    readonly_fields = ['token', 'sent_at', 'opened_at', 'submitted_at', 'created_at', 'updated_at']
+    autocomplete_fields = ['organization', 'applicant', 'employee', 'invited_by']
+
+
+@admin.register(AdminReport)
+class AdminReportAdmin(admin.ModelAdmin):
+    list_display = ['title', 'organization', 'report_type', 'tone', 'status', 'related_employee', 'event_date', 'created_by']
+    list_filter = ['organization', 'report_type', 'tone', 'status', 'event_date']
+    search_fields = ['title', 'body', 'action_taken', 'related_employee__first_name', 'related_employee__last_name']
+    autocomplete_fields = ['organization', 'related_employee', 'related_department', 'created_by', 'reviewed_by']
 
 
 @admin.register(Category)

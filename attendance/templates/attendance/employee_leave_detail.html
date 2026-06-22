@@ -1,0 +1,240 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}{{ employee.full_name }} Leave | HR Management{% endblock %}
+{% block page_title %}Employee Leave Profile{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="card border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+                <div>
+                    <p class="text-uppercase small fw-semibold text-muted mb-1">Leave Profile</p>
+                    <h4 class="mb-1">{{ employee.display_name }}</h4>
+                    <div class="text-muted">
+                        {{ employee.employee_id }} · {{ employee.category.name }}
+                        {% if employee.department %} · {{ employee.department.name }}{% endif %}
+                    </div>
+                </div>
+                <div class="responsive-actions">
+                    <a href="{% url 'leave_request_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i> New Request
+                    </a>
+                    <a href="{% url 'leave_requests' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Leave Overview
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="leave-profile-metrics mb-4">
+        <div class="card border-0 h-100"><div class="card-body"><small class="text-muted text-uppercase fw-semibold">Entitlement</small><h3 class="mt-2 mb-0">{{ overview.total_entitlement }}</h3></div></div>
+        <div class="card border-0 h-100"><div class="card-body"><small class="text-muted text-uppercase fw-semibold">Used</small><h3 class="mt-2 mb-0 text-primary">{{ overview.total_used }}</h3></div></div>
+        <div class="card border-0 h-100"><div class="card-body"><small class="text-muted text-uppercase fw-semibold">Pending</small><h3 class="mt-2 mb-0 text-warning">{{ overview.total_pending }}</h3></div></div>
+        <div class="card border-0 h-100"><div class="card-body"><small class="text-muted text-uppercase fw-semibold">Remaining</small><h3 class="mt-2 mb-0 {% if overview.total_remaining <= 3 %}text-danger{% else %}text-success{% endif %}">{{ overview.total_remaining }}</h3></div></div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <div class="card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1"><i class="bi bi-pie-chart me-2"></i>Leave Balances</h5>
+                    <small class="text-muted">Current year entitlement, used, pending, and remaining days.</small>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Leave Type</th>
+                                    <th>Entitlement</th>
+                                    <th>Used</th>
+                                    <th>Pending</th>
+                                    <th>Remaining</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for balance in overview.balances %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-{{ balance.leave_type.color }} bg-opacity-10 text-{{ balance.leave_type.color }} px-3 py-2">
+                                            {{ balance.leave_type.name }}
+                                        </span>
+                                    </td>
+                                    <td>{{ balance.entitlement }}</td>
+                                    <td>{{ balance.used }}</td>
+                                    <td>{{ balance.pending }}</td>
+                                    <td><strong>{{ balance.remaining }}</strong></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted">No leave types configured.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1"><i class="bi bi-clock-history me-2"></i>Leave History</h5>
+                    <small class="text-muted">All leave requests for this employee.</small>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Period</th>
+                                    <th>Days</th>
+                                    <th>Status</th>
+                                    <th>Reviewed By</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for leave_request in leave_requests %}
+                                <tr>
+                                    <td>{{ leave_request.leave_type.name }}</td>
+                                    <td>{{ leave_request.start_date|date:"M j" }} to {{ leave_request.end_date|date:"M j, Y" }}</td>
+                                    <td>{{ leave_request.day_count }}</td>
+                                    <td>
+                                        {% if leave_request.status == 'approved' %}
+                                            <span class="badge bg-success bg-opacity-10 text-success">Approved</span>
+                                        {% elif leave_request.status == 'rejected' %}
+                                            <span class="badge bg-danger bg-opacity-10 text-danger">Rejected</span>
+                                        {% elif leave_request.status == 'cancelled' %}
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary">Cancelled</span>
+                                        {% else %}
+                                            <span class="badge bg-warning bg-opacity-10 text-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ leave_request.reviewed_by|default:"-" }}</td>
+                                    <td class="text-end">
+                                        <a href="{% url 'leave_request_detail' leave_request.pk %}" class="btn btn-sm btn-outline-primary">Open</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">No leave requests yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Current Status</h5>
+                </div>
+                <div class="card-body">
+                    {% if overview.current_leave %}
+                    <div class="leave-status-block active">
+                        <small class="text-uppercase fw-semibold">Currently On Leave</small>
+                        <h6 class="mt-2 mb-1">{{ overview.current_leave.leave_type.name }}</h6>
+                        <p class="text-muted mb-0">{{ overview.current_leave.start_date|date:"M j" }} to {{ overview.current_leave.end_date|date:"M j, Y" }}</p>
+                    </div>
+                    {% else %}
+                    <div class="leave-status-block">
+                        <small class="text-uppercase fw-semibold">Available</small>
+                        <h6 class="mt-2 mb-1">Not currently on approved leave</h6>
+                        <p class="text-muted mb-0">{{ today|date:"M j, Y" }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Next Leave</h5>
+                </div>
+                <div class="card-body">
+                    {% if overview.next_leave %}
+                    <div class="leave-status-block next">
+                        <small class="text-uppercase fw-semibold">{{ overview.next_leave.leave_type.name }}</small>
+                        <h6 class="mt-2 mb-1">{{ overview.next_leave.start_date|date:"M j" }} to {{ overview.next_leave.end_date|date:"M j, Y" }}</h6>
+                        <p class="text-muted mb-0">{{ overview.next_leave.day_count }} day(s)</p>
+                    </div>
+                    {% else %}
+                    <div class="text-muted">No upcoming approved leave.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Employee Context</h5>
+                </div>
+                <div class="card-body">
+                    <div class="detail-line"><span>Email</span><strong>{{ employee.email }}</strong></div>
+                    <div class="detail-line"><span>Department</span><strong>{{ employee.department.name|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Position</span><strong>{{ employee.position|default:"-" }}</strong></div>
+                    <div class="detail-line"><span>Status</span><strong>{{ employee.get_employment_status_display }}</strong></div>
+                    <a href="{% url 'employee_detail' employee.pk %}" class="btn btn-outline-secondary w-100 mt-3">Open Employee Profile</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .leave-profile-metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .leave-status-block {
+        padding: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: 8px;
+        background: #f8fafc;
+    }
+
+    .leave-status-block.active {
+        border-color: rgba(59, 130, 246, 0.25);
+        background: rgba(59, 130, 246, 0.06);
+    }
+
+    .leave-status-block.next {
+        border-color: rgba(14, 165, 233, 0.25);
+        background: rgba(14, 165, 233, 0.06);
+    }
+
+    .detail-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    .detail-line:last-child {
+        border-bottom: 0;
+    }
+
+    .detail-line span {
+        color: #64748b;
+    }
+
+    @media (max-width: 1199.98px) {
+        .leave-profile-metrics {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .leave-profile-metrics {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

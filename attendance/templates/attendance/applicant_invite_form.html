@@ -1,0 +1,58 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Invite Applicant | HR Management{% endblock %}
+{% block page_title %}Invite Applicant{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row">
+        <div class="col-xl-8 mx-auto">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-1"><i class="bi bi-envelope-plus me-2"></i>Application Invitation</h5>
+                    <p class="text-muted mb-0">Send a secure application link to a new person.</p>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+                        <div class="invite-form-grid">
+                            {% for field in form %}
+                            <div class="{% if field.name == 'cover_note' %}wide-field{% endif %}">
+                                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors.0 }}</div>{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="responsive-actions mt-4 justify-content-end">
+                            <a href="{% url 'onboarding_tasks' %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send me-1"></i> Send Invitation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .invite-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .wide-field {
+        grid-column: 1 / -1;
+    }
+
+    @media (max-width: 767.98px) {
+        .invite-form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

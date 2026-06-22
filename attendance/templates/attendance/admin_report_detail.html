@@ -1,0 +1,116 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}{{ report.title }} | HR Management{% endblock %}
+{% block page_title %}Admin Report{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="card border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+                <div>
+                    <p class="text-uppercase small fw-semibold text-muted mb-1">{{ report.get_report_type_display }}</p>
+                    <h4 class="mb-2">{{ report.title }}</h4>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary">{{ report.get_status_display }}</span>
+                        <span class="badge tone-{{ report.tone }}">{{ report.get_tone_display }}</span>
+                        <span class="badge bg-primary bg-opacity-10 text-primary">{{ report.event_date|date:"M j, Y" }}</span>
+                    </div>
+                </div>
+                <div class="responsive-actions">
+                    <a href="{% url 'admin_report_edit' report.pk %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-pencil me-1"></i> Edit
+                    </a>
+                    <a href="{% url 'admin_report_delete' report.pk %}" class="btn btn-outline-danger">
+                        <i class="bi bi-trash me-1"></i> Delete
+                    </a>
+                    <a href="{% url 'admin_reports' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i>Report Details</h5>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div class="report-body">{{ report.body|linebreaks }}</div>
+                    {% if report.action_taken %}
+                    <hr>
+                    <h6 class="text-uppercase small fw-semibold text-muted">Action Taken / Follow-up</h6>
+                    <div class="report-body">{{ report.action_taken|linebreaks }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Context</h5>
+                </div>
+                <div class="card-body">
+                    <div class="detail-line"><span>Related Staff</span><strong>{% if report.related_employee %}{{ report.related_employee.display_name }}{% else %}-{% endif %}</strong></div>
+                    <div class="detail-line"><span>Department</span><strong>{% if report.related_department %}{{ report.related_department.name }}{% else %}-{% endif %}</strong></div>
+                    <div class="detail-line"><span>Written By</span><strong>{% if report.created_by %}{{ report.created_by.get_full_name|default:report.created_by.username }}{% else %}-{% endif %}</strong></div>
+                    <div class="detail-line"><span>Created</span><strong>{{ report.created_at|date:"M j, Y H:i" }}</strong></div>
+                    <div class="detail-line"><span>Reviewed By</span><strong>{% if report.reviewed_by %}{{ report.reviewed_by.get_full_name|default:report.reviewed_by.username }}{% else %}-{% endif %}</strong></div>
+                </div>
+            </div>
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-0"><i class="bi bi-check2-circle me-2"></i>Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="responsive-actions">
+                        <form method="post" action="{% url 'admin_report_set_status' report.pk 'open' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-primary">Open</button>
+                        </form>
+                        <form method="post" action="{% url 'admin_report_set_status' report.pk 'reviewed' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-success">Reviewed</button>
+                        </form>
+                        <form method="post" action="{% url 'admin_report_set_status' report.pk 'closed' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-secondary">Closed</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .report-body {
+        color: #0f172a;
+        line-height: 1.7;
+    }
+
+    .detail-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.8rem 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    .detail-line:last-child {
+        border-bottom: 0;
+    }
+
+    .detail-line span {
+        color: #64748b;
+    }
+
+    .tone-positive { background: rgba(34, 197, 94, 0.12); color: #15803d; }
+    .tone-neutral { background: rgba(71, 85, 105, 0.12); color: #475569; }
+    .tone-concern { background: rgba(245, 158, 11, 0.14); color: #b45309; }
+    .tone-urgent { background: rgba(239, 68, 68, 0.12); color: #b91c1c; }
+</style>
+{% endblock %}

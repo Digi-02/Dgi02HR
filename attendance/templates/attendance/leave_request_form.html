@@ -1,8 +1,8 @@
 <!-- attendance/templates/attendance/leave_request_form.html -->
 {% extends 'attendance/base.html' %}
 
-{% block title %}New Leave Request | HR Management{% endblock %}
-{% block page_title %}New Leave Request{% endblock %}
+{% block title %}{{ page_title|default:"New Leave Request" }} | HR Management{% endblock %}
+{% block page_title %}{{ page_title|default:"New Leave Request" }}{% endblock %}
 
 {% block content %}
 <div class="container-fluid p-0">
@@ -10,7 +10,7 @@
         <div class="col-xl-8 mx-auto">
             <div class="card border-0">
                 <div class="card-header bg-white border-0 pt-4 px-4">
-                    <h5 class="mb-1"><i class="bi bi-calendar-plus me-2"></i>Create Leave Request</h5>
+                    <h5 class="mb-1"><i class="bi bi-calendar-plus me-2"></i>{{ page_title|default:"Create Leave Request" }}</h5>
                     <p class="text-muted mb-0">Once approved, this will automatically appear in attendance exceptions.</p>
                 </div>
                 <div class="card-body px-4 pb-4">
@@ -61,11 +61,11 @@
 
                         <hr class="my-4">
                         <div class="d-flex justify-content-end gap-2">
-                            <a href="{% if is_self_service %}{% url 'employee_self_service_dashboard' %}{% else %}{% url 'leave_requests' %}{% endif %}" class="btn btn-outline-secondary">
+                            <a href="{% if leave_request %}{% url 'leave_request_detail' leave_request.pk %}{% elif is_self_service %}{% url 'employee_self_service_dashboard' %}{% else %}{% url 'leave_requests' %}{% endif %}" class="btn btn-outline-secondary">
                                 <i class="bi bi-x-lg me-1"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-send me-1"></i> Submit Request
+                                <i class="bi bi-send me-1"></i> {% if action %}{{ action }} Request{% else %}Submit Request{% endif %}
                             </button>
                         </div>
                     </form>

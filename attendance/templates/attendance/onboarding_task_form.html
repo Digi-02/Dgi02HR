@@ -37,6 +37,11 @@
                     </div>
                     {% endif %}
                     <div class="form-field">
+                        <label class="form-label" for="{{ form.stage.id_for_label }}">Stage</label>
+                        {{ form.stage }}
+                        {% if form.stage.errors %}<div class="text-danger small mt-1">{{ form.stage.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-field">
                         <label class="form-label" for="{{ form.title.id_for_label }}">Task Title</label>
                         {{ form.title }}
                         {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}

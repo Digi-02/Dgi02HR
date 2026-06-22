@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitation Expired | {{ invitation.organization.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background: #f8fafc; color: #0f172a; }
+        .public-shell { max-width: 620px; margin: 72px auto; padding: 0 16px; }
+        .card { border: 1px solid rgba(148, 163, 184, 0.35); border-radius: 8px; box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08); }
+    </style>
+</head>
+<body>
+    <main class="public-shell">
+        <div class="card">
+            <div class="card-body p-5 text-center">
+                <i class="bi bi-exclamation-circle-fill text-warning fs-1"></i>
+                <h4 class="mt-3">Invitation Expired</h4>
+                <p class="text-muted mb-0">Please contact HR at {{ invitation.organization.name }} for a fresh invitation.</p>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

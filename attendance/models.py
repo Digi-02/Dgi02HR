@@ -3,7 +3,9 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
-from datetime import date, time
+from django.utils.crypto import get_random_string
+from django.utils.text import slugify
+from datetime import date, time, timedelta
 
 
 def employee_profile_photo_path(instance, filename):
@@ -69,6 +71,7 @@ class AuditLog(models.Model):
         ('payroll', 'Payroll'),
         ('organization', 'Organization'),
         ('security', 'Security'),
+        ('admin_report', 'Admin Report'),
     ]
 
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='audit_logs')
@@ -542,6 +545,54 @@ class EmployeeDocument(models.Model):
         return f"{self.employee.full_name} - {self.title}"
 
 
+class OnboardingStage(models.Model):
+    """A configurable lane in the HR onboarding pipeline."""
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='onboarding_stages')
+    title = models.CharField(max_length=120)
+    code = models.SlugField(max_length=80)
+    description = models.TextField(blank=True)
+    order = models.PositiveSmallIntegerField(default=0)
+    color = models.CharField(max_length=20, default='primary', help_text="Bootstrap color class, e.g. primary, warning, info")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', 'title']
+        unique_together = ('organization', 'code')
+        indexes = [
+            models.Index(fields=['organization', 'is_active']),
+            models.Index(fields=['organization', 'order']),
+        ]
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            base_code = slugify(self.title) or 'stage'
+            code = base_code
+            counter = 2
+            existing = OnboardingStage.objects.filter(
+                organization=self.organization,
+                code=code,
+            )
+            if self.pk:
+                existing = existing.exclude(pk=self.pk)
+            while existing.exists():
+                code = f'{base_code}-{counter}'
+                counter += 1
+                existing = OnboardingStage.objects.filter(
+                    organization=self.organization,
+                    code=code,
+                )
+                if self.pk:
+                    existing = existing.exclude(pk=self.pk)
+            self.code = code
+        super().save(*args, **kwargs)
+
+
 class OnboardingTask(models.Model):
     """Checklist item for onboarding a staff member, intern, or student."""
 
@@ -564,6 +615,7 @@ class OnboardingTask(models.Model):
 
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='onboarding_tasks')
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='onboarding_tasks')
+    stage = models.ForeignKey(OnboardingStage, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')
     title = models.CharField(max_length=160)
     category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default='hr')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -580,6 +632,7 @@ class OnboardingTask(models.Model):
         indexes = [
             models.Index(fields=['organization', 'status']),
             models.Index(fields=['employee', 'status']),
+            models.Index(fields=['stage', 'status']),
             models.Index(fields=['due_date']),
         ]
 
@@ -589,6 +642,286 @@ class OnboardingTask(models.Model):
     @property
     def is_overdue(self):
         return self.due_date and self.due_date < timezone.localdate() and self.status not in ['completed', 'waived']
+
+
+class Applicant(models.Model):
+    """Pre-employment application record before HR converts a person to employee."""
+
+    STATUS_CHOICES = [
+        ('invited', 'Invited'),
+        ('submitted', 'Submitted'),
+        ('under_review', 'Under Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('converted', 'Converted to Employee'),
+    ]
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='applicants')
+    first_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20, blank=True)
+    gender = models.CharField(max_length=10, choices=Employee.GENDER_CHOICES, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='applicants')
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name='applicants')
+    position = models.CharField(max_length=100, blank=True)
+    cover_note = models.TextField(blank=True)
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='invited')
+    invited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='invited_applicants')
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_applicants')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    review_note = models.TextField(blank=True)
+    employee = models.OneToOneField(Employee, on_delete=models.SET_NULL, null=True, blank=True, related_name='source_application')
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ('organization', 'email')
+        indexes = [
+            models.Index(fields=['organization', 'status']),
+            models.Index(fields=['email']),
+        ]
+
+    def __str__(self):
+        return f"{self.full_name} - {self.get_status_display()}"
+
+    @property
+    def full_name(self):
+        return " ".join(
+            part for part in [self.first_name, self.middle_name, self.last_name] if part
+        ).strip()
+
+
+class OnboardingInvitation(models.Model):
+    """Secure email invitation for applicants or existing employee setup."""
+
+    INVITATION_TYPE_CHOICES = [
+        ('application', 'Application'),
+        ('employee_setup', 'Employee Setup'),
+    ]
+
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('sent', 'Sent'),
+        ('opened', 'Opened'),
+        ('submitted', 'Submitted'),
+        ('accepted', 'Accepted'),
+        ('expired', 'Expired'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='onboarding_invitations')
+    invitation_type = models.CharField(max_length=30, choices=INVITATION_TYPE_CHOICES)
+    applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE, null=True, blank=True, related_name='invitations')
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True, blank=True, related_name='onboarding_invitations')
+    email = models.EmailField()
+    token = models.CharField(max_length=64, unique=True, editable=False)
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='draft')
+    message = models.TextField(blank=True)
+    invited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_onboarding_invitations')
+    sent_at = models.DateTimeField(null=True, blank=True)
+    opened_at = models.DateTimeField(null=True, blank=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['organization', 'invitation_type', 'status']),
+            models.Index(fields=['token']),
+            models.Index(fields=['email']),
+        ]
+
+    def __str__(self):
+        return f"{self.get_invitation_type_display()} invitation to {self.email}"
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = get_random_string(48)
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timedelta(days=14)
+        super().save(*args, **kwargs)
+
+    @property
+    def is_expired(self):
+        return bool(self.expires_at and timezone.now() > self.expires_at)
+
+    @property
+    def recipient_name(self):
+        if self.applicant:
+            return self.applicant.full_name
+        if self.employee:
+            return self.employee.full_name
+        return self.email
+
+
+class OnboardingParticipant(models.Model):
+    """A person moving through the onboarding pipeline."""
+
+    PARTICIPANT_TYPE_CHOICES = [
+        ('applicant', 'Applicant'),
+        ('employee', 'Employee'),
+    ]
+
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('rejected', 'Rejected'),
+        ('withdrawn', 'Withdrawn'),
+    ]
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='onboarding_participants')
+    stage = models.ForeignKey(OnboardingStage, on_delete=models.PROTECT, related_name='participants')
+    applicant = models.OneToOneField(
+        Applicant,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='onboarding_participant',
+    )
+    employee = models.OneToOneField(
+        Employee,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='onboarding_participant',
+    )
+    invitation = models.ForeignKey(
+        OnboardingInvitation,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='participants',
+    )
+    participant_type = models.CharField(max_length=20, choices=PARTICIPANT_TYPE_CHOICES)
+    joining_date = models.DateField(null=True, blank=True)
+    note = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    moved_at = models.DateTimeField(default=timezone.now)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['stage__order', 'created_at']
+        indexes = [
+            models.Index(fields=['organization', 'status']),
+            models.Index(fields=['stage', 'status']),
+            models.Index(fields=['participant_type']),
+        ]
+
+    def __str__(self):
+        return f"{self.display_name} - {self.stage.title}"
+
+    @property
+    def display_name(self):
+        if self.employee:
+            return self.employee.full_name
+        if self.applicant:
+            return self.applicant.full_name
+        return 'Unknown participant'
+
+    @property
+    def email(self):
+        if self.employee:
+            return self.employee.email
+        if self.applicant:
+            return self.applicant.email
+        return self.invitation.email if self.invitation else ''
+
+    @property
+    def phone(self):
+        if self.employee:
+            return self.employee.phone
+        if self.applicant:
+            return self.applicant.phone
+        return ''
+
+    @property
+    def role(self):
+        if self.employee:
+            return self.employee.position
+        if self.applicant:
+            return self.applicant.position
+        return ''
+
+    @property
+    def source_status(self):
+        if self.applicant:
+            return self.applicant.get_status_display()
+        if self.invitation:
+            return self.invitation.get_status_display()
+        return self.get_status_display()
+
+
+class AdminReport(models.Model):
+    """Narrative HR/admin feedback report about a person, event, or observation."""
+
+    REPORT_TYPE_CHOICES = [
+        ('event', 'Event Report'),
+        ('staff_feedback', 'Staff Feedback'),
+        ('work_observation', 'Work Observation'),
+        ('incident', 'Incident Report'),
+        ('commendation', 'Commendation'),
+        ('general', 'General Report'),
+    ]
+
+    TONE_CHOICES = [
+        ('positive', 'Positive'),
+        ('neutral', 'Neutral'),
+        ('concern', 'Concern'),
+        ('urgent', 'Urgent'),
+    ]
+
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('reviewed', 'Reviewed'),
+        ('closed', 'Closed'),
+    ]
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='admin_reports')
+    title = models.CharField(max_length=180)
+    report_type = models.CharField(max_length=30, choices=REPORT_TYPE_CHOICES, default='general')
+    tone = models.CharField(max_length=20, choices=TONE_CHOICES, default='neutral')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    event_date = models.DateField(default=timezone.localdate)
+    related_employee = models.ForeignKey(
+        Employee,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='admin_reports',
+    )
+    related_department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='admin_reports',
+    )
+    body = models.TextField()
+    action_taken = models.TextField(blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_admin_reports')
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_admin_reports')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-event_date', '-created_at']
+        indexes = [
+            models.Index(fields=['organization', 'status']),
+            models.Index(fields=['organization', 'report_type']),
+            models.Index(fields=['event_date']),
+        ]
+
+    def __str__(self):
+        return self.title
 
 
 class AttendanceExceptionType(models.Model):
@@ -704,7 +1037,7 @@ class LeaveRequest(models.Model):
     end_date = models.DateField()
     day_part = models.CharField(max_length=20, choices=DAY_PART_CHOICES, default='full_day')
     reason = models.TextField(blank=True)
-    manager_approval_status = models.CharField(max_length=20, choices=MANAGER_APPROVAL_CHOICES, default='pending')
+    manager_approval_status = models.CharField(max_length=20, choices=MANAGER_APPROVAL_CHOICES, default='not_required')
     manager_reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='manager_reviewed_leave_requests')
     manager_reviewed_at = models.DateTimeField(null=True, blank=True)
     manager_review_note = models.TextField(blank=True)

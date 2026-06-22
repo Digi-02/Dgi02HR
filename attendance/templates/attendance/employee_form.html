@@ -32,13 +32,59 @@
                     </div>
                 </div>
                 <div class="card-body px-4 pb-4">
-                    <form method="POST" id="employee-form" enctype="multipart/form-data">
+                    <form method="POST" id="employee-form" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
 
                         {% if form.non_field_errors %}
                         <div class="alert alert-danger">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
                             {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+
+                        {% if form.errors or education_formset.errors or certification_formset.errors or work_experience_formset.errors or document_formset.errors %}
+                        <div class="alert alert-danger employee-error-summary" role="alert">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+                                <div>
+                                    <div class="fw-semibold">Please fix the highlighted fields before saving.</div>
+                                    <ul class="mb-0 mt-2">
+                                        {% for field in form %}
+                                            {% for error in field.errors %}
+                                                <li>{{ field.label }}: {{ error }}</li>
+                                            {% endfor %}
+                                        {% endfor %}
+                                        {% for formset_form in education_formset %}
+                                            {% for field in formset_form %}
+                                                {% for error in field.errors %}
+                                                    <li>Education - {{ field.label }}: {{ error }}</li>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                        {% for formset_form in certification_formset %}
+                                            {% for field in formset_form %}
+                                                {% for error in field.errors %}
+                                                    <li>Certification - {{ field.label }}: {{ error }}</li>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                        {% for formset_form in work_experience_formset %}
+                                            {% for field in formset_form %}
+                                                {% for error in field.errors %}
+                                                    <li>Work History - {{ field.label }}: {{ error }}</li>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                        {% for formset_form in document_formset %}
+                                            {% for field in formset_form %}
+                                                {% for error in field.errors %}
+                                                    <li>Document - {{ field.label }}: {{ error }}</li>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                         {% endif %}
 
@@ -1080,6 +1126,37 @@
         color: #334155;
     }
 
+    .required-field-label::after {
+        content: "";
+        display: inline-block;
+        width: 0.45rem;
+        height: 0.45rem;
+        margin-left: 0.35rem;
+        border-radius: 999px;
+        background: #dc2626;
+        vertical-align: middle;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+    }
+
+    .tab-error-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.35rem;
+        height: 1.35rem;
+        margin-left: 0.4rem;
+        padding: 0 0.35rem;
+        border-radius: 999px;
+        background: #dc2626;
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .employee-error-summary {
+        border: 1px solid rgba(220, 38, 38, 0.18);
+    }
+
     .formset-stack {
         display: grid;
         gap: 1rem;
@@ -1179,6 +1256,51 @@
         const areaOfInterestOtherField = document.getElementById('area-of-interest-other-field');
         const formsetButtons = document.querySelectorAll('.add-formset-row');
 
+        function refreshRequiredDots() {
+            document.querySelectorAll('.required-field-label').forEach((label) => {
+                label.classList.remove('required-field-label');
+            });
+
+            document.querySelectorAll('#employee-form input, #employee-form select, #employee-form textarea').forEach((field) => {
+                if (!field.required || field.type === 'hidden' || field.type === 'checkbox') {
+                    return;
+                }
+                const fieldWrapper = field.closest('.col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-12, .mb-3, .form-field');
+                const label = fieldWrapper ? fieldWrapper.querySelector('label.form-label') : null;
+                if (label) {
+                    label.classList.add('required-field-label');
+                }
+            });
+        }
+
+        function showTabsWithErrors() {
+            let firstErrorTab = null;
+            employeeTabs.forEach((tab) => {
+                const paneSelector = tab.dataset.bsTarget;
+                const pane = paneSelector ? document.querySelector(paneSelector) : null;
+                if (!pane) {
+                    return;
+                }
+                const errorCount = pane.querySelectorAll('.text-danger:not(:empty), .alert-danger').length;
+                tab.querySelectorAll('.tab-error-count').forEach((badge) => badge.remove());
+                if (errorCount > 0) {
+                    const badge = document.createElement('span');
+                    badge.className = 'tab-error-count';
+                    badge.textContent = errorCount;
+                    tab.appendChild(badge);
+                    firstErrorTab = firstErrorTab || tab;
+                }
+            });
+
+            if (firstErrorTab && window.bootstrap) {
+                bootstrap.Tab.getOrCreateInstance(firstErrorTab).show();
+                const summary = document.querySelector('.employee-error-summary');
+                if (summary) {
+                    summary.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+
         employeeTabs.forEach((tab) => {
             tab.addEventListener('shown.bs.tab', function(event) {
                 localStorage.setItem('employeeFormActiveTab', event.target.dataset.bsTarget);
@@ -1208,6 +1330,7 @@
                 const templateHtml = template.innerHTML.replaceAll('__prefix__', formIndex);
                 container.insertAdjacentHTML('beforeend', templateHtml);
                 totalFormsInput.value = formIndex + 1;
+                refreshRequiredDots();
             });
         });
 
@@ -1273,9 +1396,11 @@
             if (internshipTypeInput) internshipTypeInput.required = isIntern;
             if (internshipTypeOtherInput) internshipTypeOtherInput.required = isIntern && internshipTypeInput && internshipTypeInput.value === 'other';
             if (areaOtherInput) areaOtherInput.required = isIntern && selectedAreas.includes('other');
+            refreshRequiredDots();
         }
 
         updateFieldVisibility();
+        showTabsWithErrors();
         categorySelect.addEventListener('change', updateFieldVisibility);
         const internshipTypeInput = document.getElementById('{{ form.internship_type.id_for_label }}');
         if (internshipTypeInput) {
