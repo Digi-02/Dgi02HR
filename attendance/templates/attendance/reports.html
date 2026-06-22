@@ -191,6 +191,7 @@
                     </tbody>
                 </table>
             </div>
+            {% include 'attendance/partials/pagination.html' with page_obj=exceptions_page_obj page_param='exceptions_page' pagination_query=exceptions_pagination_query %}
         </div>
     </div>
 
@@ -380,7 +381,7 @@
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-2">
                 <div>
                     <h5 class="mb-1"><i class="bi bi-table me-2"></i>Recent Filtered Records</h5>
-                    <small class="text-muted">Showing up to 20 records from the current analytics scope.</small>
+                    <small class="text-muted">Page through the attendance records from the current analytics scope.</small>
                 </div>
                 <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">{{ records_total }} row{{ records_total|pluralize }}</span>
             </div>
@@ -426,6 +427,7 @@
                     </tbody>
                 </table>
             </div>
+            {% include 'attendance/partials/pagination.html' with page_obj=records_page_obj page_param='records_page' pagination_query=records_pagination_query %}
         </div>
     </div>
 </div>

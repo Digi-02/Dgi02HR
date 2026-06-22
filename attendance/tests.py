@@ -2,11 +2,14 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
+from datetime import timedelta
 
 from .models import (
     Applicant,
     AdminReport,
     AttendanceException,
+    AttendanceRecord,
     Category,
     Department,
     Employee,
@@ -359,6 +362,61 @@ class OnboardingInvitationTests(TestCase):
 
         self.assertRedirects(response, reverse('admin_reports'))
         self.assertFalse(AdminReport.objects.filter(pk=report.pk).exists())
+
+    def test_attendance_reports_paginate_past_records(self):
+        self.client.login(username='hr', password='pass12345')
+        employee = Employee.objects.create(
+            organization=self.organization,
+            category=self.category,
+            first_name='Attendance',
+            last_name='Subject',
+            email='attendance.subject@example.com',
+            phone='08045000000',
+            gender='MALE',
+            department=self.department,
+            position='Analyst',
+        )
+        for index in range(30):
+            AttendanceRecord.objects.create(
+                organization=self.organization,
+                employee=employee,
+                check_in_time=timezone.now() - timedelta(minutes=index),
+            )
+        for index in range(12):
+            AttendanceRecord.objects.create(
+                organization=self.organization,
+                employee=employee,
+                check_in_time=timezone.now() - timedelta(days=index + 1),
+            )
+
+        first_page = self.client.get(reverse('attendance_reports'))
+        records_second_page = self.client.get(reverse('attendance_reports'), {'attendance_page': 2})
+        days_second_page = self.client.get(reverse('attendance_reports'), {'days_page': 2})
+
+        self.assertContains(first_page, 'Showing 1-25 of 30')
+        self.assertContains(records_second_page, 'Showing 26-30 of 30')
+        self.assertContains(days_second_page, 'Showing 11-13 of 13')
+
+    def test_manual_attendance_employee_selector_is_searchable(self):
+        self.client.login(username='hr', password='pass12345')
+        employee = Employee.objects.create(
+            organization=self.organization,
+            category=self.category,
+            first_name='Searchable',
+            last_name='Person',
+            email='searchable.person@example.com',
+            phone='08046000000',
+            gender='FEMALE',
+            department=self.department,
+            position='Operations Lead',
+        )
+
+        response = self.client.get(reverse('manual_attendance_add'))
+
+        self.assertContains(response, 'data-searchable-select="true"')
+        self.assertContains(response, 'Search employee name, ID, email, department')
+        self.assertContains(response, employee.email)
+        self.assertContains(response, self.department.name)
 
     def test_leave_overview_and_employee_leave_detail_render(self):
         self.client.login(username='hr', password='pass12345')

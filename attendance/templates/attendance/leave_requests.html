@@ -81,7 +81,7 @@
                     <h5 class="mb-1"><i class="bi bi-people me-2"></i>Employee Leave Table</h5>
                     <small class="text-muted">Click an employee to open their leave profile, balances, and request history.</small>
                 </div>
-                <span class="badge bg-primary bg-opacity-10 text-primary">{{ leave_employee_rows|length }} employees</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary">{{ leave_employee_page_obj.paginator.count }} employees</span>
             </div>
         </div>
         <div class="card-body p-0">
@@ -151,6 +151,7 @@
                     </tbody>
                 </table>
             </div>
+            {% include 'attendance/partials/pagination.html' with page_obj=leave_employee_page_obj page_param='employees_page' pagination_query=leave_employee_pagination_query %}
         </div>
     </div>
 
@@ -214,6 +215,7 @@
                     </tbody>
                 </table>
             </div>
+            {% include 'attendance/partials/pagination.html' with page_obj=leave_page_obj page_param='leave_page' pagination_query=leave_pagination_query %}
         </div>
     </div>
 </div>

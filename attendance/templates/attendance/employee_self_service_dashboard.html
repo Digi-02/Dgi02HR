@@ -190,6 +190,7 @@
                             </tbody>
                         </table>
                     </div>
+                    {% include 'attendance/partials/pagination.html' with page_obj=attendance_page_obj page_param='attendance_page' pagination_query=attendance_pagination_query %}
                 </div>
             </div>
 
@@ -227,6 +228,7 @@
                             </tbody>
                         </table>
                     </div>
+                    {% include 'attendance/partials/pagination.html' with page_obj=leave_page_obj page_param='leave_page' pagination_query=leave_pagination_query %}
                 </div>
             </div>
 
@@ -265,6 +267,7 @@
                             </tbody>
                         </table>
                     </div>
+                    {% include 'attendance/partials/pagination.html' with page_obj=payslips_page_obj page_param='payslips_page' pagination_query=payslips_pagination_query %}
                 </div>
             </div>
         </div>

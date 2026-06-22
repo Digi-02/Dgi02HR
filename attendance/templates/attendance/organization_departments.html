@@ -91,6 +91,7 @@
                             </tbody>
                         </table>
                     </div>
+                    {% include 'attendance/partials/pagination.html' with page_obj=departments_page_obj page_param='departments_page' pagination_query=departments_pagination_query %}
                 </div>
             </div>
         </div>

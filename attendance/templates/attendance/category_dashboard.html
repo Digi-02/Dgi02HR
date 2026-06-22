@@ -229,14 +229,8 @@
                             </tbody>
                         </table>
                     </div>
+                    {% include 'attendance/partials/pagination.html' with page_obj=employees_page_obj page_param='employees_page' pagination_query=employees_pagination_query %}
                 </div>
-                {% if employees %}
-                <div class="card-footer bg-white border-0 py-3">
-                    <small class="text-muted">
-                        Showing {{ employees|length }} {{ category.name|lower }} record{{ employees|length|pluralize }}
-                    </small>
-                </div>
-                {% endif %}
             </div>
         </div>
 

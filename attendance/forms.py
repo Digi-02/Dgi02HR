@@ -25,6 +25,36 @@ from .models import (
 )
 
 
+EMPLOYEE_SEARCH_PLACEHOLDER = 'Search employee name, ID, email, department'
+
+
+def searchable_employee_select_attrs(extra_class=''):
+    classes = 'form-select'
+    if extra_class:
+        classes = f'{classes} {extra_class}'
+    return {
+        'class': classes,
+        'data-searchable-select': 'true',
+        'data-search-placeholder': EMPLOYEE_SEARCH_PLACEHOLDER,
+    }
+
+
+def employee_choice_label(employee):
+    details = [
+        employee.display_name,
+        employee.employee_id,
+        employee.email,
+    ]
+    if employee.department_id:
+        details.append(employee.department.name)
+    return ' - '.join(detail for detail in details if detail)
+
+
+class EmployeeChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return employee_choice_label(obj)
+
+
 class EmployeeForm(forms.ModelForm):
     """Form for adding/editing employees with category-specific fields"""
 
@@ -223,7 +253,7 @@ class EmployeeForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'e.g., Software Developer, Intern, Student'
             }),
-            'line_manager': forms.Select(attrs={'class': 'form-select'}),
+            'line_manager': forms.Select(attrs=searchable_employee_select_attrs()),
             'hire_date': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date',
@@ -321,9 +351,7 @@ class EmployeeForm(forms.ModelForm):
                 'rows': 4,
                 'placeholder': 'List other relevant skills, certifications, projects, portfolio links, or achievements'
             }),
-            'supervisor': forms.Select(attrs={
-                'class': 'form-select intern-student-field'
-            }),
+            'supervisor': forms.Select(attrs=searchable_employee_select_attrs('intern-student-field')),
             'probation_end_date': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date'
@@ -410,7 +438,7 @@ class EmployeeForm(forms.ModelForm):
             )
             if self.organization:
                 supervisor_qs = supervisor_qs.filter(organization=self.organization)
-            self.fields['supervisor'].queryset = supervisor_qs
+            self.fields['supervisor'].queryset = supervisor_qs.select_related('category', 'department')
         else:
             self.fields['supervisor'].queryset = Employee.objects.none()
 
@@ -419,10 +447,12 @@ class EmployeeForm(forms.ModelForm):
         )
         if self.organization:
             line_manager_qs = line_manager_qs.filter(organization=self.organization)
-        self.fields['line_manager'].queryset = line_manager_qs.order_by('first_name', 'last_name')
+        self.fields['line_manager'].queryset = line_manager_qs.select_related('category', 'department').order_by('first_name', 'last_name')
         if self.instance.pk:
             self.fields['line_manager'].queryset = self.fields['line_manager'].queryset.exclude(pk=self.instance.pk)
             self.fields['supervisor'].queryset = self.fields['supervisor'].queryset.exclude(pk=self.instance.pk)
+        self.fields['line_manager'].label_from_instance = employee_choice_label
+        self.fields['supervisor'].label_from_instance = employee_choice_label
         
         # Make fields required based on category (handled by JS, but set initial)
         self.fields['department'].required = False
@@ -502,9 +532,9 @@ class ManualAttendanceForm(forms.Form):
         initial='work_session'
     )
 
-    employee = forms.ModelChoiceField(
+    employee = EmployeeChoiceField(
         queryset=Employee.objects.filter(is_active=True, employment_status='active'),
-        widget=forms.Select(attrs={'class': 'form-select'}),
+        widget=forms.Select(attrs=searchable_employee_select_attrs()),
         empty_label="Select Person"
     )
 
@@ -572,7 +602,10 @@ class ManualAttendanceForm(forms.Form):
         if self.organization:
             employee_qs = employee_qs.filter(organization=self.organization)
             exception_qs = exception_qs.filter(organization=self.organization)
-        self.fields['employee'].queryset = employee_qs.select_related('category').order_by('category__name', 'first_name')
+        self.fields['employee'].queryset = employee_qs.select_related(
+            'category',
+            'department',
+        ).order_by('category__name', 'first_name')
         self.fields['exception_type'].queryset = exception_qs.order_by('name')
 
     def clean(self):
@@ -798,7 +831,7 @@ class LeaveRequestForm(forms.ModelForm):
         model = LeaveRequest
         fields = ['employee', 'leave_type', 'start_date', 'end_date', 'day_part', 'reason']
         widgets = {
-            'employee': forms.Select(attrs={'class': 'form-select'}),
+            'employee': forms.Select(attrs=searchable_employee_select_attrs()),
             'leave_type': forms.Select(attrs={'class': 'form-select'}),
             'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
@@ -810,12 +843,13 @@ class LeaveRequestForm(forms.ModelForm):
         self.organization = kwargs.pop('organization', None)
         self.employee = kwargs.pop('employee', None)
         super().__init__(*args, **kwargs)
-        employee_qs = Employee.objects.filter(is_active=True).select_related('category')
+        employee_qs = Employee.objects.filter(is_active=True).select_related('category', 'department')
         leave_type_qs = LeaveType.objects.filter(is_active=True)
         if self.organization:
             employee_qs = employee_qs.filter(organization=self.organization)
             leave_type_qs = leave_type_qs.filter(organization=self.organization)
         self.fields['employee'].queryset = employee_qs.order_by('first_name', 'last_name')
+        self.fields['employee'].label_from_instance = employee_choice_label
         self.fields['leave_type'].queryset = leave_type_qs.order_by('name')
         if self.employee:
             self.fields['employee'].required = False
@@ -939,9 +973,9 @@ class ApplicantInvitationForm(forms.ModelForm):
 
 
 class ExistingEmployeeOnboardingInviteForm(forms.Form):
-    employee = forms.ModelChoiceField(
+    employee = EmployeeChoiceField(
         queryset=Employee.objects.none(),
-        widget=forms.Select(attrs={'class': 'form-select'}),
+        widget=forms.Select(attrs=searchable_employee_select_attrs()),
         empty_label='Select employee',
     )
     message = forms.CharField(
@@ -1099,7 +1133,7 @@ class AdminReportForm(forms.ModelForm):
             'report_type': forms.Select(attrs={'class': 'form-select'}),
             'tone': forms.Select(attrs={'class': 'form-select'}),
             'event_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'related_employee': forms.Select(attrs={'class': 'form-select'}),
+            'related_employee': forms.Select(attrs=searchable_employee_select_attrs()),
             'related_department': forms.Select(attrs={'class': 'form-select'}),
             'body': forms.Textarea(attrs={'class': 'form-control', 'rows': 8, 'placeholder': 'Write the report, feedback, observation, or event details'}),
             'action_taken': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Optional action taken, recommendation, or follow-up'}),
@@ -1122,6 +1156,7 @@ class AdminReportForm(forms.ModelForm):
             ).order_by('name')
         self.fields['related_employee'].queryset = employee_qs
         self.fields['related_employee'].required = False
+        self.fields['related_employee'].label_from_instance = employee_choice_label
         self.fields['related_department'].queryset = department_qs
         self.fields['related_department'].required = False
         self.fields['action_taken'].required = False
@@ -1191,9 +1226,9 @@ class DateFilterForm(forms.Form):
         required=False
     )
     
-    employee = forms.ModelChoiceField(
-        queryset=Employee.objects.filter(is_active=True),
-        widget=forms.Select(attrs={'class': 'form-select'}),
+    employee = EmployeeChoiceField(
+        queryset=Employee.objects.filter(is_active=True).select_related('category', 'department'),
+        widget=forms.Select(attrs=searchable_employee_select_attrs()),
         required=False,
         empty_label="All People"
     )
@@ -1236,7 +1271,7 @@ class DateFilterForm(forms.Form):
             employee_qs = employee_qs.filter(organization=self.organization)
             category_qs = category_qs.filter(organization=self.organization)
             department_qs = department_qs.filter(organization=self.organization)
-        self.fields['employee'].queryset = employee_qs.order_by('first_name', 'last_name')
+        self.fields['employee'].queryset = employee_qs.select_related('category', 'department').order_by('first_name', 'last_name')
         self.fields['category'].queryset = category_qs
         self.fields['department'].queryset = department_qs
 
@@ -1299,7 +1334,7 @@ class OnboardingTaskForm(forms.ModelForm):
         model = OnboardingTask
         fields = ['employee', 'stage', 'title', 'category', 'status', 'assigned_to', 'due_date', 'notes']
         widgets = {
-            'employee': forms.Select(attrs={'class': 'form-select'}),
+            'employee': forms.Select(attrs=searchable_employee_select_attrs()),
             'stage': forms.Select(attrs={'class': 'form-select'}),
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Task title'}),
             'category': forms.Select(attrs={'class': 'form-select'}),
@@ -1317,7 +1352,8 @@ class OnboardingTaskForm(forms.ModelForm):
             self.fields['employee'].queryset = Employee.objects.filter(
                 organization=organization,
                 is_active=True,
-            ).order_by('first_name', 'last_name')
+            ).select_related('category', 'department').order_by('first_name', 'last_name')
+            self.fields['employee'].label_from_instance = employee_choice_label
             self.fields['stage'].queryset = OnboardingStage.objects.filter(
                 organization=organization,
                 is_active=True,

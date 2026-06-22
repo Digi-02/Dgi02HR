@@ -126,6 +126,7 @@
                             </tbody>
                         </table>
                     </div>
+                    {% include 'attendance/partials/pagination.html' with page_obj=leave_requests_page_obj page_param='leave_page' pagination_query=leave_requests_pagination_query %}
                 </div>
             </div>
         </div>

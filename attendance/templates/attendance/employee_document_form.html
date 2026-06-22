@@ -30,10 +30,16 @@
                     {% if not employee and not document %}
                     <div class="form-field">
                         <label class="form-label">Employee</label>
-                        <select name="employee" class="form-select" required>
+                        <select
+                            name="employee"
+                            class="form-select"
+                            data-searchable-select="true"
+                            data-search-placeholder="Search employee name, ID, email, department"
+                            required
+                        >
                             <option value="">Select employee</option>
                             {% for employee_option in employees %}
-                            <option value="{{ employee_option.pk }}">{{ employee_option.display_name }} - {{ employee_option.employee_id }}</option>
+                            <option value="{{ employee_option.pk }}">{{ employee_option.display_name }} - {{ employee_option.employee_id }} - {{ employee_option.email }}{% if employee_option.department %} - {{ employee_option.department.name }}{% endif %}</option>
                             {% endfor %}
                         </select>
                     </div>

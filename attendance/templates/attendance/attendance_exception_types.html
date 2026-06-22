@@ -113,6 +113,7 @@
                             </tbody>
                         </table>
                     </div>
+                    {% include 'attendance/partials/pagination.html' with page_obj=exception_types_page_obj page_param='exception_types_page' pagination_query=exception_types_pagination_query %}
                 </div>
             </div>
         </div>

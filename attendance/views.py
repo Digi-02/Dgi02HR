@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.db import transaction
 from django.db.models.functions import TruncDate
@@ -137,6 +138,14 @@ def send_onboarding_invitation_email(request, invitation):
     invitation.status = 'sent'
     invitation.sent_at = timezone.now()
     invitation.save(update_fields=['status', 'sent_at', 'updated_at'])
+
+
+def paginate_queryset(request, queryset, *, per_page=25, page_param='page'):
+    paginator = Paginator(queryset, per_page)
+    page_obj = paginator.get_page(request.GET.get(page_param))
+    query_params = request.GET.copy()
+    query_params.pop(page_param, None)
+    return page_obj, query_params.urlencode()
 
 
 DEFAULT_ONBOARDING_STAGES = [
@@ -377,9 +386,17 @@ def logout_view(request):
 def organization_list(request):
     organizations = get_user_organizations(request.user)
     active_organization = get_active_organization(request)
+    organizations_page, organizations_pagination_query = paginate_queryset(
+        request,
+        organizations.order_by('name'),
+        per_page=20,
+        page_param='organizations_page',
+    )
 
     context = {
-        'organizations': organizations,
+        'organizations': organizations_page,
+        'organizations_page_obj': organizations_page,
+        'organizations_pagination_query': organizations_pagination_query,
         'active_organization': active_organization,
         'page_title': 'Organizations',
     }
@@ -478,11 +495,19 @@ def organization_departments(request):
             return redirect('organization_departments')
     else:
         form = DepartmentForm(initial={'is_active': True}, organization=organization)
+    departments_page, departments_pagination_query = paginate_queryset(
+        request,
+        Department.objects.filter(organization=organization).order_by('name'),
+        per_page=20,
+        page_param='departments_page',
+    )
 
     context = {
         'form': form,
         'organization': organization,
-        'departments': Department.objects.filter(organization=organization).order_by('name'),
+        'departments': departments_page,
+        'departments_page_obj': departments_page,
+        'departments_pagination_query': departments_pagination_query,
         'page_title': 'Departments',
     }
     return render(request, 'attendance/organization_departments.html', context)
@@ -501,11 +526,19 @@ def organization_categories(request):
             return redirect('organization_categories')
     else:
         form = CategoryForm(initial={'icon': 'bi-person', 'color': 'primary'}, organization=organization)
+    categories_page, categories_pagination_query = paginate_queryset(
+        request,
+        Category.objects.filter(organization=organization).order_by('name'),
+        per_page=20,
+        page_param='categories_page',
+    )
 
     context = {
         'form': form,
         'organization': organization,
-        'categories': Category.objects.filter(organization=organization).order_by('name'),
+        'categories': categories_page,
+        'categories_page_obj': categories_page,
+        'categories_pagination_query': categories_pagination_query,
         'page_title': 'Employee Categories',
     }
     return render(request, 'attendance/organization_categories.html', context)
@@ -556,11 +589,19 @@ def organization_leave_types(request):
             },
             organization=organization,
         )
+    leave_types_page, leave_types_pagination_query = paginate_queryset(
+        request,
+        LeaveType.objects.filter(organization=organization).order_by('name'),
+        per_page=20,
+        page_param='leave_types_page',
+    )
 
     context = {
         'form': form,
         'organization': organization,
-        'leave_types': LeaveType.objects.filter(organization=organization).order_by('name'),
+        'leave_types': leave_types_page,
+        'leave_types_page_obj': leave_types_page,
+        'leave_types_pagination_query': leave_types_pagination_query,
         'page_title': 'Leave Types',
     }
     return render(request, 'attendance/leave_types.html', context)
@@ -834,6 +875,12 @@ def category_dashboard(request, code):
     late_count = count_distinct_late_employees(todays_records)
     absent_count = max(total_employees - present_count, 0)
     recent_attendance = todays_records.order_by('-check_in_time')[:8]
+    employees_page, employees_pagination_query = paginate_queryset(
+        request,
+        employees.order_by('first_name', 'last_name'),
+        per_page=25,
+        page_param='employees_page',
+    )
 
     context = {
         'category': category,
@@ -845,7 +892,9 @@ def category_dashboard(request, code):
         'checked_out_count': checked_out_count,
         'late_count': late_count,
         'absent_count': absent_count,
-        'employees': employees.order_by('first_name', 'last_name'),
+        'employees': employees_page,
+        'employees_page_obj': employees_page,
+        'employees_pagination_query': employees_pagination_query,
         'recent_attendance': recent_attendance,
         'departments': Department.objects.filter(organization=organization, is_active=True).order_by('name'),
         'search_query': search_query,
@@ -897,9 +946,18 @@ def employee_list(request):
     # Get unique departments for filter dropdown
     departments = Department.objects.filter(organization=organization, is_active=True).order_by('name')
     categories = Category.objects.filter(organization=organization).order_by('name')
+    employees = employees.order_by('first_name', 'last_name')
+    employees_page, employees_pagination_query = paginate_queryset(
+        request,
+        employees,
+        per_page=25,
+        page_param='employees_page',
+    )
     
     context = {
-        'employees': employees,
+        'employees': employees_page,
+        'employees_page_obj': employees_page,
+        'employees_pagination_query': employees_pagination_query,
         'organization': organization,
         'search_query': search_query,
         'departments': departments,
@@ -1141,12 +1199,20 @@ def employee_detail(request, pk):
     attendance_history = AttendanceRecord.objects.filter(
         organization=organization,
         employee=employee
-    ).order_by('-check_in_time')[:30]
+    ).order_by('-check_in_time')
+    attendance_page, attendance_pagination_query = paginate_queryset(
+        request,
+        attendance_history,
+        per_page=15,
+        page_param='attendance_page',
+    )
     
     context = {
         'employee': employee,
         'organization': organization,
-        'attendance_history': attendance_history,
+        'attendance_history': attendance_page,
+        'attendance_page_obj': attendance_page,
+        'attendance_pagination_query': attendance_pagination_query,
         'page_title': employee.full_name,
     }
     
@@ -1182,10 +1248,19 @@ def employee_documents(request):
         documents = documents.filter(expiry_date__gte=today, expiry_date__lte=today + timedelta(days=30))
     elif expiring == 'none':
         documents = documents.filter(expiry_date__isnull=True)
+    documents = documents.order_by('-uploaded_at', 'employee__first_name', 'title')
+    documents_page, documents_pagination_query = paginate_queryset(
+        request,
+        documents,
+        per_page=25,
+        page_param='documents_page',
+    )
 
     context = {
         'organization': organization,
-        'documents': documents,
+        'documents': documents_page,
+        'documents_page_obj': documents_page,
+        'documents_pagination_query': documents_pagination_query,
         'search_query': search_query,
         'selected_document_type': document_type,
         'selected_expiring': expiring,
@@ -1236,7 +1311,10 @@ def employee_document_upload(request, employee_pk=None):
     context = {
         'form': form,
         'employee': employee,
-        'employees': Employee.objects.filter(organization=organization, is_active=True).order_by('first_name', 'last_name'),
+        'employees': Employee.objects.filter(
+            organization=organization,
+            is_active=True,
+        ).select_related('department').order_by('first_name', 'last_name'),
         'organization': organization,
         'page_title': 'Upload Document',
     }
@@ -1380,6 +1458,14 @@ def onboarding_tasks(request):
             'participants': list(participants.filter(stage=stage).order_by('created_at')),
             'task_count': tasks.filter(stage=stage).count(),
         })
+    filtered_task_count = tasks.count()
+    tasks = tasks.order_by('status', 'due_date', 'employee__first_name', 'title')
+    tasks_page, tasks_pagination_query = paginate_queryset(
+        request,
+        tasks,
+        per_page=20,
+        page_param='tasks_page',
+    )
 
     base_tasks = OnboardingTask.objects.filter(organization=organization)
     invitations = OnboardingInvitation.objects.filter(
@@ -1390,7 +1476,9 @@ def onboarding_tasks(request):
     participant_base = OnboardingParticipant.objects.filter(organization=organization)
     context = {
         'organization': organization,
-        'tasks': tasks,
+        'tasks': tasks_page,
+        'tasks_page_obj': tasks_page,
+        'tasks_pagination_query': tasks_pagination_query,
         'stages': stages,
         'stage_rows': stage_rows,
         'invitations': invitations,
@@ -1401,7 +1489,7 @@ def onboarding_tasks(request):
         'status_choices': OnboardingTask.STATUS_CHOICES,
         'category_choices': OnboardingTask.CATEGORY_CHOICES,
         'stage_choices': stages,
-        'total_tasks': tasks.count(),
+        'total_tasks': filtered_task_count,
         'pending_count': base_tasks.filter(status='pending').count(),
         'in_progress_count': base_tasks.filter(status='in_progress').count(),
         'completed_count': base_tasks.filter(status='completed').count(),
@@ -2055,15 +2143,33 @@ def employee_self_service_dashboard(request):
     attendance_history = AttendanceRecord.objects.filter(
         organization=employee.organization,
         employee=employee,
-    ).order_by('-check_in_time')[:10]
+    ).order_by('-check_in_time')
     leave_requests_qs = LeaveRequest.objects.filter(
         organization=employee.organization,
         employee=employee,
-    ).select_related('leave_type').order_by('-created_at')[:10]
-    payslips = Payslip.objects.filter(
+    ).select_related('leave_type').order_by('-created_at')
+    payslips_qs = Payslip.objects.filter(
         employee=employee,
         payroll_run__status__in=['approved', 'paid'],
-    ).select_related('payroll_run').order_by('-payroll_run__payroll_month')[:6]
+    ).select_related('payroll_run').order_by('-payroll_run__payroll_month')
+    attendance_page, attendance_pagination_query = paginate_queryset(
+        request,
+        attendance_history,
+        per_page=10,
+        page_param='attendance_page',
+    )
+    leave_page, leave_pagination_query = paginate_queryset(
+        request,
+        leave_requests_qs,
+        per_page=10,
+        page_param='leave_page',
+    )
+    payslips_page, payslips_pagination_query = paginate_queryset(
+        request,
+        payslips_qs,
+        per_page=6,
+        page_param='payslips_page',
+    )
     leave_balances = build_leave_balances(employee)
     today_record = employee.today_attendance
     pending_leave_count = LeaveRequest.objects.filter(
@@ -2086,14 +2192,20 @@ def employee_self_service_dashboard(request):
     context = {
         'employee': employee,
         'organization': employee.organization,
-        'attendance_history': attendance_history,
-        'leave_requests': leave_requests_qs,
-        'payslips': payslips,
+        'attendance_history': attendance_page,
+        'attendance_page_obj': attendance_page,
+        'attendance_pagination_query': attendance_pagination_query,
+        'leave_requests': leave_page,
+        'leave_page_obj': leave_page,
+        'leave_pagination_query': leave_pagination_query,
+        'payslips': payslips_page,
+        'payslips_page_obj': payslips_page,
+        'payslips_pagination_query': payslips_pagination_query,
         'leave_balances': leave_balances,
         'today_record': today_record,
         'pending_leave_count': pending_leave_count,
         'approved_leave_count': approved_leave_count,
-        'latest_payslip': payslips[0] if payslips else None,
+        'latest_payslip': payslips_qs.first(),
         'manager_pending_count': manager_pending_count,
         'page_title': 'My Dashboard',
     }
@@ -2136,10 +2248,18 @@ def employee_my_documents(request):
         return redirect('dashboard')
 
     documents = employee.documents.order_by('-uploaded_at', 'title')
+    documents_page, documents_pagination_query = paginate_queryset(
+        request,
+        documents,
+        per_page=20,
+        page_param='documents_page',
+    )
     context = {
         'employee': employee,
         'organization': employee.organization,
-        'documents': documents,
+        'documents': documents_page,
+        'documents_page_obj': documents_page,
+        'documents_pagination_query': documents_pagination_query,
         'document_count': documents.count(),
         'page_title': 'My Documents',
     }
@@ -2291,11 +2411,19 @@ def manager_team(request):
             'status': status,
             'status_color': status_color,
         })
+    team_rows_page, team_rows_pagination_query = paginate_queryset(
+        request,
+        team_rows,
+        per_page=25,
+        page_param='team_page',
+    )
 
     context = {
         'organization': organization,
         'manager': manager,
-        'team_rows': team_rows,
+        'team_rows': team_rows_page,
+        'team_rows_page_obj': team_rows_page,
+        'team_rows_pagination_query': team_rows_pagination_query,
         'team_count': len(team_rows),
         'checked_in_count': sum(1 for row in team_rows if row['status'] == 'Checked In'),
         'completed_count': sum(1 for row in team_rows if row['status'] == 'Completed'),
@@ -2317,10 +2445,18 @@ def manager_leave_requests(request):
 
     if manager and not user_has_hr_access(request.user):
         requests_qs = requests_qs.filter(employee__line_manager=manager)
+    leave_requests_page, leave_requests_pagination_query = paginate_queryset(
+        request,
+        requests_qs.order_by('created_at'),
+        per_page=20,
+        page_param='leave_page',
+    )
 
     context = {
         'organization': organization,
-        'leave_requests': requests_qs.order_by('created_at'),
+        'leave_requests': leave_requests_page,
+        'leave_requests_page_obj': leave_requests_page,
+        'leave_requests_pagination_query': leave_requests_pagination_query,
         'page_title': 'Manager Leave Approvals',
     }
     return render(request, 'attendance/manager_leave_requests.html', context)
@@ -2420,7 +2556,20 @@ def attendance_reports(request):
     total_hours = sum((record.hours_worked or 0) for record in records)
     late_records = sum(1 for record in records if record.is_late)
     exception_count = exceptions.count()
-    recent_attendance_days = list(
+    records_page, records_pagination_query = paginate_queryset(
+        request,
+        records,
+        per_page=25,
+        page_param='attendance_page',
+    )
+    exceptions_ordered = exceptions.order_by('-start_date', 'employee__first_name')
+    exceptions_page, exceptions_pagination_query = paginate_queryset(
+        request,
+        exceptions_ordered,
+        per_page=20,
+        page_param='exceptions_page',
+    )
+    recent_attendance_days_qs = (
         AttendanceRecord.objects.filter(organization=organization, employee__is_active=True)
         .annotate(attendance_date=TruncDate('check_in_time'))
         .values('attendance_date')
@@ -2429,18 +2578,30 @@ def attendance_reports(request):
             total_records=Count('id'),
             completed_records=Count('id', filter=Q(check_out_time__isnull=False)),
         )
-        .order_by('-attendance_date')[:14]
+        .order_by('-attendance_date')
+    )
+    recent_attendance_days_page, recent_attendance_days_pagination_query = paginate_queryset(
+        request,
+        recent_attendance_days_qs,
+        per_page=10,
+        page_param='days_page',
     )
     
     context = {
-        'records': records,
+        'records': records_page,
+        'records_page_obj': records_page,
+        'records_pagination_query': records_pagination_query,
         'organization': organization,
         'date_form': date_form,
         'total_hours': round(total_hours, 2),
         'late_records': late_records,
-        'attendance_exceptions': exceptions.order_by('-start_date', 'employee__first_name')[:20],
+        'attendance_exceptions': exceptions_page,
+        'exceptions_page_obj': exceptions_page,
+        'exceptions_pagination_query': exceptions_pagination_query,
         'exception_count': exception_count,
-        'recent_attendance_days': recent_attendance_days,
+        'recent_attendance_days': recent_attendance_days_page,
+        'recent_attendance_days_page_obj': recent_attendance_days_page,
+        'recent_attendance_days_pagination_query': recent_attendance_days_pagination_query,
         'page_title': 'Attendance Reports',
     }
     
@@ -2527,11 +2688,19 @@ def attendance_exception_types(request):
             return redirect('attendance_exception_types')
     else:
         form = AttendanceExceptionTypeForm(initial={'color': 'primary', 'is_active': True}, organization=organization)
+    exception_types_page, exception_types_pagination_query = paginate_queryset(
+        request,
+        AttendanceExceptionType.objects.filter(organization=organization).order_by('name'),
+        per_page=20,
+        page_param='exception_types_page',
+    )
 
     context = {
         'form': form,
         'organization': organization,
-        'exception_types': AttendanceExceptionType.objects.filter(organization=organization),
+        'exception_types': exception_types_page,
+        'exception_types_page_obj': exception_types_page,
+        'exception_types_pagination_query': exception_types_pagination_query,
         'page_title': 'Attendance Exception Types',
     }
     return render(request, 'attendance/attendance_exception_types.html', context)
@@ -2580,11 +2749,27 @@ def leave_requests(request):
         build_employee_leave_overview(employee, year=today.year)
         for employee in active_employees
     ]
+    leave_employee_page, leave_employee_pagination_query = paginate_queryset(
+        request,
+        leave_employee_rows,
+        per_page=20,
+        page_param='employees_page',
+    )
+    recent_leave_page, recent_leave_pagination_query = paginate_queryset(
+        request,
+        requests_qs,
+        per_page=15,
+        page_param='leave_page',
+    )
 
     context = {
         'organization': organization,
-        'leave_requests': requests_qs,
-        'leave_employee_rows': leave_employee_rows,
+        'leave_requests': recent_leave_page,
+        'leave_page_obj': recent_leave_page,
+        'leave_pagination_query': recent_leave_pagination_query,
+        'leave_employee_rows': leave_employee_page,
+        'leave_employee_page_obj': leave_employee_page,
+        'leave_employee_pagination_query': leave_employee_pagination_query,
         'selected_status': status,
         'search_query': search_query,
         'status_choices': LeaveRequest.STATUS_CHOICES,
@@ -2609,7 +2794,7 @@ def leave_requests(request):
             start_date__lte=upcoming_limit,
         ).count(),
         'low_balance_count': sum(1 for row in leave_employee_rows if row['total_remaining'] <= 3),
-        'recent_leave_requests': requests_qs[:8],
+        'recent_leave_requests': recent_leave_page,
         'today': today,
         'page_title': 'Leave Management',
     }
@@ -2631,12 +2816,20 @@ def employee_leave_detail(request, employee_pk):
         organization=organization,
         employee=employee,
     ).select_related('leave_type', 'reviewed_by').order_by('-created_at')
+    leave_requests_page, leave_requests_pagination_query = paginate_queryset(
+        request,
+        leave_requests_qs,
+        per_page=15,
+        page_param='leave_page',
+    )
 
     context = {
         'organization': organization,
         'employee': employee,
         'overview': overview,
-        'leave_requests': leave_requests_qs,
+        'leave_requests': leave_requests_page,
+        'leave_requests_page_obj': leave_requests_page,
+        'leave_requests_pagination_query': leave_requests_pagination_query,
         'approved_requests': leave_requests_qs.filter(status='approved')[:8],
         'pending_requests': leave_requests_qs.filter(status='pending'),
         'page_title': f'Leave: {employee.full_name}',
@@ -2940,11 +3133,19 @@ def leave_request_delete(request, pk):
 @payroll_required
 def payroll_runs(request):
     organization = get_active_organization(request)
-    runs = PayrollRun.objects.filter(organization=organization).prefetch_related('payslips')
+    runs = PayrollRun.objects.filter(organization=organization).prefetch_related('payslips').order_by('-payroll_month', '-created_at')
+    runs_page, runs_pagination_query = paginate_queryset(
+        request,
+        runs,
+        per_page=20,
+        page_param='runs_page',
+    )
 
     context = {
         'organization': organization,
-        'payroll_runs': runs,
+        'payroll_runs': runs_page,
+        'payroll_runs_page_obj': runs_page,
+        'payroll_runs_pagination_query': runs_pagination_query,
         'page_title': 'Payroll',
     }
     return render(request, 'attendance/payroll_runs.html', context)
@@ -3247,11 +3448,20 @@ def admin_reports(request):
         reports = reports.filter(tone=tone)
     if status:
         reports = reports.filter(status=status)
+    reports = reports.order_by('-event_date', '-created_at')
+    reports_page, reports_pagination_query = paginate_queryset(
+        request,
+        reports,
+        per_page=20,
+        page_param='reports_page',
+    )
 
     base_reports = AdminReport.objects.filter(organization=organization)
     context = {
         'organization': organization,
-        'admin_reports': reports,
+        'admin_reports': reports_page,
+        'admin_reports_page_obj': reports_page,
+        'admin_reports_pagination_query': reports_pagination_query,
         'search_query': search_query,
         'selected_report_type': report_type,
         'selected_tone': tone,
@@ -3259,7 +3469,7 @@ def admin_reports(request):
         'report_type_choices': AdminReport.REPORT_TYPE_CHOICES,
         'tone_choices': AdminReport.TONE_CHOICES,
         'status_choices': AdminReport.STATUS_CHOICES,
-        'total_reports': reports.count(),
+        'total_reports': reports_page.paginator.count,
         'open_count': base_reports.filter(status='open').count(),
         'reviewed_count': base_reports.filter(status='reviewed').count(),
         'closed_count': base_reports.filter(status='closed').count(),
@@ -3430,6 +3640,18 @@ def reports_view(request):
     employee_scope = build_employee_scope(cleaned_data, organization)
     records_total = records.count()
     exceptions_total = exceptions.count()
+    records_page, records_pagination_query = paginate_queryset(
+        request,
+        records,
+        per_page=25,
+        page_param='records_page',
+    )
+    exceptions_page, exceptions_pagination_query = paginate_queryset(
+        request,
+        exceptions,
+        per_page=20,
+        page_param='exceptions_page',
+    )
 
     total_employees = employee_scope.count()
     present_count = records.values('employee_id').distinct().count()
@@ -3456,7 +3678,9 @@ def reports_view(request):
         'today': today,
         'organization': organization,
         'date_form': date_form,
-        'records': records[:20],
+        'records': records_page,
+        'records_page_obj': records_page,
+        'records_pagination_query': records_pagination_query,
         'records_total': records_total,
         'total_employees': total_employees,
         'present_count': present_count,
@@ -3469,7 +3693,9 @@ def reports_view(request):
         'exceptions_total': exceptions_total,
         'leave_count': leave_count,
         'sick_count': sick_count,
-        'attendance_exceptions': exceptions[:20],
+        'attendance_exceptions': exceptions_page,
+        'exceptions_page_obj': exceptions_page,
+        'exceptions_pagination_query': exceptions_pagination_query,
         'attendance_rate': attendance_rate,
         'department_summary': department_summary,
         'category_summary': category_summary,

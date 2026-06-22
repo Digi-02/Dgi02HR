@@ -114,6 +114,7 @@
                     </tbody>
                 </table>
             </div>
+            {% include 'attendance/partials/pagination.html' with page_obj=admin_reports_page_obj page_param='reports_page' pagination_query=admin_reports_pagination_query %}
         </div>
     </div>
 </div>
