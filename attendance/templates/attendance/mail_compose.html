@@ -1,0 +1,52 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Compose Mail | HR Management{% endblock %}
+{% block page_title %}Compose Mail{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="card border-0">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                <div>
+                    <h5 class="mb-1"><i class="bi bi-send me-2"></i>New Mail</h5>
+                    <small class="text-muted">Sending from {{ from_email }}.</small>
+                </div>
+                <a href="{% url 'mail_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Mail
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="post" class="mail-compose-form">
+                {% csrf_token %}
+                <div>
+                    <label class="form-label">To</label>
+                    <input type="email" name="to" class="form-control" value="{{ form_data.to }}" placeholder="recipient@example.com" required>
+                </div>
+                <div>
+                    <label class="form-label">Subject</label>
+                    <input type="text" name="subject" class="form-control" value="{{ form_data.subject }}" required>
+                </div>
+                <div>
+                    <label class="form-label">Message</label>
+                    <textarea name="body" class="form-control" rows="10" required>{{ form_data.body }}</textarea>
+                </div>
+                <div class="responsive-actions justify-content-end">
+                    <a href="{% url 'mail_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send me-1"></i> Send Mail
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .mail-compose-form {
+        display: grid;
+        gap: 1rem;
+    }
+</style>
+{% endblock %}

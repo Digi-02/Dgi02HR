@@ -46,46 +46,60 @@ def get_user_organizations(user):
     return organizations.distinct().order_by('name')
 
 
-def user_has_hr_access(user):
+def user_has_hr_access(user, organization=None):
     if not user.is_authenticated:
         return False
     if user.is_staff or user.is_superuser:
         return True
-    return user.organization_memberships.filter(
+    memberships = user.organization_memberships.filter(
         is_active=True,
         role__in=HR_ROLES,
-    ).exists()
+    )
+    if organization is not None:
+        memberships = memberships.filter(organization=organization)
+    return memberships.exists()
 
 
-def user_has_payroll_access(user):
+def user_has_payroll_access(user, organization=None):
     if not user.is_authenticated:
         return False
     if user.is_staff or user.is_superuser:
         return True
-    return user.organization_memberships.filter(
+    memberships = user.organization_memberships.filter(
         is_active=True,
         role__in=PAYROLL_ROLES,
-    ).exists()
+    )
+    if organization is not None:
+        memberships = memberships.filter(organization=organization)
+    return memberships.exists()
 
 
-def user_has_viewer_access(user):
+def user_has_viewer_access(user, organization=None):
     if not user.is_authenticated:
         return False
     if user.is_staff or user.is_superuser:
         return True
-    return user.organization_memberships.filter(
+    memberships = user.organization_memberships.filter(
         is_active=True,
         role__in=VIEWER_ROLES,
-    ).exists()
+    )
+    if organization is not None:
+        memberships = memberships.filter(organization=organization)
+    return memberships.exists()
 
 
-def user_has_manager_access(user):
+def user_has_manager_access(user, organization=None):
     if not user.is_authenticated:
         return False
-    if user_has_hr_access(user):
+    if user_has_hr_access(user, organization):
         return True
     employee = getattr(user, 'employee_profile', None)
-    return bool(employee and employee.direct_reports.filter(is_active=True).exists())
+    if not employee:
+        return False
+    direct_reports = employee.direct_reports.filter(is_active=True)
+    if organization is not None:
+        direct_reports = direct_reports.filter(organization=organization)
+    return direct_reports.exists()
 
 
 def is_employee_self_service_user(user):

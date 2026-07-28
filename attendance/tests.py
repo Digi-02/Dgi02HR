@@ -1,18 +1,22 @@
 from django.contrib.auth.models import User
 from django.core import mail
+from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
-from datetime import timedelta
+from datetime import date, timedelta
 
 from .models import (
     Applicant,
     AdminReport,
     AttendanceException,
+    AttendanceSettings,
     AttendanceRecord,
+    BirthdayMessageLog,
     Category,
     Department,
     Employee,
+    EmployeeDocument,
     LeaveRequest,
     LeaveType,
     OnboardingInvitation,
@@ -20,6 +24,7 @@ from .models import (
     OnboardingStage,
     Organization,
     OrganizationMembership,
+    PayrollRun,
 )
 from .organization import (
     user_has_hr_access,
@@ -71,6 +76,265 @@ class RolePermissionTests(TestCase):
         self.assertFalse(user_has_payroll_access(user))
         self.assertFalse(user_has_viewer_access(user))
         self.assertFalse(user_has_manager_access(user))
+
+    def test_roles_are_scoped_to_the_requested_organization(self):
+        other_organization = Organization.objects.create(
+            name='Other Organization',
+            slug='other-organization',
+        )
+        user = self.make_user_with_role('hr_admin')
+        OrganizationMembership.objects.create(
+            user=user,
+            organization=other_organization,
+            role='viewer',
+            is_active=True,
+        )
+
+        self.assertTrue(user_has_hr_access(user, self.organization))
+        self.assertFalse(user_has_hr_access(user, other_organization))
+        self.assertFalse(user_has_payroll_access(user, other_organization))
+
+
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+class BirthdayMessagingTests(TestCase):
+    def setUp(self):
+        self.organization = Organization.objects.create(
+            name='Digi02 Birthday Test',
+            slug='digi02-birthday-test',
+        )
+        self.category = Category.objects.create(
+            organization=self.organization,
+            name='Staff',
+            code='STAFF',
+            icon='bi-person',
+            color='primary',
+        )
+        self.employee = Employee.objects.create(
+            organization=self.organization,
+            category=self.category,
+            first_name='Ada',
+            last_name='Okafor',
+            email='ada.birthday@example.com',
+            phone='08010000000',
+            gender='FEMALE',
+            date_of_birth=date(1998, 7, 28),
+        )
+        Employee.objects.create(
+            organization=self.organization,
+            category=self.category,
+            first_name='No',
+            last_name='Birthday',
+            email='not.today@example.com',
+            phone='08010000001',
+            gender='MALE',
+            date_of_birth=date(1998, 7, 29),
+        )
+
+    def test_command_sends_birthday_message_to_today_recipients(self):
+        call_command('send_birthday_messages', '--organization', self.organization.slug, '--date', '2026-07-28')
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [self.employee.email])
+        self.assertIn('Happy Birthday, Ada', mail.outbox[0].subject)
+        self.assertIn('Dear Ms Ada Okafor', mail.outbox[0].body)
+        self.assertTrue(
+            BirthdayMessageLog.objects.filter(
+                organization=self.organization,
+                employee=self.employee,
+                birthday_year=2026,
+            ).exists()
+        )
+
+    def test_command_does_not_send_duplicate_for_same_year(self):
+        BirthdayMessageLog.objects.create(
+            organization=self.organization,
+            employee=self.employee,
+            birthday_year=2026,
+            recipient_email=self.employee.email,
+        )
+
+        call_command('send_birthday_messages', '--organization', self.organization.slug, '--date', '2026-07-28')
+
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_command_uses_saved_birthday_template(self):
+        AttendanceSettings.objects.create(
+            organization=self.organization,
+            birthday_message_subject='Celebrating {first_name} at {organization_name}',
+            birthday_message_body='Hello {display_name}, your ID is {employee_id}.',
+        )
+
+        call_command('send_birthday_messages', '--organization', self.organization.slug, '--date', '2026-07-28')
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, 'Celebrating Ada at Digi02 Birthday Test')
+        self.assertIn('Hello Ms Ada Okafor, your ID is STAFF-', mail.outbox[0].body)
+
+
+class TenantAuthorizationRegressionTests(TestCase):
+    def setUp(self):
+        self.organization = Organization.objects.create(name='Primary', slug='primary')
+        self.other_organization = Organization.objects.create(name='Other', slug='other')
+        self.user = User.objects.create_user(username='tenant-admin', password='pass12345')
+        OrganizationMembership.objects.create(
+            user=self.user,
+            organization=self.organization,
+            role='owner',
+            is_active=True,
+        )
+        self.client.login(username='tenant-admin', password='pass12345')
+        session = self.client.session
+        session['active_organization_id'] = self.organization.pk
+        session.save()
+
+    def test_hr_cannot_review_another_organizations_leave_request_by_id(self):
+        category = Category.objects.create(
+            organization=self.other_organization,
+            name='Staff',
+            code='STAFF',
+        )
+        employee = Employee.objects.create(
+            organization=self.other_organization,
+            category=category,
+            first_name='Other',
+            last_name='Employee',
+            email='other.employee@example.com',
+            phone='08000000000',
+            gender='FEMALE',
+        )
+        leave_type = LeaveType.objects.create(
+            organization=self.other_organization,
+            name='Annual Leave',
+            code='annual_leave',
+        )
+        leave_request = LeaveRequest.objects.create(
+            organization=self.other_organization,
+            employee=employee,
+            leave_type=leave_type,
+            start_date='2026-08-03',
+            end_date='2026-08-04',
+            status='pending',
+        )
+
+        response = self.client.get(
+            reverse('manager_leave_request_approve', kwargs={'pk': leave_request.pk})
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_payroll_state_transitions_reject_get_requests(self):
+        payroll_month = timezone.localdate().replace(day=1)
+        draft = PayrollRun.objects.create(
+            organization=self.organization,
+            title='Draft Payroll',
+            payroll_month=payroll_month,
+            status='draft',
+        )
+        processed = PayrollRun.objects.create(
+            organization=self.organization,
+            title='Processed Payroll',
+            payroll_month=(payroll_month - timedelta(days=1)).replace(day=1),
+            status='processed',
+        )
+        approved = PayrollRun.objects.create(
+            organization=self.organization,
+            title='Approved Payroll',
+            payroll_month=(processed.payroll_month - timedelta(days=1)).replace(day=1),
+            status='approved',
+        )
+
+        responses = [
+            self.client.get(reverse('payroll_run_generate', kwargs={'pk': draft.pk})),
+            self.client.get(reverse('payroll_run_approve', kwargs={'pk': processed.pk})),
+            self.client.get(reverse('payroll_run_mark_paid', kwargs={'pk': approved.pk})),
+        ]
+
+        self.assertEqual([response.status_code for response in responses], [405, 405, 405])
+        draft.refresh_from_db()
+        processed.refresh_from_db()
+        approved.refresh_from_db()
+        self.assertEqual(draft.status, 'draft')
+        self.assertEqual(processed.status, 'processed')
+        self.assertEqual(approved.status, 'approved')
+
+
+class EmployeeSelfServiceTests(TestCase):
+    def setUp(self):
+        self.organization = Organization.objects.create(name='Staff Portal', slug='staff-portal')
+        self.category = Category.objects.create(
+            organization=self.organization,
+            name='Staff',
+            code='STAFF',
+        )
+        self.user = User.objects.create_user(username='normal-staff', password='pass12345')
+        self.employee = Employee.objects.create(
+            organization=self.organization,
+            user=self.user,
+            category=self.category,
+            first_name='Normal',
+            last_name='Staff',
+            email='normal.staff@example.com',
+            phone='08010000000',
+            gender='FEMALE',
+        )
+        OrganizationMembership.objects.create(
+            user=self.user,
+            organization=self.organization,
+            role='employee',
+            is_active=True,
+        )
+        self.client.login(username='normal-staff', password='pass12345')
+
+    def test_normal_staff_dashboard_is_available(self):
+        response = self.client.get(reverse('employee_self_service_dashboard'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.employee.display_name)
+        self.assertNotContains(response, 'Kiosk View')
+
+    def test_employee_can_update_only_their_own_document(self):
+        own_document = EmployeeDocument.objects.create(
+            employee=self.employee,
+            document_type='certificate',
+            title='Old Certificate',
+            file='employee_documents/old-certificate.pdf',
+        )
+        other_user = User.objects.create_user(username='other-staff', password='pass12345')
+        other_employee = Employee.objects.create(
+            organization=self.organization,
+            user=other_user,
+            category=self.category,
+            first_name='Other',
+            last_name='Staff',
+            email='other.staff@example.com',
+            phone='08020000000',
+            gender='MALE',
+        )
+        other_document = EmployeeDocument.objects.create(
+            employee=other_employee,
+            document_type='id',
+            title='Private ID',
+            file='employee_documents/private-id.pdf',
+        )
+
+        response = self.client.post(
+            reverse('employee_my_document_edit', kwargs={'pk': own_document.pk}),
+            {
+                'document_type': 'certificate',
+                'title': 'Updated Certificate',
+                'issue_date': '',
+                'expiry_date': '',
+                'notes': 'Updated by the employee.',
+            },
+        )
+        forbidden_response = self.client.get(
+            reverse('employee_my_document_edit', kwargs={'pk': other_document.pk})
+        )
+
+        self.assertRedirects(response, reverse('employee_my_documents'))
+        own_document.refresh_from_db()
+        self.assertEqual(own_document.title, 'Updated Certificate')
+        self.assertEqual(forbidden_response.status_code, 404)
 
 
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
@@ -187,6 +451,8 @@ class OnboardingInvitationTests(TestCase):
             gender='MALE',
             department=self.department,
             position='Analyst',
+            personal_email='john.existing@example.com',
+            residential_address='Existing HR address',
         )
         invitation = OnboardingInvitation.objects.create(
             organization=self.organization,
@@ -200,11 +466,6 @@ class OnboardingInvitationTests(TestCase):
         response = self.client.post(reverse('public_onboarding_invitation', kwargs={'token': invitation.token}), {
             'username': 'john_doe',
             'password': 'securepass123',
-            'personal_email': 'john.personal@example.com',
-            'phone': '08020000001',
-            'residential_address': '12 Lagos Street',
-            'emergency_contact_name': 'Jane Doe',
-            'emergency_contact_phone': '08030000000',
         })
 
         self.assertRedirects(response, reverse('employee_self_service_dashboard'))
@@ -212,6 +473,9 @@ class OnboardingInvitationTests(TestCase):
         invitation.refresh_from_db()
         self.assertIsNotNone(employee.user)
         self.assertEqual(employee.user.username, 'john_doe')
+        self.assertEqual(employee.phone, '08020000000')
+        self.assertEqual(employee.personal_email, 'john.existing@example.com')
+        self.assertEqual(employee.residential_address, 'Existing HR address')
         self.assertEqual(invitation.status, 'accepted')
         self.assertTrue(
             OrganizationMembership.objects.filter(

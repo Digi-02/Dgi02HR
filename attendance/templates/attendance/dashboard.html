@@ -24,7 +24,8 @@
             </div>
         </div>
 
-        <div class="card metric-card h-100 metric-accent-success">
+        <a href="{% url 'dashboard' %}?attendance_status=present#attendance-people" class="metric-card-link text-decoration-none text-reset d-block h-100">
+        <div class="card metric-card h-100 metric-accent-success {% if attendance_status == 'present' %}metric-card-active{% endif %}">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start gap-3">
                     <div class="metric-copy">
@@ -37,8 +38,10 @@
                 </div>
             </div>
         </div>
+        </a>
 
-        <div class="card metric-card h-100 metric-accent-warning">
+        <a href="{% url 'dashboard' %}?attendance_status=late#attendance-people" class="metric-card-link text-decoration-none text-reset d-block h-100">
+        <div class="card metric-card h-100 metric-accent-warning {% if attendance_status == 'late' %}metric-card-active{% endif %}">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start gap-3">
                     <div class="metric-copy">
@@ -52,8 +55,10 @@
                 </div>
             </div>
         </div>
+        </a>
 
-        <div class="card metric-card h-100 metric-accent-danger">
+        <a href="{% url 'dashboard' %}?attendance_status=absent#attendance-people" class="metric-card-link text-decoration-none text-reset d-block h-100">
+        <div class="card metric-card h-100 metric-accent-danger {% if attendance_status == 'absent' %}metric-card-active{% endif %}">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start gap-3">
                     <div class="metric-copy">
@@ -66,8 +71,97 @@
                 </div>
             </div>
         </div>
+        </a>
 
     </div>
+
+    {% if attendance_status %}
+    <div class="card border-0 mb-4" id="attendance-people">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                <div>
+                    <h5 class="mb-1">
+                        {% if attendance_status == 'present' %}
+                            <i class="bi bi-box-arrow-in-right me-2 text-success"></i>Present People Today
+                        {% elif attendance_status == 'late' %}
+                            <i class="bi bi-clock-history me-2 text-warning"></i>Late People Today
+                        {% else %}
+                            <i class="bi bi-person-x me-2 text-danger"></i>Absent People Today
+                        {% endif %}
+                    </h5>
+                    <small class="text-muted">Filtered from active employees for {{ today|date:"F j, Y" }}.</small>
+                </div>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-circle me-1"></i> Clear Filter
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Person</th>
+                            <th>Category</th>
+                            <th>Department</th>
+                            <th>Check In</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in attendance_people %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-{{ row.employee.category.color }} bg-opacity-10 p-2 rounded me-3">
+                                        <i class="bi {{ row.employee.category.icon }} text-{{ row.employee.category.color }}"></i>
+                                    </div>
+                                    <div>
+                                        <strong>{{ row.employee.display_name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ row.employee.employee_id }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ row.employee.category.color }} bg-opacity-10 text-{{ row.employee.category.color }} px-3 py-2">
+                                    {{ row.employee.category.name }}
+                                </span>
+                            </td>
+                            <td>{{ row.employee.department|default:"-" }}</td>
+                            <td>
+                                {% if row.record %}
+                                    {{ row.record.check_in_time|time:"H:i" }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ row.status_color }} bg-opacity-10 text-{{ row.status_color }} px-3 py-2">
+                                    {{ row.status_label }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'employee_detail' row.employee.pk %}" class="btn btn-sm btn-outline-primary">
+                                    Open
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-calendar-x fs-1 d-block mb-3"></i>
+                                No people found for this attendance filter
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
     
     <!-- Category Breakdown Cards -->
     <div class="category-grid mb-4">
@@ -422,6 +516,11 @@
 
     .metric-card {
         transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .metric-card-link:focus-visible .metric-card,
+    .metric-card-active {
+        outline: 3px solid rgba(var(--bs-primary-rgb), 0.22);
+        box-shadow: 0 18px 42px rgba(15, 23, 42, 0.16);
     }
     .metric-card:hover {
         transform: translateY(-2px);

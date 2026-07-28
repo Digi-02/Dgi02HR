@@ -745,6 +745,22 @@ class AttendanceSettingsForm(forms.ModelForm):
         }
 
 
+class BirthdayMessageTemplateForm(forms.ModelForm):
+    class Meta:
+        model = AttendanceSettings
+        fields = ['birthday_message_subject', 'birthday_message_body']
+        widgets = {
+            'birthday_message_subject': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Happy Birthday, {first_name}!',
+            }),
+            'birthday_message_body': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 12,
+            }),
+        }
+
+
 class AttendanceExceptionTypeForm(forms.ModelForm):
     class Meta:
         model = AttendanceExceptionType
@@ -1029,29 +1045,6 @@ class EmployeeOnboardingSetupForm(forms.Form):
         min_length=8,
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Choose password'}),
     )
-    personal_email = forms.EmailField(
-        required=False,
-        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Personal email'}),
-    )
-    phone = forms.CharField(
-        max_length=20,
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone number'}),
-    )
-    residential_address = forms.CharField(
-        required=False,
-        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Residential address'}),
-    )
-    emergency_contact_name = forms.CharField(
-        max_length=150,
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Emergency contact name'}),
-    )
-    emergency_contact_phone = forms.CharField(
-        max_length=20,
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Emergency contact phone'}),
-    )
 
     def __init__(self, *args, employee=None, **kwargs):
         self.employee = employee
@@ -1059,11 +1052,6 @@ class EmployeeOnboardingSetupForm(forms.Form):
         if employee and not self.is_bound:
             base_username = employee.email.split('@')[0] if employee.email else employee.employee_id.lower()
             self.fields['username'].initial = slugify(base_username).replace('-', '_')
-            self.fields['personal_email'].initial = employee.personal_email
-            self.fields['phone'].initial = employee.phone
-            self.fields['residential_address'].initial = employee.residential_address
-            self.fields['emergency_contact_name'].initial = employee.emergency_contact_name
-            self.fields['emergency_contact_phone'].initial = employee.emergency_contact_phone
         if employee and employee.user:
             self.fields['username'].initial = employee.user.username
             self.fields['username'].disabled = True

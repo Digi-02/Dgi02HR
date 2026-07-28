@@ -1,0 +1,61 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Birthday Message Template | HR Management{% endblock %}
+{% block page_title %}Birthday Message Template{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="card border-0">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                <div>
+                    <h5 class="mb-1"><i class="bi bi-gift me-2"></i>{{ organization.name }} Birthday Message</h5>
+                    <small class="text-muted">Edit the automatic birthday email sent by HR.</small>
+                </div>
+                <a href="{% url 'organization_settings' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Settings
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="post" class="birthday-template-form">
+                {% csrf_token %}
+                <div>
+                    <label class="form-label">Subject</label>
+                    {{ form.birthday_message_subject }}
+                    {% if form.birthday_message_subject.errors %}
+                    <div class="text-danger small mt-1">{{ form.birthday_message_subject.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="form-label">Message Body</label>
+                    {{ form.birthday_message_body }}
+                    {% if form.birthday_message_body.errors %}
+                    <div class="text-danger small mt-1">{{ form.birthday_message_body.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Available placeholders:
+                    {% for placeholder in placeholders %}
+                    <code>{{ placeholder }}</code>{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="responsive-actions justify-content-end">
+                    <a href="{% url 'organization_settings' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check2 me-1"></i> Save Template
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .birthday-template-form {
+        display: grid;
+        gap: 1rem;
+    }
+</style>
+{% endblock %}

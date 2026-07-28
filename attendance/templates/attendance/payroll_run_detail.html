@@ -13,19 +13,28 @@
         </div>
         <div class="responsive-actions">
             {% if payroll_run.status == 'draft' or payroll_run.status == 'processed' %}
-                <a href="{% url 'payroll_run_generate' payroll_run.pk %}" class="btn btn-outline-primary">
-                    <i class="bi bi-gear me-1"></i> Generate Payslips
-                </a>
+                <form method="post" action="{% url 'payroll_run_generate' payroll_run.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="bi bi-gear me-1"></i> Generate Payslips
+                    </button>
+                </form>
             {% endif %}
             {% if payroll_run.status == 'processed' %}
-                <a href="{% url 'payroll_run_approve' payroll_run.pk %}" class="btn btn-success">
-                    <i class="bi bi-check-lg me-1"></i> Approve
-                </a>
+                <form method="post" action="{% url 'payroll_run_approve' payroll_run.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-lg me-1"></i> Approve
+                    </button>
+                </form>
             {% endif %}
             {% if payroll_run.status == 'approved' %}
-                <a href="{% url 'payroll_run_mark_paid' payroll_run.pk %}" class="btn btn-primary">
-                    <i class="bi bi-credit-card me-1"></i> Mark Paid
-                </a>
+                <form method="post" action="{% url 'payroll_run_mark_paid' payroll_run.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-credit-card me-1"></i> Mark Paid
+                    </button>
+                </form>
             {% endif %}
         </div>
     </div>

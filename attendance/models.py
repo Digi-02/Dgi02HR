@@ -924,6 +924,27 @@ class AdminReport(models.Model):
         return self.title
 
 
+class BirthdayMessageLog(models.Model):
+    """Tracks yearly birthday messages sent by HR."""
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='birthday_message_logs')
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='birthday_message_logs')
+    birthday_year = models.PositiveIntegerField()
+    recipient_email = models.EmailField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-sent_at']
+        unique_together = ('organization', 'employee', 'birthday_year')
+        indexes = [
+            models.Index(fields=['organization', 'birthday_year']),
+            models.Index(fields=['employee', 'birthday_year']),
+        ]
+
+    def __str__(self):
+        return f'{self.employee.full_name} birthday message - {self.birthday_year}'
+
+
 class AttendanceExceptionType(models.Model):
     """Configurable attendance exception labels managed by HR."""
 
@@ -1201,6 +1222,23 @@ class AttendanceSettings(models.Model):
     late_threshold = models.TimeField(default=time(8, 30), help_text="Check-ins at or after this time are marked late.")
     birthday_reminder_days = models.PositiveSmallIntegerField(default=7)
     internship_reminder_days = models.PositiveSmallIntegerField(default=14)
+    birthday_message_subject = models.CharField(
+        max_length=180,
+        default='Happy Birthday, {first_name}! From everyone at {organization_name}',
+    )
+    birthday_message_body = models.TextField(
+        default=(
+            'Dear {display_name},\n\n'
+            'Happy birthday from all of us at {organization_name}.\n\n'
+            'Today, we celebrate you and the value you bring to the team. We hope your day is filled with joy, '
+            'good health, and the kind of moments that remind you how appreciated you are.\n\n'
+            'Thank you for being part of {organization_name}. We wish you a wonderful birthday and a year ahead '
+            'filled with growth, fulfilment, and success.\n\n'
+            'Warm regards,\n'
+            'HR Team\n'
+            '{organization_name}'
+        ),
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

@@ -1,0 +1,246 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Mail | HR Management{% endblock %}
+{% block page_title %}Mail{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mail-metrics-grid mb-4">
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">All Emails</small>
+                <h3 class="mt-2 mb-0">{{ invitation_counts.total }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Sent</small>
+                <h3 class="mt-2 mb-0 text-info">{{ invitation_counts.sent }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Opened</small>
+                <h3 class="mt-2 mb-0 text-warning">{{ invitation_counts.opened }}</h3>
+            </div>
+        </div>
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-semibold">Responded</small>
+                <h3 class="mt-2 mb-0 text-success">{{ invitation_counts.responded }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 toolbar-card mb-4">
+        <div class="card-body">
+            <form method="get" class="mail-filter-grid">
+                <div class="search-control">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search name, email, or employee ID">
+                    </div>
+                </div>
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <select name="type" class="form-select">
+                    <option value="">All Types</option>
+                    {% for value, label in type_choices %}
+                    <option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel me-1"></i> Filter
+                </button>
+                {% if search_query or selected_status or selected_type %}
+                <a href="{% url 'mail_dashboard' %}" class="btn btn-outline-secondary">Reset</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <h5 class="mb-1"><i class="bi bi-envelope-paper me-2"></i>Onboarding Mail</h5>
+                    <small class="text-muted">Track sent invitation links and whether people opened or completed them.</small>
+                </div>
+                <div class="responsive-actions">
+                    <a href="{% url 'mail_compose' %}" class="btn btn-success btn-sm">
+                        <i class="bi bi-send me-1"></i> Compose
+                    </a>
+                    <a href="{% url 'applicant_invite' %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-envelope-plus me-1"></i> Invite Applicant
+                    </a>
+                    <a href="{% url 'existing_employee_onboarding_invite' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-person-gear me-1"></i> Invite Employee
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Recipient</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Sent</th>
+                            <th>Opened</th>
+                            <th>Responded</th>
+                            <th>Expires</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invitation in invitations %}
+                        <tr>
+                            <td>
+                                <strong>{{ invitation.recipient_name }}</strong>
+                                <div class="small text-muted">{{ invitation.email }}</div>
+                            </td>
+                            <td>{{ invitation.get_invitation_type_display }}</td>
+                            <td>
+                                <span class="badge mail-status-{{ invitation.status }} px-3 py-2">
+                                    {{ invitation.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ invitation.sent_at|date:"M j, Y H:i"|default:"-" }}</td>
+                            <td>{{ invitation.opened_at|date:"M j, Y H:i"|default:"-" }}</td>
+                            <td>{{ invitation.submitted_at|date:"M j, Y H:i"|default:"-" }}</td>
+                            <td>{{ invitation.expires_at|date:"M j, Y H:i"|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                No mail records found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% include 'attendance/partials/pagination.html' with page_obj=mail_page_obj page_param='mail_page' pagination_query=mail_pagination_query %}
+        </div>
+    </div>
+
+    <div class="card border-0 mt-4">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <h5 class="mb-1"><i class="bi bi-inbox me-2"></i>Recent Inbox</h5>
+            <small class="text-muted">Latest messages received by the configured IMAP mailbox.</small>
+        </div>
+        <div class="card-body">
+            {% if inbox_error %}
+            <div class="alert alert-warning mb-0">
+                <i class="bi bi-exclamation-triangle me-2"></i>{{ inbox_error }}
+            </div>
+            {% else %}
+                {% for message in inbox_messages %}
+                <div class="inbox-message">
+                    <div class="d-flex flex-column flex-lg-row justify-content-between gap-2">
+                        <div>
+                            <strong>{{ message.subject }}</strong>
+                            <div class="small text-muted">{{ message.from }}</div>
+                        </div>
+                        <div class="d-flex align-items-start gap-2 flex-wrap justify-content-lg-end">
+                            <small class="text-muted">{{ message.date|default:"-" }}</small>
+                            <a href="{% url 'mail_inbox_message' message.uid %}" class="btn btn-sm btn-outline-primary">
+                                Open
+                            </a>
+                        </div>
+                    </div>
+                    {% if message.preview %}
+                    <p class="mb-0 mt-2 text-muted small">{{ message.preview }}</p>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                    No inbox messages found
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="alert alert-info mt-4 mb-0">
+        <i class="bi bi-info-circle me-2"></i>
+        Onboarding mail tracks link responses. Recent Inbox shows direct replies from the configured mailbox.
+    </div>
+</div>
+
+<style>
+    .mail-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1.5rem;
+    }
+
+    .mail-filter-grid {
+        display: grid;
+        grid-template-columns: minmax(240px, 1.5fr) minmax(160px, 0.8fr) minmax(160px, 0.8fr) auto auto;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .mail-status-draft,
+    .mail-status-cancelled {
+        background: rgba(var(--bs-secondary-rgb), 0.1);
+        color: var(--bs-secondary);
+    }
+
+    .mail-status-sent,
+    .mail-status-opened {
+        background: rgba(var(--bs-info-rgb), 0.1);
+        color: var(--bs-info);
+    }
+
+    .mail-status-submitted,
+    .mail-status-accepted {
+        background: rgba(var(--bs-success-rgb), 0.1);
+        color: var(--bs-success);
+    }
+
+    .mail-status-expired {
+        background: rgba(var(--bs-danger-rgb), 0.1);
+        color: var(--bs-danger);
+    }
+
+    .inbox-message {
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.24);
+    }
+
+    .inbox-message:first-child {
+        padding-top: 0;
+    }
+
+    .inbox-message:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    @media (max-width: 1199.98px) {
+        .mail-metrics-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .mail-filter-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .mail-metrics-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+    }
+</style>
+{% endblock %}

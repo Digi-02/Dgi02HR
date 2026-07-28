@@ -62,6 +62,30 @@ def _env_str(name: str, default: str | None = None) -> str | None:
     return value if value != "" else default
 
 
+def _env_str_any(names: list[str], default: str | None = None) -> str | None:
+    for name in names:
+        value = _env_str(name)
+        if value is not None:
+            return value
+    return default
+
+
+def _env_bool_any(names: list[str], default: bool = False) -> bool:
+    for name in names:
+        value = os.getenv(name)
+        if value is not None:
+            return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+    return default
+
+
+def _env_int_any(names: list[str], default: int) -> int:
+    for name in names:
+        raw = os.getenv(name)
+        if raw is not None and raw.strip():
+            return int(raw.strip())
+    return default
+
+
 def _env_pair(name: str) -> tuple[str, str] | None:
     raw = os.getenv(name)
     if raw is None or not raw.strip():
@@ -86,7 +110,7 @@ if not SECRET_KEY:
     else:
         raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is false.")
 
-ALLOWED_HOSTS = _env_list("DJANGO_ALLOWED_HOSTS", default="localhost,127.0.0.1,dgi02hr-production.up.railway.app")
+ALLOWED_HOSTS = _env_list("DJANGO_ALLOWED_HOSTS", default="localhost,127.0.0.1,dgi02hr-production.up.railway.app,192.168.1.181:8002")
 if not DEBUG and not ALLOWED_HOSTS:
     raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS must be set when DJANGO_DEBUG is false.")
 
@@ -229,5 +253,29 @@ LOGIN_URL = os.getenv("DJANGO_LOGIN_URL", "login")
 LOGIN_REDIRECT_URL = os.getenv("DJANGO_LOGIN_REDIRECT_URL", "dashboard")
 LOGOUT_REDIRECT_URL = os.getenv("DJANGO_LOGOUT_REDIRECT_URL", "login")
 
-EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
-DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL", "Digi02 HR <noreply@digi02hr.local>")
+EMAIL_BACKEND = _env_str_any(
+    ["DJANGO_EMAIL_BACKEND", "EMAIL_BACKEND"],
+    default="django.core.mail.backends.console.EmailBackend",
+)
+EMAIL_HOST = _env_str_any(["DJANGO_EMAIL_HOST", "EMAIL_HOST"], default="localhost")
+EMAIL_PORT = _env_int_any(["DJANGO_EMAIL_PORT", "EMAIL_PORT"], default=25)
+EMAIL_HOST_USER = _env_str_any(["DJANGO_EMAIL_HOST_USER", "EMAIL_HOST_USER"], default="")
+EMAIL_HOST_PASSWORD = _env_str_any(["DJANGO_EMAIL_HOST_PASSWORD", "EMAIL_HOST_PASSWORD"], default="")
+EMAIL_USE_TLS = _env_bool_any(["DJANGO_EMAIL_USE_TLS", "EMAIL_USE_TLS"], default=False)
+EMAIL_USE_SSL = _env_bool_any(["DJANGO_EMAIL_USE_SSL", "EMAIL_USE_SSL"], default=False)
+EMAIL_TIMEOUT = _env_int_any(["DJANGO_EMAIL_TIMEOUT", "EMAIL_TIMEOUT"], default=10)
+DEFAULT_FROM_EMAIL = _env_str_any(
+    ["DJANGO_DEFAULT_FROM_EMAIL", "DEFAULT_FROM_EMAIL"],
+    default="Digi02 HR <noreply@digi02hr.local>",
+)
+
+IMAP_HOST = _env_str_any(["DJANGO_IMAP_HOST", "IMAP_HOST", "DJANGO_EMAIL_HOST", "EMAIL_HOST"], default="")
+IMAP_PORT = _env_int_any(["DJANGO_IMAP_PORT", "IMAP_PORT"], default=993)
+IMAP_HOST_USER = _env_str_any(["DJANGO_IMAP_HOST_USER", "IMAP_HOST_USER", "DJANGO_EMAIL_HOST_USER", "EMAIL_HOST_USER"], default="")
+IMAP_HOST_PASSWORD = _env_str_any(
+    ["DJANGO_IMAP_HOST_PASSWORD", "IMAP_HOST_PASSWORD", "DJANGO_EMAIL_HOST_PASSWORD", "EMAIL_HOST_PASSWORD"],
+    default="",
+)
+IMAP_USE_SSL = _env_bool_any(["DJANGO_IMAP_USE_SSL", "IMAP_USE_SSL"], default=True)
+IMAP_MAILBOX = _env_str_any(["DJANGO_IMAP_MAILBOX", "IMAP_MAILBOX"], default="INBOX")
+IMAP_TIMEOUT = _env_int_any(["DJANGO_IMAP_TIMEOUT", "IMAP_TIMEOUT"], default=10)

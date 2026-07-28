@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
@@ -12,14 +13,21 @@ from django.db import transaction
 from django.db.models.functions import TruncDate
 from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import PermissionDenied
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from django.conf import settings
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.db.models.deletion import ProtectedError
+from email.header import decode_header
+from email.utils import parseaddr
+from html.parser import HTMLParser
 from datetime import timedelta, date
 from functools import wraps
 import csv
+import imaplib
+import email
+import html
+import re
 
 from .models import (
     Employee,
@@ -58,6 +66,7 @@ from .forms import (
     DepartmentForm,
     CategoryForm,
     AttendanceSettingsForm,
+    BirthdayMessageTemplateForm,
     LeaveTypeForm,
     LeaveRequestForm,
     LeaveReviewForm,
@@ -138,6 +147,171 @@ def send_onboarding_invitation_email(request, invitation):
     invitation.status = 'sent'
     invitation.sent_at = timezone.now()
     invitation.save(update_fields=['status', 'sent_at', 'updated_at'])
+
+
+def decode_email_header(value):
+    if not value:
+        return ''
+    decoded_parts = []
+    for part, encoding in decode_header(value):
+        if isinstance(part, bytes):
+            decoded_parts.append(part.decode(encoding or 'utf-8', errors='replace'))
+        else:
+            decoded_parts.append(part)
+    return ''.join(decoded_parts)
+
+
+def format_email_address(value):
+    decoded_value = decode_email_header(value)
+    name, address = parseaddr(decoded_value)
+    name = name.strip().strip('"')
+    if name and address and name.lower() != address.lower():
+        return f'{name} <{address}>'
+    return address or decoded_value
+
+
+class EmailHTMLTextExtractor(HTMLParser):
+    block_tags = {'br', 'div', 'p', 'tr', 'table', 'li', 'ul', 'ol', 'blockquote'}
+
+    def __init__(self):
+        super().__init__()
+        self.parts = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag in self.block_tags:
+            self.parts.append('\n')
+
+    def handle_endtag(self, tag):
+        if tag in self.block_tags:
+            self.parts.append('\n')
+
+    def handle_data(self, data):
+        if data:
+            self.parts.append(data)
+
+    def text(self):
+        text = html.unescape(''.join(self.parts))
+        text = re.sub(r'[ \t\r\f\v]+', ' ', text)
+        text = re.sub(r'\n\s*\n\s*\n+', '\n\n', text)
+        return text.strip()
+
+
+def html_to_text(value):
+    extractor = EmailHTMLTextExtractor()
+    extractor.feed(value or '')
+    extractor.close()
+    return extractor.text()
+
+
+def decode_message_part(part):
+    payload = part.get_payload(decode=True)
+    if not payload:
+        return ''
+    charset = part.get_content_charset() or 'utf-8'
+    return payload.decode(charset, errors='replace').strip()
+
+
+def message_text_preview(message):
+    html_body = ''
+    if message.is_multipart():
+        for part in message.walk():
+            if part.get_content_type() == 'text/plain' and not part.get_content_disposition():
+                text_body = decode_message_part(part)
+                if text_body:
+                    return text_body
+            if part.get_content_type() == 'text/html' and not part.get_content_disposition():
+                html_body = html_body or decode_message_part(part)
+        return html_to_text(html_body)
+
+    body = decode_message_part(message)
+    if message.get_content_type() == 'text/html':
+        return html_to_text(body)
+    return body
+
+
+def close_imap_mailbox(mail):
+    if mail is None:
+        return
+    try:
+        mail.logout()
+    except (imaplib.IMAP4.error, OSError, TimeoutError):
+        pass
+
+
+def open_imap_mailbox():
+    if not settings.IMAP_HOST or not settings.IMAP_HOST_USER or not settings.IMAP_HOST_PASSWORD:
+        return None, 'IMAP is not configured yet.'
+
+    try:
+        if settings.IMAP_USE_SSL:
+            mail = imaplib.IMAP4_SSL(settings.IMAP_HOST, settings.IMAP_PORT, timeout=settings.IMAP_TIMEOUT)
+        else:
+            mail = imaplib.IMAP4(settings.IMAP_HOST, settings.IMAP_PORT, timeout=settings.IMAP_TIMEOUT)
+        mail.login(settings.IMAP_HOST_USER, settings.IMAP_HOST_PASSWORD)
+        status, _ = mail.select(settings.IMAP_MAILBOX, readonly=True)
+        if status != 'OK':
+            close_imap_mailbox(mail)
+            return None, f'Could not open mailbox {settings.IMAP_MAILBOX}.'
+        return mail, ''
+    except (imaplib.IMAP4.error, OSError, TimeoutError) as exc:
+        return None, f'Inbox connection failed: {exc}'
+
+
+def fetch_recent_mail(limit=10):
+    mail, error = open_imap_mailbox()
+    if error:
+        return [], error
+
+    try:
+        status, data = mail.uid('search', None, 'ALL')
+        if status != 'OK' or not data or not data[0]:
+            return [], ''
+
+        message_ids = data[0].split()[-limit:]
+        inbox_messages = []
+        for message_id in reversed(message_ids):
+            status, message_data = mail.uid('fetch', message_id, '(RFC822)')
+            if status != 'OK' or not message_data or not message_data[0]:
+                continue
+            raw_message = message_data[0][1]
+            message = email.message_from_bytes(raw_message)
+            preview = message_text_preview(message)
+            inbox_messages.append({
+                'uid': message_id.decode('ascii', errors='ignore'),
+                'from': format_email_address(message.get('From')),
+                'subject': decode_email_header(message.get('Subject')) or '(No subject)',
+                'date': message.get('Date', ''),
+                'preview': preview[:220],
+            })
+        return inbox_messages, ''
+    except (imaplib.IMAP4.error, OSError, TimeoutError) as exc:
+        return [], f'Inbox connection failed: {exc}'
+    finally:
+        close_imap_mailbox(mail)
+
+
+def fetch_mail_message(uid):
+    mail, error = open_imap_mailbox()
+    if error:
+        return None, error
+
+    try:
+        status, message_data = mail.uid('fetch', str(uid).encode('ascii'), '(RFC822)')
+        if status != 'OK' or not message_data or not message_data[0]:
+            return None, 'Message could not be found.'
+        message = email.message_from_bytes(message_data[0][1])
+        return {
+            'uid': uid,
+            'from': format_email_address(message.get('From')),
+            'to': format_email_address(message.get('To')),
+            'subject': decode_email_header(message.get('Subject')) or '(No subject)',
+            'date': message.get('Date', ''),
+            'body': message_text_preview(message),
+        }, ''
+    except (imaplib.IMAP4.error, OSError, TimeoutError) as exc:
+        return None, f'Inbox connection failed: {exc}'
+    finally:
+        close_imap_mailbox(mail)
 
 
 def paginate_queryset(request, queryset, *, per_page=25, page_param='page'):
@@ -310,7 +484,8 @@ def sync_existing_onboarding_participants(organization):
 def hr_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        if user_has_hr_access(request.user):
+        organization = get_active_organization(request)
+        if organization and user_has_hr_access(request.user, organization):
             return view_func(request, *args, **kwargs)
         messages.warning(request, 'You do not have access to the HR admin area.')
         if hasattr(request.user, 'employee_profile'):
@@ -322,7 +497,8 @@ def hr_required(view_func):
 def manager_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        if user_has_manager_access(request.user):
+        organization = get_active_organization(request)
+        if organization and user_has_manager_access(request.user, organization):
             return view_func(request, *args, **kwargs)
         messages.warning(request, 'You do not have access to manager approvals.')
         if hasattr(request.user, 'employee_profile'):
@@ -334,7 +510,8 @@ def manager_required(view_func):
 def payroll_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        if user_has_payroll_access(request.user):
+        organization = get_active_organization(request)
+        if organization and user_has_payroll_access(request.user, organization):
             return view_func(request, *args, **kwargs)
         messages.warning(request, 'You do not have access to payroll or finance tools.')
         if hasattr(request.user, 'employee_profile'):
@@ -569,6 +746,37 @@ def organization_attendance_settings(request):
 
 @login_required
 @hr_required
+def organization_birthday_message_template(request):
+    organization = get_active_organization(request)
+    settings_obj = get_attendance_settings(organization)
+
+    if request.method == 'POST':
+        form = BirthdayMessageTemplateForm(request.POST, instance=settings_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Birthday message template has been updated.')
+            return redirect('organization_birthday_message_template')
+    else:
+        form = BirthdayMessageTemplateForm(instance=settings_obj)
+
+    context = {
+        'form': form,
+        'organization': organization,
+        'placeholders': [
+            '{first_name}',
+            '{last_name}',
+            '{full_name}',
+            '{display_name}',
+            '{employee_id}',
+            '{organization_name}',
+        ],
+        'page_title': 'Birthday Message Template',
+    }
+    return render(request, 'attendance/birthday_message_template.html', context)
+
+
+@login_required
+@hr_required
 def organization_leave_types(request):
     organization = get_active_organization(request)
 
@@ -746,10 +954,13 @@ def dashboard_view(request):
     
     organization = get_active_organization(request)
     ensure_default_categories(organization)
-    today = timezone.now().date()
+    today = timezone.localdate()
     settings_obj = get_attendance_settings(organization)
     late_threshold = settings_obj.late_threshold
     workday_start = settings_obj.workday_start
+    attendance_status = request.GET.get('attendance_status', '').strip().lower()
+    if attendance_status not in ['present', 'late', 'absent']:
+        attendance_status = ''
     
     # Statistics
     active_employees = Employee.objects.filter(
@@ -771,6 +982,36 @@ def dashboard_view(request):
     
     # Recent activity
     recent_attendance = todays_records.order_by('-check_in_time')[:5]
+
+    attendance_people = []
+    latest_records_by_employee = {}
+    late_employee_ids = set()
+    for record in todays_records.order_by('-check_in_time'):
+        latest_records_by_employee.setdefault(record.employee_id, record)
+        if record.is_late:
+            late_employee_ids.add(record.employee_id)
+
+    if attendance_status in ['present', 'late']:
+        selected_employee_ids = set(latest_records_by_employee.keys())
+        if attendance_status == 'late':
+            selected_employee_ids = late_employee_ids
+        for employee in active_employees.filter(pk__in=selected_employee_ids).order_by('first_name', 'last_name'):
+            record = latest_records_by_employee.get(employee.pk)
+            attendance_people.append({
+                'employee': employee,
+                'record': record,
+                'status_label': 'Late' if employee.pk in late_employee_ids else 'Present',
+                'status_color': 'warning' if employee.pk in late_employee_ids else 'success',
+            })
+    elif attendance_status == 'absent':
+        present_employee_ids = set(latest_records_by_employee.keys())
+        for employee in active_employees.exclude(pk__in=present_employee_ids).order_by('first_name', 'last_name'):
+            attendance_people.append({
+                'employee': employee,
+                'record': None,
+                'status_label': 'Absent',
+                'status_color': 'danger',
+            })
 
     # Birthdays this week
     birthdays_this_week = get_upcoming_birthdays(organization=organization)
@@ -815,6 +1056,8 @@ def dashboard_view(request):
         'internship_endings': internship_endings,
         'anniversaries_this_week': anniversaries_this_week,
         'category_stats': category_stats,
+        'attendance_people': attendance_people,
+        'attendance_status': attendance_status,
         'organization': organization,
         'kiosk_url': request.build_absolute_uri(reverse('organization_kiosk', kwargs={'org_slug': organization.slug})),
         'late_threshold': late_threshold,
@@ -1393,6 +1636,139 @@ def employee_document_delete(request, pk):
         'page_title': 'Delete Document',
     }
     return render(request, 'attendance/employee_document_confirm_delete.html', context)
+
+
+@login_required
+@hr_required
+def mail_dashboard(request):
+    """Track outbound onboarding mail and candidate/employee responses."""
+
+    organization = get_active_organization(request)
+    search_query = request.GET.get('q', '').strip()
+    selected_status = request.GET.get('status', '').strip()
+    selected_type = request.GET.get('type', '').strip()
+
+    valid_statuses = dict(OnboardingInvitation.STATUS_CHOICES)
+    valid_types = dict(OnboardingInvitation.INVITATION_TYPE_CHOICES)
+    if selected_status not in valid_statuses:
+        selected_status = ''
+    if selected_type not in valid_types:
+        selected_type = ''
+
+    invitations = OnboardingInvitation.objects.filter(
+        organization=organization,
+    ).select_related(
+        'applicant',
+        'employee',
+        'invited_by',
+    )
+
+    if search_query:
+        invitations = invitations.filter(
+            Q(email__icontains=search_query) |
+            Q(applicant__first_name__icontains=search_query) |
+            Q(applicant__last_name__icontains=search_query) |
+            Q(employee__first_name__icontains=search_query) |
+            Q(employee__last_name__icontains=search_query) |
+            Q(employee__employee_id__icontains=search_query)
+        )
+
+    if selected_status:
+        invitations = invitations.filter(status=selected_status)
+    if selected_type:
+        invitations = invitations.filter(invitation_type=selected_type)
+
+    organization_invitations = OnboardingInvitation.objects.filter(organization=organization)
+    invitation_counts = {
+        'total': organization_invitations.count(),
+        'sent': organization_invitations.filter(status='sent').count(),
+        'opened': organization_invitations.filter(status='opened').count(),
+        'responded': organization_invitations.filter(status__in=['submitted', 'accepted']).count(),
+    }
+    mail_page, mail_pagination_query = paginate_queryset(
+        request,
+        invitations.order_by('-created_at'),
+        per_page=25,
+        page_param='mail_page',
+    )
+    inbox_messages, inbox_error = fetch_recent_mail(limit=10)
+
+    context = {
+        'organization': organization,
+        'invitations': mail_page,
+        'mail_page_obj': mail_page,
+        'mail_pagination_query': mail_pagination_query,
+        'inbox_messages': inbox_messages,
+        'inbox_error': inbox_error,
+        'invitation_counts': invitation_counts,
+        'status_choices': OnboardingInvitation.STATUS_CHOICES,
+        'type_choices': OnboardingInvitation.INVITATION_TYPE_CHOICES,
+        'search_query': search_query,
+        'selected_status': selected_status,
+        'selected_type': selected_type,
+        'page_title': 'Mail',
+    }
+    return render(request, 'attendance/mail_dashboard.html', context)
+
+
+@login_required
+@hr_required
+def mail_inbox_message(request, uid):
+    message, inbox_error = fetch_mail_message(uid)
+    context = {
+        'message': message,
+        'inbox_error': inbox_error,
+        'page_title': 'Inbox Message',
+    }
+    return render(request, 'attendance/mail_inbox_message.html', context)
+
+
+@login_required
+@hr_required
+def mail_compose(request):
+    initial_to = request.GET.get('to', '').strip()
+    initial_subject = request.GET.get('subject', '').strip()
+    form_data = {
+        'to': initial_to,
+        'subject': initial_subject,
+        'body': '',
+    }
+
+    if request.method == 'POST':
+        form_data = {
+            'to': request.POST.get('to', '').strip(),
+            'subject': request.POST.get('subject', '').strip(),
+            'body': request.POST.get('body', '').strip(),
+        }
+        errors = []
+        if not form_data['to']:
+            errors.append('Recipient email is required.')
+        if not form_data['subject']:
+            errors.append('Subject is required.')
+        if not form_data['body']:
+            errors.append('Message body is required.')
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        else:
+            email_message = EmailMessage(
+                subject=form_data['subject'],
+                body=form_data['body'],
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[address.strip() for address in form_data['to'].split(',') if address.strip()],
+                reply_to=[settings.IMAP_HOST_USER] if settings.IMAP_HOST_USER else None,
+            )
+            email_message.send(fail_silently=False)
+            messages.success(request, f"Mail sent to {form_data['to']}.")
+            return redirect('mail_dashboard')
+
+    context = {
+        'form_data': form_data,
+        'from_email': settings.DEFAULT_FROM_EMAIL,
+        'page_title': 'Compose Mail',
+    }
+    return render(request, 'attendance/mail_compose.html', context)
 
 
 @login_required
@@ -1997,18 +2373,8 @@ def employee_onboarding_setup(request, invitation):
                         organization=employee.organization,
                         defaults={'role': 'employee', 'is_active': True},
                     )
-                employee.personal_email = form.cleaned_data['personal_email']
-                employee.phone = form.cleaned_data['phone'] or employee.phone
-                employee.residential_address = form.cleaned_data['residential_address']
-                employee.emergency_contact_name = form.cleaned_data['emergency_contact_name']
-                employee.emergency_contact_phone = form.cleaned_data['emergency_contact_phone']
                 employee.save(update_fields=[
                     'user',
-                    'personal_email',
-                    'phone',
-                    'residential_address',
-                    'emergency_contact_name',
-                    'emergency_contact_phone',
                     'updated_at',
                 ])
                 invitation.status = 'accepted'
@@ -2031,7 +2397,7 @@ def employee_onboarding_setup(request, invitation):
         'form': form,
         'invitation': invitation,
         'employee': employee,
-        'page_title': 'Set Up Employee Profile',
+        'page_title': 'Activate Employee Account',
     }
     return render(request, 'attendance/public_employee_setup_form.html', context)
 
@@ -2264,6 +2630,78 @@ def employee_my_documents(request):
         'page_title': 'My Documents',
     }
     return render(request, 'attendance/employee_my_documents.html', context)
+
+
+@login_required
+def employee_my_document_upload(request):
+    employee = getattr(request.user, 'employee_profile', None)
+    if not employee:
+        messages.info(request, 'Your account is not linked to an employee profile yet.')
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        form = EmployeeDocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            document = form.save(commit=False)
+            document.employee = employee
+            document.save()
+            write_audit_log(
+                request,
+                organization=employee.organization,
+                area='employee',
+                action='employee_document_uploaded_self_service',
+                target=document,
+                summary=f'{employee.full_name} uploaded document {document.title}.',
+                metadata={'employee_id': employee.employee_id, 'document_type': document.document_type},
+            )
+            messages.success(request, 'Your document has been uploaded.')
+            return redirect('employee_my_documents')
+    else:
+        form = EmployeeDocumentForm()
+
+    context = {
+        'form': form,
+        'employee': employee,
+        'organization': employee.organization,
+        'page_title': 'Upload My Document',
+    }
+    return render(request, 'attendance/employee_document_form.html', context)
+
+
+@login_required
+def employee_my_document_edit(request, pk):
+    employee = getattr(request.user, 'employee_profile', None)
+    if not employee:
+        messages.info(request, 'Your account is not linked to an employee profile yet.')
+        return redirect('dashboard')
+
+    document = get_object_or_404(EmployeeDocument, employee=employee, pk=pk)
+    if request.method == 'POST':
+        form = EmployeeDocumentForm(request.POST, request.FILES, instance=document)
+        if form.is_valid():
+            document = form.save()
+            write_audit_log(
+                request,
+                organization=employee.organization,
+                area='employee',
+                action='employee_document_updated_self_service',
+                target=document,
+                summary=f'{employee.full_name} updated document {document.title}.',
+                metadata={'employee_id': employee.employee_id, 'document_type': document.document_type},
+            )
+            messages.success(request, 'Your document has been updated.')
+            return redirect('employee_my_documents')
+    else:
+        form = EmployeeDocumentForm(instance=document)
+
+    context = {
+        'form': form,
+        'document': document,
+        'employee': employee,
+        'organization': employee.organization,
+        'page_title': 'Edit My Document',
+    }
+    return render(request, 'attendance/employee_document_form.html', context)
 
 
 @login_required
@@ -3295,6 +3733,7 @@ def payroll_run_detail(request, pk):
 
 
 @login_required
+@require_POST
 @payroll_required
 def payroll_run_generate(request, pk):
     organization = get_active_organization(request)
@@ -3345,6 +3784,7 @@ def payroll_run_generate(request, pk):
 
 
 @login_required
+@require_POST
 @payroll_required
 def payroll_run_approve(request, pk):
     organization = get_active_organization(request)
@@ -3372,6 +3812,7 @@ def payroll_run_approve(request, pk):
 
 
 @login_required
+@require_POST
 @payroll_required
 def payroll_run_mark_paid(request, pk):
     organization = get_active_organization(request)
@@ -3400,12 +3841,15 @@ def payroll_run_mark_paid(request, pk):
 def payslip_detail(request, pk):
     payslip = get_object_or_404(Payslip.objects.select_related('payroll_run', 'employee'), pk=pk)
     employee = getattr(request.user, 'employee_profile', None)
+    active_organization = get_active_organization(request)
 
-    if user_has_payroll_access(request.user):
-        active_organization = get_active_organization(request)
-        if payslip.payroll_run.organization_id != active_organization.pk:
-            raise PermissionDenied('This payslip belongs to another organization.')
-    elif not employee or payslip.employee_id != employee.pk:
+    has_payroll_access = (
+        active_organization
+        and payslip.payroll_run.organization_id == active_organization.pk
+        and user_has_payroll_access(request.user, active_organization)
+    )
+    owns_payslip = employee and payslip.employee_id == employee.pk
+    if not has_payroll_access and not owns_payslip:
         raise PermissionDenied('You can only view your own payslips.')
 
     context = {
@@ -3779,13 +4223,17 @@ def get_attendance_settings(organization=None):
 
 
 def get_manager_leave_request(request, pk):
+    organization = get_active_organization(request)
     leave_request = get_object_or_404(
         LeaveRequest.objects.select_related('employee', 'employee__line_manager', 'leave_type'),
         pk=pk,
+        organization=organization,
         status='pending',
     )
     manager = getattr(request.user, 'employee_profile', None)
-    if manager and not user_has_hr_access(request.user) and leave_request.employee.line_manager_id != manager.pk:
+    if not user_has_hr_access(request.user, organization) and (
+        not manager or leave_request.employee.line_manager_id != manager.pk
+    ):
         raise PermissionDenied('You can only review leave requests for your direct reports.')
     return leave_request
 
