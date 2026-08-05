@@ -5,8 +5,11 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from attendance import views
+from attendance.integration_api import technical_command_attendance_today_api, technical_command_people_api
 
 urlpatterns = [
+    path('api/v1/technical-command/people/', technical_command_people_api, name='technical_command_people_api'),
+    path('api/v1/technical-command/attendance/today/', technical_command_attendance_today_api, name='technical_command_attendance_today_api'),
     # Admin (only for superusers)
     path('admin/', admin.site.urls),
     

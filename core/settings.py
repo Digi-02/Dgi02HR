@@ -248,6 +248,19 @@ MEDIA_ROOT = _env_str("DJANGO_MEDIA_ROOT") or (BASE_DIR / "media")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Read-only Technical Command integration. Keep the key in environment
+# configuration; it must never be committed or returned by an API response.
+TECHNICAL_COMMAND_API_KEY = _env_str("TECHNICAL_COMMAND_API_KEY", default="")
+TECHNICAL_COMMAND_ORGANIZATION_SLUG = _env_str(
+    "TECHNICAL_COMMAND_ORGANIZATION_SLUG", default=""
+)
+TECHNICAL_COMMAND_API_DEFAULT_PAGE_SIZE = _env_int(
+    "TECHNICAL_COMMAND_API_DEFAULT_PAGE_SIZE", default=25
+)
+TECHNICAL_COMMAND_API_MAX_PAGE_SIZE = _env_int(
+    "TECHNICAL_COMMAND_API_MAX_PAGE_SIZE", default=100
+)
+
 # Login redirect
 LOGIN_URL = os.getenv("DJANGO_LOGIN_URL", "login")
 LOGIN_REDIRECT_URL = os.getenv("DJANGO_LOGIN_REDIRECT_URL", "dashboard")
