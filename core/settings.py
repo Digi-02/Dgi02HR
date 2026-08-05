@@ -110,7 +110,11 @@ if not SECRET_KEY:
     else:
         raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is false.")
 
-ALLOWED_HOSTS = _env_list("DJANGO_ALLOWED_HOSTS", default="localhost,127.0.0.1,dgi02hr-production.up.railway.app,192.168.1.181:8002")
+DEFAULT_ALLOWED_HOSTS = "localhost,127.0.0.1,hr.digi02.org,dgi02hr-production.up.railway.app,192.168.1.181:8002"
+ALLOWED_HOSTS = _env_list("DJANGO_ALLOWED_HOSTS", default=DEFAULT_ALLOWED_HOSTS)
+for host in _env_list("DJANGO_EXTRA_ALLOWED_HOSTS", default="hr.digi02.org"):
+    if host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(host)
 if not DEBUG and not ALLOWED_HOSTS:
     raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS must be set when DJANGO_DEBUG is false.")
 
@@ -118,6 +122,9 @@ if not DEBUG and not ALLOWED_HOSTS:
 SECURE_PROXY_SSL_HEADER = _env_pair("DJANGO_SECURE_PROXY_SSL_HEADER")
 USE_X_FORWARDED_HOST = _env_bool("DJANGO_USE_X_FORWARDED_HOST", default=False)
 CSRF_TRUSTED_ORIGINS = _env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
+for origin in _env_list("DJANGO_EXTRA_CSRF_TRUSTED_ORIGINS", default="https://hr.digi02.org"):
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
 SECURE_SSL_REDIRECT = _env_bool("DJANGO_SECURE_SSL_REDIRECT", default=not DEBUG)
 SESSION_COOKIE_SECURE = _env_bool("DJANGO_SESSION_COOKIE_SECURE", default=not DEBUG)
@@ -184,12 +191,11 @@ DB_HOST = _env_str("DJANGO_DB_HOST")
 DB_PORT = _env_str("DJANGO_DB_PORT")
 
 DATABASES = {
-    'default': {
-        'ENGINE': DB_ENGINE,
-        'NAME': DB_NAME or (BASE_DIR / 'db.sqlite3'),
+    "default": {
+        "ENGINE": DB_ENGINE,
+        "NAME": DB_NAME or (BASE_DIR / "db.sqlite3"),
     }
 }
-
 
 if DB_ENGINE != "django.db.backends.sqlite3":
     DATABASES["default"].update(

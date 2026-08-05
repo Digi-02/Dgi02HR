@@ -5,7 +5,17 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from django.utils.text import slugify
-from datetime import date, time, timedelta
+from datetime import date, datetime, time, timedelta
+
+
+def local_date_range_filter(field_name, target_date):
+    current_tz = timezone.get_current_timezone()
+    start_at = timezone.make_aware(datetime.combine(target_date, time.min), current_tz)
+    end_at = timezone.make_aware(datetime.combine(target_date + timedelta(days=1), time.min), current_tz)
+    return {
+        f'{field_name}__gte': start_at,
+        f'{field_name}__lt': end_at,
+    }
 
 
 def employee_profile_photo_path(instance, filename):
@@ -395,18 +405,18 @@ class Employee(models.Model):
     @property
     def is_checked_in_today(self):
         """Check if employee has an open attendance record today"""
-        today = timezone.now().date()
+        today = timezone.localdate()
         return self.attendance_records.filter(
-            check_in_time__date=today,
+            **local_date_range_filter('check_in_time', today),
             check_out_time__isnull=True
         ).exists()
     
     @property
     def today_attendance(self):
         """Get today's attendance record if it exists"""
-        today = timezone.now().date()
+        today = timezone.localdate()
         return self.attendance_records.filter(
-            check_in_time__date=today
+            **local_date_range_filter('check_in_time', today)
         ).first()
     
     @property

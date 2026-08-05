@@ -1,0 +1,5686 @@
+[
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$PFqtUpI44etZpcATqBCrOy$WTHOVnZzTzFbIQcOo7FvyQJe7VW6t6Usiqovfy+epOI=",
+    "last_login": "2026-06-22T21:16:24.322Z",
+    "is_superuser": true,
+    "username": "hr",
+    "first_name": "",
+    "last_name": "",
+    "email": "hr@digi02.org",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-04-18T01:36:16.748Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "051afdxoobl97vg16w92bgddlgmw5u3l",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGllrx2BMSZ8zWOv9kACypXwqxN0hUgpo38y8l8m4LkNeZ5nyyOZinDn8bgXpIXUDfMd6a5ZaXaax2E2xO51t31ie1939OxhwHr518JhIiSHQOYkUUgAiEOhCdKoxhlNx5Eg1AWjiErxP7PCI3FGRaN4fDco5EQ:1wEkkJ:9TYjh4HyDcL8hTv-lY4M0oJBv02L5WqAuURf3ZfIPbU",
+    "expire_date": "2026-05-04T09:16:47.852Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "2q692blw7j5cl7ddkgx9ko964xv6scb1",
+  "fields": {
+    "session_data": ".eJxVjkEOwiAURO_C2hCgFMSle89A_udDixpIWupC491tTRe6nTfzMi_mYWmjX-Y4-UzsxCQ7_GYI4RbLBugKZag81NKmjHyr8J3O_FIp3s97908wwjyua0sCjzZE6YC6LhxJaGeFUwoMKexUQqellklJnZAQBSWSzpDtyfSm61cphJYf0ddpgJKf0HIt38vy_QFQKEHE:1wVpBD:MCZx5-rqDuDnyr2mt84A0H32J0AjPhOq9WTKXrnE5Wg",
+    "expire_date": "2026-06-20T11:27:07.189Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "2skesgfxxoic9xd3da7zd7jpo2x3eh6z",
+  "fields": {
+    "session_data": ".eJxVjsEOwiAQRP-FsyHQoohH734DWZbdFjWQFOpB47_bmh70Om_mZV7Cw9xGP1eafIriJLTY_WYB8EZ5BfEKeSgSS25TCnKtyI1WeSmR7uet-ycYoY7L2nTgkDEqg0dHFJCVQlSkemM1s7XmEDRqZHZKsYvBdJ2LGvYQewxkFylgSw_yZRogpye0VPL3sn5_AJzxQwg:1wSuhp:RJ10IvATQB-xKSll0JMtKLaszkNe_RyOF2l8U6-_2Wg",
+    "expire_date": "2026-06-12T10:44:45.360Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "30s6guoafagm2aiob83c6jkrd14ou5fz",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGllrx2BMSZ8zWOv9kACypXwqxN0hUgpo38y8l8m4LkNeZ5nyyOZinDn8bgXpIXUDfMd6a5ZaXaax2E2xO51t31ie1939OxhwHr518JhIiSHQOYkUUgAiEOhCdKoxhlNx5Eg1AWjiErxP7PCI3FGRaN4fDco5EQ:1wJsUz:JYtk1x2DrLv2OIWvTlNQY0o9bbz9d7PsDvXA0UjAae4",
+    "expire_date": "2026-05-18T12:34:09.451Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "89ix567ucymb79q474rooymfxi14jlio",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGllrx2BMSZ8zWOv9kACypXwqxN0hUgpo38y8l8m4LkNeZ5nyyOZinDn8bgXpIXUDfMd6a5ZaXaax2E2xO51t31ie1939OxhwHr518JhIiSHQOYkUUgAiEOhCdKoxhlNx5Eg1AWjiErxP7PCI3FGRaN4fDco5EQ:1wJsfo:2oVSQydWJFFA1kc9aAbI8dJBXmJWgvhMbZQ0Ziesz-I",
+    "expire_date": "2026-05-18T12:45:20.808Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "bm7yyrwgqmjcc2faee1knv8k0o1pnttp",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGllrx2BMSZ8zWOv9kACypXwqxN0hUgpo38y8l8m4LkNeZ5nyyOZinDn8bgXpIXUDfMd6a5ZaXaax2E2xO51t31ie1939OxhwHr518JhIiSHQOYkUUgAiEOhCdKoxhlNx5Eg1AWjiErxP7PCI3FGRaN4fDco5EQ:1wJsfq:T1Te__lCkO42EIynjb32qVA09KhpsPxwlqcUaGlLlCA",
+    "expire_date": "2026-05-18T12:45:22.271Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "btnlb79y09s1qacju6b61oel69ahaolt",
+  "fields": {
+    "session_data": ".eJxVjkEOwiAURO_C2hCgFMSle89A_udDixpIWupC491tTRe6nTfzMi_mYWmjX-Y4-UzsxCQ7_GYI4RbLBugKZag81NKmjHyr8J3O_FIp3s97908wwjyua0sCjzZE6YC6LhxJaGeFUwoMKexUQqellklJnZAQBSWSzpDtyfSm61cphJYf0ddpgJKf0HIt38vy_QFQKEHE:1wVXYk:OVJoK90kqpHRnmQ_1oxhd54E6OE39_BOruH6I1bFYdg",
+    "expire_date": "2026-06-19T16:38:14.616Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "cp5wi6he2azo4g58iqkfbzfrfce1qwhj",
+  "fields": {
+    "session_data": "e30:1wSgbJ:9gkrNc9szOt7IwEXrIkspnO4zxaivTteSNgIQ_QjOVk",
+    "expire_date": "2026-06-11T19:41:05.093Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "cv3crowu7pe3y44e72amhjv6fomjwjwa",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGllrx2BMSZ8zWOv9kACypXwqxN0hUgpo38y8l8m4LkNeZ5nyyOZinDn8bgXpIXUDfMd6a5ZaXaax2E2xO51t31ie1939OxhwHr518JhIiSHQOYkUUgAiEOhCdKoxhlNx5Eg1AWjiErxP7PCI3FGRaN4fDco5EQ:1wF5bx:YTFj-hR0y9DWBktmYhQeHXCF2OjnPlErMu07Mpxg2m4",
+    "expire_date": "2026-05-05T07:33:33.455Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "d29v2t1czbtv21prkuqeu676i253rvnw",
+  "fields": {
+    "session_data": ".eJxVjsEOwiAQRP-FsyHQoohH734DWZbdFjWQFOpB47_bmh70Om_mZV7Cw9xGP1eafIriJLTY_WYB8EZ5BfEKeSgSS25TCnKtyI1WeSmR7uet-ycYoY7L2nTgkDEqg0dHFJCVQlSkemM1s7XmEDRqZHZKsYvBdJ2LGvYQewxkFylgSw_yZRogpye0VPL3sn5_AJzxQwg:1wSgaY:2miVEVMLxz88YhEYZWMQkbdgqXm4ZyIJ9KPz3AinPVI",
+    "expire_date": "2026-06-11T19:40:18.963Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "fcfo3gvp0ysf862ibwcqnhgftw6hwa0i",
+  "fields": {
+    "session_data": ".eJxVjkEOwiAURO_C2hCgFMSle89A_udDixpIWupC491tTRe6nTfzMi_mYWmjX-Y4-UzsxCQ7_GYI4RbLBugKZag81NKmjHyr8J3O_FIp3s97908wwjyua0sCjzZE6YC6LhxJaGeFUwoMKexUQqellklJnZAQBSWSzpDtyfSm61cphJYf0ddpgJKf0HIt38vy_QFQKEHE:1wbb0J:shhrEnheS5Ab5Pymjt9t0PqJaRyCCLM6mDlnbsgKPBM",
+    "expire_date": "2026-07-06T09:31:43.420Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "g0gvkfebwy3zzn0u5ja1xvk1fi0dix76",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGllrx2BMSZ8zWOv9kACypXwqxN0hUgpo38y8l8m4LkNeZ5nyyOZinDn8bgXpIXUDfMd6a5ZaXaax2E2xO51t31ie1939OxhwHr518JhIiSHQOYkUUgAiEOhCdKoxhlNx5Eg1AWjiErxP7PCI3FGRaN4fDco5EQ:1wRjhn:IjhBl_AnzMn7oufY5wW3B8xkhiepW-eY-OZUbRTIxLM",
+    "expire_date": "2026-06-09T04:47:51.688Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "ggwcwgosl5k709sb5geh7h4e4nw5dlhw",
+  "fields": {
+    "session_data": ".eJxVjkEOwiAURO_C2hCgFMSle89A_udDixpIWupC491tTRe6nTfzMi_mYWmjX-Y4-UzsxCQ7_GYI4RbLBugKZag81NKmjHyr8J3O_FIp3s97908wwjyua0sCjzZE6YC6LhxJaGeFUwoMKexUQqellklJnZAQBSWSzpDtyfSm61cphJYf0ddpgJKf0HIt38vy_QFQKEHE:1wbacT:IXi_HWORjsiaZqR6FBZ_omDR9_IkBVNsxZiN3qudl64",
+    "expire_date": "2026-07-06T09:07:05.612Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "gs6w8qhl3hcirr8kaju9greyee4e3wei",
+  "fields": {
+    "session_data": ".eJxVjkEOwiAURO_C2hCgFMSle89A_udDixpIWupC491tTRe6nTfzMi_mYWmjX-Y4-UzsxCQ7_GYI4RbLBugKZag81NKmjHyr8J3O_FIp3s97908wwjyua0sCjzZE6YC6LhxJaGeFUwoMKexUQqellklJnZAQBSWSzpDtyfSm61cphJYf0ddpgJKf0HIt38vy_QFQKEHE:1wZ78x:SstQ2j485UgD7ckIDX43oE4-w-N-pQAd5x42HuG19NI",
+    "expire_date": "2026-06-29T13:14:23.138Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "hkmzpbu93dc429zhk0np1lswe9pr981b",
+  "fields": {
+    "session_data": ".eJxVjssOwiAURP-FtSGF8hCX7v0GcuFeWtRA0lIXGv_d1nSh2zkzJ_NiHpY2-mWmyWdkJybY4TcLEG9UNoBXKEPlsZY25cC3Ct_pzC8V6X7eu3-CEeZxXVs0wsiokHTstYOEDiRh1yerXHApahsMUNJKKYG9Qaeck0J39mhJKlqlEFt-kK_TACU_oeVavpfF-wNcVUG4:1wUo4c:O93i83KkrNlxdjT5X1ICBfM6ZS_7ceVLhdgaoTtcjZ4",
+    "expire_date": "2026-06-17T16:04:06.957Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "jf855o1g9oiexptsnn7qdh9u29rcqyvx",
+  "fields": {
+    "session_data": ".eJxVjkEOwiAURO_C2hCgFMSle89A_udDixpIWupC491tTRe6nTfzMi_mYWmjX-Y4-UzsxCQ7_GYI4RbLBugKZag81NKmjHyr8J3O_FIp3s97908wwjyua0sCjzZE6YC6LhxJaGeFUwoMKexUQqellklJnZAQBSWSzpDtyfSm61cphJYf0ddpgJKf0HIt38vy_QFQKEHE:1wbm0T:HS2wekcqFSi7lCD1jjB3Wcuo9NnW6QHCJ7R76L5v4eY",
+    "expire_date": "2026-07-06T21:16:37.774Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "ju9sgyt7a70t9fz4dxx3t9mypeh9o14j",
+  "fields": {
+    "session_data": ".eJxVjkEOwiAURO_C2hCgFMSle89A_udDixpIWupC491tTRe6nTfzMi_mYWmjX-Y4-UzsxCQ7_GYI4RbLBugKZag81NKmjHyr8J3O_FIp3s97908wwjyua0sCjzZE6YC6LhxJaGeFUwoMKexUQqellklJnZAQBSWSzpDtyfSm61cphJYf0ddpgJKf0HIt38vy_QFQKEHE:1wbQAG:kF1AvoW0Fl0vRlCSJXGQrjy4RAoomSh0u9_ntoXeJjE",
+    "expire_date": "2026-07-05T21:57:16.915Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "jy2h4cytzs32z5q0p0y2ggx6ujjhu31y",
+  "fields": {
+    "session_data": ".eJxVjMsOwiAQRf-FtSHDo4Au3fsNZGAGqRqalHZl_HfbpAvd3nPOfYuI61Lj2nmOI4mLUOL0uyXMT247oAe2-yTz1JZ5THJX5EG7vE3Er-vh_h1U7HWrQZlEYGzxA4RQmFEb4KTRG6NL5pyHohQUOjsOKiRnIVsCjxRoM5z4fAHlQzfs:1wVBep:pMhEjUo4JD5Ns634DWLk25oWqjH1ULC6Yx5lKmhuwO8",
+    "expire_date": "2026-06-18T17:15:03.529Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "kmmqzk47f1zvg8st5cih888lmb4u43ay",
+  "fields": {
+    "session_data": ".eJxVjkEOwiAURO_C2hCgFMSle89A_udDixpIWupC491tTRe6nTfzMi_mYWmjX-Y4-UzsxCQ7_GYI4RbLBugKZag81NKmjHyr8J3O_FIp3s97908wwjyua0sCjzZE6YC6LhxJaGeFUwoMKexUQqellklJnZAQBSWSzpDtyfSm61cphJYf0ddpgJKf0HIt38vy_QFQKEHE:1wZ0ec:C0PGnrFlBX5rrSbQK1GU7BwZxQCr17lsVSHWdqbPOG0",
+    "expire_date": "2026-06-29T06:18:38.665Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "le8ev4sap30x37gny3th6pb213usw47w",
+  "fields": {
+    "session_data": ".eJxVjkEOwiAURO_C2hCgFMSle89A_udDixpIWupC491tTRe6nTfzMi_mYWmjX-Y4-UzsxCQ7_GYI4RbLBugKZag81NKmjHyr8J3O_FIp3s97908wwjyua0sCjzZE6YC6LhxJaGeFUwoMKexUQqellklJnZAQBSWSzpDtyfSm61cphJYf0ddpgJKf0HIt38vy_QFQKEHE:1wVCQu:4uoKw2atHmv6RpKtnH2IyDKvO_H-PCfzVHSK0BWEsT4",
+    "expire_date": "2026-06-18T18:04:44.332Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "nhfkfytw8b923xd3wjoektc0tu1nngsw",
+  "fields": {
+    "session_data": ".eJxVjkEOwiAURO_C2hCgFMSle89A_udDixpIWupC491tTRe6nTfzMi_mYWmjX-Y4-UzsxCQ7_GYI4RbLBugKZag81NKmjHyr8J3O_FIp3s97908wwjyua0sCjzZE6YC6LhxJaGeFUwoMKexUQqellklJnZAQBSWSzpDtyfSm61cphJYf0ddpgJKf0HIt38vy_QFQKEHE:1wbbHp:7RqM5eiGbvB9eBEnSrEqIJRY-r-JSqKicLrhe3SApSs",
+    "expire_date": "2026-07-06T09:49:49.329Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "qe1jtz6d8y3hm5g3uuzdh2193ky1pxcz",
+  "fields": {
+    "session_data": ".eJxVjkEOwiAURO_C2hCgFMSle89A_udDixpIWupC491tTRe6nTfzMi_mYWmjX-Y4-UzsxCQ7_GYI4RbLBugKZag81NKmjHyr8J3O_FIp3s97908wwjyua0sCjzZE6YC6LhxJaGeFUwoMKexUQqellklJnZAQBSWSzpDtyfSm61cphJYf0ddpgJKf0HIt38vy_QFQKEHE:1wZ0c6:SQGASAqXb_-t_jHh5z_0h70YkjtFVwzaIS58niuCA5g",
+    "expire_date": "2026-06-29T06:16:02.219Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "rgpk3ys2r83m8ii6j8vrcvuisq59dxp6",
+  "fields": {
+    "session_data": ".eJxVjssOwiAURP-FtSGF8hCX7v0GcuFeWtRA0lIXGv_d1nSh2zkzJ_NiHpY2-mWmyWdkJybY4TcLEG9UNoBXKEPlsZY25cC3Ct_pzC8V6X7eu3-CEeZxXVs0wsiokHTstYOEDiRh1yerXHApahsMUNJKKYG9Qaeck0J39mhJKlqlEFt-kK_TACU_oeVavpfF-wNcVUG4:1wUZqk:rU5yYnnp5T9AZmdbtcQ1o1TLpQnCQx6hGSXh7m9OSs4",
+    "expire_date": "2026-06-17T00:52:50.481Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "rqbc7pisrkpuq9xxl129sj7x1ovlymwq",
+  "fields": {
+    "session_data": ".eJxVjsEOwiAQRP-FsyHQoohH734DWZbdFjWQFOpB47_bmh70Om_mZV7Cw9xGP1eafIriJLTY_WYB8EZ5BfEKeSgSS25TCnKtyI1WeSmR7uet-ycYoY7L2nTgkDEqg0dHFJCVQlSkemM1s7XmEDRqZHZKsYvBdJ2LGvYQewxkFylgSw_yZRogpye0VPL3sn5_AJzxQwg:1wTGqp:AYkdeunumxm3c1Xvco1E3sWI6Aj_2XqN5rb8saRQxYE",
+    "expire_date": "2026-06-13T10:23:31.406Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "sdp52qmmtgekht8whhp6i5160lpexs5k",
+  "fields": {
+    "session_data": ".eJxVjsEOwiAQRP-FsyHQoohH734DWZbdFjWQFOpB47_bmh70Om_mZV7Cw9xGP1eafIriJLTY_WYB8EZ5BfEKeSgSS25TCnKtyI1WeSmR7uet-ycYoY7L2nTgkDEqg0dHFJCVQlSkemM1s7XmEDRqZHZKsYvBdJ2LGvYQewxkFylgSw_yZRogpye0VPL3sn5_AJzxQwg:1wSgdH:1xCDO49w0AKya8eXW7MDOkmC5KVX7b4_30B1t2Y2mwo",
+    "expire_date": "2026-06-11T19:43:07.443Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "t3ifalwjtdst7gy4p995t8xrcx4v5227",
+  "fields": {
+    "session_data": ".eJxVjkEOwiAURO_C2hAKvxZcuvcM5MOHFjWQUOpC491tTRe6nTfzMi9mcWmTXeZQbSJ2Yh07_GYO_S3kDdAV81i4L7nV5PhW4Tud-aVQuJ_37p9gwnla16AUHbX0RssuCIgah56i7HvjBIYBETyQMGqQxmkVDZAXECKKKAgBxCpF39Ij2FJHzOmJLZX8vdy9P0ByQcQ:1wVBij:ZOWubRy_30f9AzFY3hx-7SuL6AhgH_RMjgZN8j4gl2Q",
+    "expire_date": "2026-06-18T17:19:05.959Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "t3s7kqjl2cwevmnttd1y11dt2o1b7wk2",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGllrx2BMSZ8zWOv9kACypXwqxN0hUgpo38y8l8m4LkNeZ5nyyOZinDn8bgXpIXUDfMd6a5ZaXaax2E2xO51t31ie1939OxhwHr518JhIiSHQOYkUUgAiEOhCdKoxhlNx5Eg1AWjiErxP7PCI3FGRaN4fDco5EQ:1wG1gd:1TEgsMkVxSV-IxpN7g5TVpO-AvhtMqr_u7mfhI0mc4Q",
+    "expire_date": "2026-05-07T21:34:15.181Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "tyth0u35bozksmfvxvqsc60fewzq1f82",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGllrx2BMSZ8zWOv9kACypXwqxN0hUgpo38y8l8m4LkNeZ5nyyOZinDn8bgXpIXUDfMd6a5ZaXaax2E2xO51t31ie1939OxhwHr518JhIiSHQOYkUUgAiEOhCdKoxhlNx5Eg1AWjiErxP7PCI3FGRaN4fDco5EQ:1wJsfo:2oVSQydWJFFA1kc9aAbI8dJBXmJWgvhMbZQ0Ziesz-I",
+    "expire_date": "2026-05-18T12:45:20.078Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "uq6lyaxqm4f5nk3o6zh564wnrs0l1dpz",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGllrx2BMSZ8zWOv9kACypXwqxN0hUgpo38y8l8m4LkNeZ5nyyOZinDn8bgXpIXUDfMd6a5ZaXaax2E2xO51t31ie1939OxhwHr518JhIiSHQOYkUUgAiEOhCdKoxhlNx5Eg1AWjiErxP7PCI3FGRaN4fDco5EQ:1wJsYR:iCr2tk938fREqhc3HfiVn_QSQd5IQpdLEOK182qY-m4",
+    "expire_date": "2026-05-18T12:37:43.227Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "uuzn3xfuwrha1meb4kji47x6342ogzfy",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGllrx2BMSZ8zWOv9kACypXwqxN0hUgpo38y8l8m4LkNeZ5nyyOZinDn8bgXpIXUDfMd6a5ZaXaax2E2xO51t31ie1939OxhwHr518JhIiSHQOYkUUgAiEOhCdKoxhlNx5Eg1AWjiErxP7PCI3FGRaN4fDco5EQ:1wJsUw:1dlbVLfjr4qCA5b4-c_8anIUwfaimcTOSUCmtMN5P3E",
+    "expire_date": "2026-05-18T12:34:06.700Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "z7a1048p4bigas81vp5nc0fwvluw8zaa",
+  "fields": {
+    "session_data": ".eJxVjssOwiAURP-FtSGF8hCX7v0GcuFeWtRA0lIXGv_d1nSh2zkzJ_NiHpY2-mWmyWdkJybY4TcLEG9UNoBXKEPlsZY25cC3Ct_pzC8V6X7eu3-CEeZxXVs0wsiokHTstYOEDiRh1yerXHApahsMUNJKKYG9Qaeck0J39mhJKlqlEFt-kK_TACU_oeVavpfF-wNcVUG4:1wUal6:dDV5u1PCK1EDMPDqPOtP39RjiLAHo8yLvOUlbSet9Yg",
+    "expire_date": "2026-06-17T01:51:04.814Z"
+  }
+},
+{
+  "model": "attendance.organization",
+  "pk": 1,
+  "fields": {
+    "name": "Digi02TechSystem",
+    "slug": "digi02techsystem",
+    "email": "",
+    "phone": "",
+    "address": "",
+    "is_active": true,
+    "created_at": "2026-05-28T07:31:29.761Z"
+  }
+},
+{
+  "model": "attendance.organizationmembership",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "hr"
+    ],
+    "organization": 1,
+    "role": "owner",
+    "is_active": true,
+    "created_at": "2026-05-28T07:31:32.509Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "payroll",
+    "action": "payroll_run_created",
+    "target_model": "PayrollRun",
+    "target_id": "1",
+    "summary": "Created payroll run June 2026 Payroll.",
+    "metadata": {
+      "payroll_month": "2026-06-01"
+    },
+    "created_at": "2026-06-04T17:24:45.381Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 2,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "payroll",
+    "action": "payslips_generated",
+    "target_model": "PayrollRun",
+    "target_id": "1",
+    "summary": "Generated 20 payslips for June 2026 Payroll.",
+    "metadata": {
+      "generated_count": 20
+    },
+    "created_at": "2026-06-04T17:25:00.054Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 3,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "payroll",
+    "action": "payslips_generated",
+    "target_model": "PayrollRun",
+    "target_id": "1",
+    "summary": "Generated 20 payslips for June 2026 Payroll.",
+    "metadata": {
+      "generated_count": 20
+    },
+    "created_at": "2026-06-04T17:25:04.407Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 4,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "attendance",
+    "action": "attendance_exception_created",
+    "target_model": "AttendanceException",
+    "target_id": "2",
+    "summary": "Sick Day recorded for Divine Osevbagimede Ohien.",
+    "metadata": {
+      "employee_id": "INTERN-2026-006",
+      "exception_type": "sick"
+    },
+    "created_at": "2026-06-05T16:43:17.096Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 5,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "attendance",
+    "action": "attendance_exception_created",
+    "target_model": "AttendanceException",
+    "target_id": "3",
+    "summary": "Authorized Absence recorded for KOSISOCHUKWU UGWUMBA.",
+    "metadata": {
+      "employee_id": "STAFF-2026-007",
+      "exception_type": "authorized_absence"
+    },
+    "created_at": "2026-06-05T16:44:58.814Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 6,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "employee",
+    "action": "employee_onboarding_invited",
+    "target_model": "Employee",
+    "target_id": "9",
+    "summary": "Sent onboarding setup invitation to COVENANT AYOMIKUN  IREGBEYEN.",
+    "metadata": {
+      "email": "covenant@digi02.org",
+      "employee_id": "STAFF-2026-003"
+    },
+    "created_at": "2026-06-06T11:29:34.758Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 7,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "employee",
+    "action": "employee_created",
+    "target_model": "Employee",
+    "target_id": "22",
+    "summary": "Created employee profile for Isaac Benjamin.",
+    "metadata": {
+      "category": "INTERN",
+      "employee_id": "INTERN-2026-010"
+    },
+    "created_at": "2026-06-21T22:07:38.476Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 8,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "admin_report",
+    "action": "admin_report_created",
+    "target_model": "AdminReport",
+    "target_id": "1",
+    "summary": "Created admin report: Docummentation.",
+    "metadata": {
+      "tone": "neutral",
+      "status": "open",
+      "report_type": "general"
+    },
+    "created_at": "2026-06-21T22:29:12.882Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 9,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "admin_report",
+    "action": "admin_report_status_changed",
+    "target_model": "AdminReport",
+    "target_id": "1",
+    "summary": "Set admin report Docummentation to Open.",
+    "metadata": {
+      "status": "open"
+    },
+    "created_at": "2026-06-21T22:29:32.146Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 10,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "admin_report",
+    "action": "admin_report_status_changed",
+    "target_model": "AdminReport",
+    "target_id": "1",
+    "summary": "Set admin report Docummentation to Reviewed.",
+    "metadata": {
+      "status": "reviewed"
+    },
+    "created_at": "2026-06-21T22:30:04.059Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 11,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "attendance",
+    "action": "manual_attendance_created",
+    "target_model": "AttendanceRecord",
+    "target_id": "163",
+    "summary": "Manual attendance recorded for COVENANT AYOMIKUN  IREGBEYEN.",
+    "metadata": {
+      "check_in": "2026-06-22T08:45:00+01:00",
+      "employee_id": "STAFF-2026-003"
+    },
+    "created_at": "2026-06-22T08:04:40.630Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 12,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "attendance",
+    "action": "attendance_exception_created",
+    "target_model": "AttendanceException",
+    "target_id": "4",
+    "summary": "Sick Day recorded for Chioma Joevita.",
+    "metadata": {
+      "employee_id": "INTERN-2026-008",
+      "exception_type": "sick"
+    },
+    "created_at": "2026-06-22T09:28:25.921Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 13,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "attendance",
+    "action": "attendance_exception_created",
+    "target_model": "AttendanceException",
+    "target_id": "5",
+    "summary": "Authorized Absence recorded for Immanuella Ekpemi Saliu.",
+    "metadata": {
+      "employee_id": "INTERN-2026-002",
+      "exception_type": "authorized_absence"
+    },
+    "created_at": "2026-06-22T09:32:33.650Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 14,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "attendance",
+    "action": "attendance_exception_created",
+    "target_model": "AttendanceException",
+    "target_id": "6",
+    "summary": "Sick Day recorded for Sanctus John Otokpa.",
+    "metadata": {
+      "employee_id": "INTERN-2026-003",
+      "exception_type": "sick"
+    },
+    "created_at": "2026-06-22T09:40:30.408Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 15,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "admin_report",
+    "action": "admin_report_status_changed",
+    "target_model": "AdminReport",
+    "target_id": "1",
+    "summary": "Set admin report Docummentation to Open.",
+    "metadata": {
+      "status": "open"
+    },
+    "created_at": "2026-06-22T09:43:03.115Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 16,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "admin_report",
+    "action": "admin_report_status_changed",
+    "target_model": "AdminReport",
+    "target_id": "1",
+    "summary": "Set admin report Docummentation to Closed.",
+    "metadata": {
+      "status": "closed"
+    },
+    "created_at": "2026-06-22T09:43:30.272Z"
+  }
+},
+{
+  "model": "attendance.auditlog",
+  "pk": 17,
+  "fields": {
+    "organization": 1,
+    "actor": [
+      "hr"
+    ],
+    "area": "admin_report",
+    "action": "admin_report_status_changed",
+    "target_model": "AdminReport",
+    "target_id": "1",
+    "summary": "Set admin report Docummentation to Closed.",
+    "metadata": {
+      "status": "closed"
+    },
+    "created_at": "2026-06-22T09:43:38.820Z"
+  }
+},
+{
+  "model": "attendance.category",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "name": "Staff",
+    "code": "STAFF",
+    "icon": "bi-person-badge",
+    "color": "primary",
+    "created_at": "2026-04-20T09:28:17.620Z"
+  }
+},
+{
+  "model": "attendance.category",
+  "pk": 2,
+  "fields": {
+    "organization": 1,
+    "name": "Intern",
+    "code": "INTERN",
+    "icon": "bi-mortarboard",
+    "color": "success",
+    "created_at": "2026-04-20T09:28:18.532Z"
+  }
+},
+{
+  "model": "attendance.category",
+  "pk": 3,
+  "fields": {
+    "organization": 1,
+    "name": "Student",
+    "code": "STUDENT",
+    "icon": "bi-backpack",
+    "color": "info",
+    "created_at": "2026-04-20T09:28:19.399Z"
+  }
+},
+{
+  "model": "attendance.category",
+  "pk": 4,
+  "fields": {
+    "organization": 1,
+    "name": "Management",
+    "code": "MANAGEMENT",
+    "icon": "bi-diagram-3",
+    "color": "secondary",
+    "created_at": "2026-06-03T01:04:41.519Z"
+  }
+},
+{
+  "model": "attendance.department",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "name": "Human Resource",
+    "code": "HR--00",
+    "description": "",
+    "is_active": true,
+    "created_at": "2026-04-20T09:22:19.493Z"
+  }
+},
+{
+  "model": "attendance.department",
+  "pk": 2,
+  "fields": {
+    "organization": 1,
+    "name": "Managemnet",
+    "code": "MANG--00",
+    "description": "",
+    "is_active": true,
+    "created_at": "2026-04-20T09:22:53.111Z"
+  }
+},
+{
+  "model": "attendance.department",
+  "pk": 3,
+  "fields": {
+    "organization": 1,
+    "name": "Accounting",
+    "code": "ACCT",
+    "description": "",
+    "is_active": true,
+    "created_at": "2026-04-20T09:28:20.226Z"
+  }
+},
+{
+  "model": "attendance.department",
+  "pk": 4,
+  "fields": {
+    "organization": 1,
+    "name": "Administration",
+    "code": "ADMIN",
+    "description": "",
+    "is_active": true,
+    "created_at": "2026-04-20T09:28:21.189Z"
+  }
+},
+{
+  "model": "attendance.department",
+  "pk": 5,
+  "fields": {
+    "organization": 1,
+    "name": "IT",
+    "code": "TECH",
+    "description": "",
+    "is_active": true,
+    "created_at": "2026-04-20T09:28:22.102Z"
+  }
+},
+{
+  "model": "attendance.department",
+  "pk": 6,
+  "fields": {
+    "organization": 1,
+    "name": "Engineering",
+    "code": "ENG",
+    "description": "",
+    "is_active": true,
+    "created_at": "2026-04-20T10:07:31.582Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "INTERN-2026-001",
+    "category": 2,
+    "profile_photo": "",
+    "title": "Ms",
+    "first_name": "Usah",
+    "middle_name": "",
+    "last_name": "Ann Kwaha",
+    "email": "usah.au@digi02.org",
+    "personal_email": "preciouskwaha@gmai.com",
+    "phone": "08060543132",
+    "alternative_phone": "",
+    "gender": "FEMALE",
+    "date_of_birth": "2007-02-17",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 5,
+    "position": "Software Developer- IT Student",
+    "line_manager": null,
+    "hire_date": "2026-02-23",
+    "end_date": "2026-08-14",
+    "probation_end_date": null,
+    "institution": "Airforce Instotute of Technology Kaduna",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "Physics",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": 7,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T09:35:59.990Z",
+    "updated_at": "2026-05-26T12:40:47.059Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 2,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "INTERN-2026-002",
+    "category": 2,
+    "profile_photo": "",
+    "title": "Ms",
+    "first_name": "Immanuella",
+    "middle_name": "",
+    "last_name": "Ekpemi Saliu",
+    "email": "ella.es@digi02.org",
+    "personal_email": "saliuimmanuella@gmail.com",
+    "phone": "08160144753",
+    "alternative_phone": "",
+    "gender": "FEMALE",
+    "date_of_birth": "2005-04-28",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 5,
+    "position": "Software Developer- IT Student",
+    "line_manager": null,
+    "hire_date": "2026-02-23",
+    "end_date": "2026-08-14",
+    "probation_end_date": null,
+    "institution": "Airforce Institute of Technology",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "Electrical Electronics",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": 7,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T09:39:21.374Z",
+    "updated_at": "2026-05-26T10:18:57.811Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 3,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "INTERN-2026-003",
+    "category": 2,
+    "profile_photo": "",
+    "title": "Mr.",
+    "first_name": "Sanctus",
+    "middle_name": "",
+    "last_name": "John Otokpa",
+    "email": "sanctus.oj@digi02.org",
+    "personal_email": "otokpasanctus1@gmail.com",
+    "phone": "08069538306",
+    "alternative_phone": "",
+    "gender": "MALE",
+    "date_of_birth": "2007-04-11",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 5,
+    "position": "Front-end Developer-IT Student",
+    "line_manager": null,
+    "hire_date": "2026-02-23",
+    "end_date": "2026-08-14",
+    "probation_end_date": null,
+    "institution": "Airforce Institute of Technology",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "Statistics",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": 12,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T09:41:46.110Z",
+    "updated_at": "2026-05-26T12:09:07.156Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 4,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "INTERN-2026-004",
+    "category": 2,
+    "profile_photo": "",
+    "title": "Mr.",
+    "first_name": "Victor",
+    "middle_name": "",
+    "last_name": "Suurshater Jirgba",
+    "email": "victor.j@digi02.org",
+    "personal_email": "jirgbasuurshater@gmail.com",
+    "phone": "09166390388",
+    "alternative_phone": "",
+    "gender": "MALE",
+    "date_of_birth": "2006-01-22",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 5,
+    "position": "Software Developer- IT Student",
+    "line_manager": null,
+    "hire_date": "2026-02-23",
+    "end_date": "2026-08-14",
+    "probation_end_date": null,
+    "institution": "Airforce Institute of Technology",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "Electrical Electronics",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": 9,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T09:47:09.500Z",
+    "updated_at": "2026-05-26T12:29:20.086Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 5,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "INTERN-2026-005",
+    "category": 2,
+    "profile_photo": "",
+    "title": "Mr.",
+    "first_name": "Ukpono-abasi",
+    "middle_name": "",
+    "last_name": "Emmanuel Effiong",
+    "email": "emmanuel.ue@digi02.org",
+    "personal_email": "effiukp@gmail.com",
+    "phone": "08069905203",
+    "alternative_phone": "",
+    "gender": "MALE",
+    "date_of_birth": "2002-05-31",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 5,
+    "position": "Hardware/Software Integration-IT Student",
+    "line_manager": null,
+    "hire_date": "2026-02-23",
+    "end_date": "2026-08-14",
+    "probation_end_date": null,
+    "institution": "Airforce institute of Technology",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "Physics with Electronics",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": 8,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T09:49:20.397Z",
+    "updated_at": "2026-05-26T10:10:27.639Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 6,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "INTERN-2026-006",
+    "category": 2,
+    "profile_photo": "",
+    "title": "Mr.",
+    "first_name": "Divine",
+    "middle_name": "",
+    "last_name": "Osevbagimede Ohien",
+    "email": "divine.oo@digi02.org",
+    "personal_email": "divineohien59@gmail.com",
+    "phone": "09153625366",
+    "alternative_phone": "",
+    "gender": "MALE",
+    "date_of_birth": "2005-07-11",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 5,
+    "position": "UI/UX Designer-IT Student",
+    "line_manager": null,
+    "hire_date": "2026-02-23",
+    "end_date": "2026-08-14",
+    "probation_end_date": null,
+    "institution": "Airforce Institute of Technology",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "Civil Engineering",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": 13,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T09:52:26.100Z",
+    "updated_at": "2026-05-26T12:14:29.495Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 7,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "STAFF-2025-001",
+    "category": 1,
+    "profile_photo": "",
+    "title": "Engr.",
+    "first_name": "JOHN",
+    "middle_name": "",
+    "last_name": "NNAEMEKA OKOJERE",
+    "email": "okojere@digi02.org",
+    "personal_email": "okojerejohn@gmail.com",
+    "phone": "2348169404088",
+    "alternative_phone": "",
+    "gender": "MALE",
+    "date_of_birth": "2002-10-02",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 5,
+    "position": "Software Developer",
+    "line_manager": null,
+    "hire_date": "2025-06-16",
+    "end_date": "2030-01-04",
+    "probation_end_date": null,
+    "institution": "",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": null,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T10:07:32.605Z",
+    "updated_at": "2026-06-22T10:38:22.249Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 8,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "STAFF-2025-002",
+    "category": 1,
+    "profile_photo": "",
+    "title": "Mr.",
+    "first_name": "ABRAHAM",
+    "middle_name": "",
+    "last_name": "ELEOJO SALIFU",
+    "email": "abraham@digi02.org",
+    "personal_email": "abrahamhyacinth3@gmail.com",
+    "phone": "2347015108786",
+    "alternative_phone": "",
+    "gender": "MALE",
+    "date_of_birth": "2001-03-20",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 6,
+    "position": "Cyber Security Engineer",
+    "line_manager": null,
+    "hire_date": "2025-06-16",
+    "end_date": "2030-01-04",
+    "probation_end_date": null,
+    "institution": "",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": null,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T10:07:33.145Z",
+    "updated_at": "2026-06-22T10:38:22.524Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 9,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "STAFF-2025-003",
+    "category": 1,
+    "profile_photo": "",
+    "title": "Engr.",
+    "first_name": "COVENANT",
+    "middle_name": "",
+    "last_name": "AYOMIKUN  IREGBEYEN",
+    "email": "covenant@digi02.org",
+    "personal_email": "covenantayomikun@gmail.com",
+    "phone": "2349013633629",
+    "alternative_phone": "",
+    "gender": "MALE",
+    "date_of_birth": "2002-12-29",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 5,
+    "position": "Software Developer",
+    "line_manager": null,
+    "hire_date": "2025-06-16",
+    "end_date": "2030-01-04",
+    "probation_end_date": null,
+    "institution": "",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": null,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T10:07:33.656Z",
+    "updated_at": "2026-06-22T10:38:22.711Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 10,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "STAFF-2026-004",
+    "category": 1,
+    "profile_photo": "",
+    "title": "Ms",
+    "first_name": "JEMIMAH",
+    "middle_name": "",
+    "last_name": "ENIOLAOLUWA BAYODE-TAYLOR",
+    "email": "jbtaylor@digi02.org",
+    "personal_email": "jemmykicks@gmail.com",
+    "phone": "08139910442",
+    "alternative_phone": "",
+    "gender": "FEMALE",
+    "date_of_birth": "2001-10-08",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 2,
+    "position": "Chief Operations Officer",
+    "line_manager": null,
+    "hire_date": "2026-11-25",
+    "end_date": "2030-01-04",
+    "probation_end_date": null,
+    "institution": "",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": null,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T10:07:34.168Z",
+    "updated_at": "2026-05-26T12:48:24.847Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 11,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "STAFF-2025-005",
+    "category": 1,
+    "profile_photo": "",
+    "title": "Mr.",
+    "first_name": "ADEOLA",
+    "middle_name": "",
+    "last_name": "VICTOR BAKARE",
+    "email": "adeola@digi02.org",
+    "personal_email": "bakareadeolaoladimeji20@gmail.com",
+    "phone": "2348039885685",
+    "alternative_phone": "",
+    "gender": "MALE",
+    "date_of_birth": "2000-04-04",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 5,
+    "position": "Data Analyst",
+    "line_manager": null,
+    "hire_date": "2025-06-16",
+    "end_date": "2030-01-04",
+    "probation_end_date": null,
+    "institution": "",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": null,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T10:07:34.709Z",
+    "updated_at": "2026-06-22T10:38:22.891Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 12,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "STAFF-2025-006",
+    "category": 1,
+    "profile_photo": "",
+    "title": "Mr.",
+    "first_name": "NSIKAN-ABASI",
+    "middle_name": "",
+    "last_name": "INI ESSIET",
+    "email": "ini@digi02.org",
+    "personal_email": "mfonessiet0@gmail.com",
+    "phone": "2348039884019",
+    "alternative_phone": "",
+    "gender": "MALE",
+    "date_of_birth": "2001-12-11",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 5,
+    "position": "Front-end Developer",
+    "line_manager": null,
+    "hire_date": "2025-06-16",
+    "end_date": "2030-01-04",
+    "probation_end_date": null,
+    "institution": "",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": null,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T10:07:35.231Z",
+    "updated_at": "2026-06-22T10:38:23.083Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 13,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "STAFF-2026-007",
+    "category": 1,
+    "profile_photo": "",
+    "title": "Engr.",
+    "first_name": "KOSISOCHUKWU",
+    "middle_name": "",
+    "last_name": "UGWUMBA",
+    "email": "kossy@digi02.org",
+    "personal_email": "k.ugwumba@yahoo.com",
+    "phone": "2348137279836",
+    "alternative_phone": "",
+    "gender": "FEMALE",
+    "date_of_birth": "2000-12-20",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 5,
+    "position": "UI/UX Designer",
+    "line_manager": null,
+    "hire_date": "2026-06-16",
+    "end_date": "2030-01-04",
+    "probation_end_date": null,
+    "institution": "",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": null,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T10:07:35.768Z",
+    "updated_at": "2026-05-26T13:14:34.102Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 15,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "STAFF-2026-009",
+    "category": 1,
+    "profile_photo": "",
+    "title": "Ms",
+    "first_name": "FAITH OVIDI",
+    "middle_name": "",
+    "last_name": "YAYA",
+    "email": "faith.ovidi@digi02.org",
+    "personal_email": null,
+    "phone": "2347057334799",
+    "alternative_phone": "",
+    "gender": "FEMALE",
+    "date_of_birth": "2026-05-08",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 2,
+    "position": "Chief Executive Officer",
+    "line_manager": null,
+    "hire_date": "2023-01-01",
+    "end_date": "2030-01-04",
+    "probation_end_date": null,
+    "institution": "",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": null,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T10:07:36.827Z",
+    "updated_at": "2026-05-26T12:42:29.763Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 16,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "STAFF-2026-010",
+    "category": 1,
+    "profile_photo": "",
+    "title": "Mrs.",
+    "first_name": "NATASHA",
+    "middle_name": "",
+    "last_name": "JOSEPH",
+    "email": "zoey.natasha@digi02.org",
+    "personal_email": null,
+    "phone": "2347034802924",
+    "alternative_phone": "",
+    "gender": "FEMALE",
+    "date_of_birth": null,
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 6,
+    "position": "",
+    "line_manager": null,
+    "hire_date": "2023-01-01",
+    "end_date": "2030-01-04",
+    "probation_end_date": null,
+    "institution": "",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": null,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T10:07:37.377Z",
+    "updated_at": "2026-04-20T10:07:37.377Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 17,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "STAFF-2025-011",
+    "category": 1,
+    "profile_photo": "",
+    "title": "Mr.",
+    "first_name": "OSHOMHA",
+    "middle_name": "",
+    "last_name": "OMOH SLUEIMAN",
+    "email": "oshomha.omoh@digi02.org",
+    "personal_email": "omohoshomha@gmail.com",
+    "phone": "2347044448932",
+    "alternative_phone": "",
+    "gender": "MALE",
+    "date_of_birth": "2000-03-08",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 2,
+    "position": "Accountant 1",
+    "line_manager": null,
+    "hire_date": "2025-06-16",
+    "end_date": "2030-01-04",
+    "probation_end_date": null,
+    "institution": "",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": null,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T10:07:37.927Z",
+    "updated_at": "2026-06-22T10:38:23.271Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 18,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "STAFF-2025-012",
+    "category": 1,
+    "profile_photo": "",
+    "title": "Ms",
+    "first_name": "ESTHER",
+    "middle_name": "",
+    "last_name": "GARBA CHORI",
+    "email": "esthergarba@digi02.org",
+    "personal_email": "esthergarba45@gmail.com",
+    "phone": "07062779317",
+    "alternative_phone": "",
+    "gender": "FEMALE",
+    "date_of_birth": "1998-08-07",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 2,
+    "position": "Human Resource Manager",
+    "line_manager": null,
+    "hire_date": "2025-06-16",
+    "end_date": "2030-01-04",
+    "probation_end_date": null,
+    "institution": "",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": null,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-04-20T10:07:38.463Z",
+    "updated_at": "2026-06-22T10:38:23.570Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 19,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "INTERN-2026-007",
+    "category": 2,
+    "profile_photo": "",
+    "title": "Mr.",
+    "first_name": "MIracle",
+    "middle_name": "",
+    "last_name": "Jonathan",
+    "email": "miracle.j@digi02.org",
+    "personal_email": "miraclejonathan399@gmail.com",
+    "phone": "09073293641",
+    "alternative_phone": "",
+    "gender": "MALE",
+    "date_of_birth": "2005-10-25",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 5,
+    "position": "UI/UX Designer-IT Student",
+    "line_manager": null,
+    "hire_date": "2026-04-13",
+    "end_date": "2026-08-14",
+    "probation_end_date": null,
+    "institution": "Airforce Institute of Technology Kaduna",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "Electrical Electronics",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": 13,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-05-06T06:18:41.847Z",
+    "updated_at": "2026-05-26T12:36:30.223Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 20,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "INTERN-2026-008",
+    "category": 2,
+    "profile_photo": "",
+    "title": "Ms",
+    "first_name": "Chioma",
+    "middle_name": "",
+    "last_name": "Joevita",
+    "email": "chioma.j@digi02.org",
+    "personal_email": "sylviajoevita60@gmail.com",
+    "phone": "08108153903",
+    "alternative_phone": "",
+    "gender": "FEMALE",
+    "date_of_birth": "2005-05-09",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 5,
+    "position": "Software Developer- IT Student",
+    "line_manager": null,
+    "hire_date": "2026-04-23",
+    "end_date": "2026-08-14",
+    "probation_end_date": null,
+    "institution": "Airforce institute of Technology",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "Mechatronics Engineering",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": 9,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-05-06T08:09:44.574Z",
+    "updated_at": "2026-05-26T12:15:30.513Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 21,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "INTERN-2026-009",
+    "category": 2,
+    "profile_photo": "",
+    "title": "Mr.",
+    "first_name": "EMMANUEL",
+    "middle_name": "",
+    "last_name": "Ayomide Okunlola",
+    "email": "emmanuel.o@digi02.org",
+    "personal_email": "emmanuelokunlola16@gmail.com",
+    "phone": "08143363581",
+    "alternative_phone": "",
+    "gender": "MALE",
+    "date_of_birth": "2004-06-20",
+    "nationality": "",
+    "marital_status": "",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": 5,
+    "position": "Cyber Security Personnel-IT Student",
+    "line_manager": null,
+    "hire_date": "2026-05-14",
+    "end_date": "2026-11-14",
+    "probation_end_date": null,
+    "institution": "Federal University Technology Akure",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "Cyber Security",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "",
+    "internship_type_other": "",
+    "area_of_interest": "",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": 8,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-05-26T06:46:34.999Z",
+    "updated_at": "2026-05-26T12:21:44.528Z"
+  }
+},
+{
+  "model": "attendance.employee",
+  "pk": 22,
+  "fields": {
+    "organization": 1,
+    "user": null,
+    "employee_id": "INTERN-2026-010",
+    "category": 2,
+    "profile_photo": "",
+    "title": "Mr.",
+    "first_name": "Isaac",
+    "middle_name": "",
+    "last_name": "Benjamin",
+    "email": "benjaminisaac@digi02.org",
+    "personal_email": null,
+    "phone": "08066456439",
+    "alternative_phone": "",
+    "gender": "MALE",
+    "date_of_birth": null,
+    "nationality": "",
+    "marital_status": "single",
+    "religion": "",
+    "blood_group": "",
+    "genotype": "",
+    "allergies_or_medical_conditions": "",
+    "emergency_medical_contact_name": "",
+    "emergency_medical_contact_relationship": "",
+    "emergency_medical_contact_phone": "",
+    "residential_address": "",
+    "permanent_address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "postal_code": "",
+    "local_government": "",
+    "emergency_contact_name": "",
+    "emergency_contact_relationship": "",
+    "emergency_contact_phone": "",
+    "next_of_kin_name": "",
+    "next_of_kin_relationship": "",
+    "next_of_kin_phone": "",
+    "next_of_kin_email": "",
+    "next_of_kin_address": "",
+    "department": null,
+    "position": "",
+    "line_manager": null,
+    "hire_date": "2026-06-10",
+    "end_date": "2026-11-01",
+    "probation_end_date": null,
+    "institution": "uni",
+    "faculty": "",
+    "academic_department": "",
+    "qualification_obtained": "",
+    "field_of_study": "cyber security",
+    "year_of_graduation": null,
+    "class_of_degree": "",
+    "student_id": "uuid",
+    "current_level": "",
+    "expected_graduation_date": null,
+    "academic_supervisor_name": "",
+    "academic_supervisor_phone": "",
+    "academic_supervisor_email": "",
+    "internship_type": "industrial_training",
+    "internship_type_other": "",
+    "area_of_interest": "cybersecurity",
+    "area_of_interest_other": "",
+    "preferred_department": "",
+    "skill_html_css": "",
+    "skill_javascript": "",
+    "skill_python": "",
+    "skill_java": "",
+    "skill_c_cpp": "",
+    "skill_django": "",
+    "skill_react": "",
+    "skill_nodejs": "",
+    "skill_ui_ux": "",
+    "skill_networking": "",
+    "skill_cybersecurity": "",
+    "other_technical_skill": "",
+    "skill_other": "",
+    "relevant_skills_projects": "",
+    "supervisor": null,
+    "nin_number": "",
+    "passport_number": "",
+    "passport_expiry_date": null,
+    "tin_number": "",
+    "drivers_license_number": "",
+    "work_permit_number": "",
+    "work_permit_expiry_date": null,
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "bank_branch": "",
+    "pension_rsa_pin": "",
+    "pension_fund_administrator": "",
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "employment_status": "active",
+    "is_active": true,
+    "created_at": "2026-06-21T22:07:38.275Z",
+    "updated_at": "2026-06-21T22:07:38.275Z"
+  }
+},
+{
+  "model": "attendance.onboardingstage",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "title": "Invitation Sent",
+    "code": "invitation_sent",
+    "description": "",
+    "order": 10,
+    "color": "secondary",
+    "is_active": true,
+    "created_at": "2026-06-22T00:40:59.406Z",
+    "updated_at": "2026-06-22T00:40:59.406Z"
+  }
+},
+{
+  "model": "attendance.onboardingstage",
+  "pk": 2,
+  "fields": {
+    "organization": 1,
+    "title": "Application Submitted",
+    "code": "application_submitted",
+    "description": "",
+    "order": 20,
+    "color": "warning",
+    "is_active": true,
+    "created_at": "2026-06-22T00:41:00.225Z",
+    "updated_at": "2026-06-22T00:41:00.225Z"
+  }
+},
+{
+  "model": "attendance.onboardingstage",
+  "pk": 3,
+  "fields": {
+    "organization": 1,
+    "title": "HR Review",
+    "code": "hr_review",
+    "description": "",
+    "order": 30,
+    "color": "info",
+    "is_active": true,
+    "created_at": "2026-06-22T00:41:01.037Z",
+    "updated_at": "2026-06-22T00:41:01.037Z"
+  }
+},
+{
+  "model": "attendance.onboardingstage",
+  "pk": 4,
+  "fields": {
+    "organization": 1,
+    "title": "Profile Setup",
+    "code": "profile_setup",
+    "description": "",
+    "order": 40,
+    "color": "primary",
+    "is_active": true,
+    "created_at": "2026-06-22T00:41:01.812Z",
+    "updated_at": "2026-06-22T00:41:01.813Z"
+  }
+},
+{
+  "model": "attendance.onboardingstage",
+  "pk": 5,
+  "fields": {
+    "organization": 1,
+    "title": "Pre Arrival",
+    "code": "pre_arrival",
+    "description": "",
+    "order": 50,
+    "color": "success",
+    "is_active": true,
+    "created_at": "2026-06-22T00:41:02.581Z",
+    "updated_at": "2026-06-22T00:41:02.581Z"
+  }
+},
+{
+  "model": "attendance.onboardingstage",
+  "pk": 6,
+  "fields": {
+    "organization": 1,
+    "title": "First Day",
+    "code": "first_day",
+    "description": "",
+    "order": 60,
+    "color": "dark",
+    "is_active": true,
+    "created_at": "2026-06-22T00:41:03.393Z",
+    "updated_at": "2026-06-22T00:41:03.393Z"
+  }
+},
+{
+  "model": "attendance.onboardingstage",
+  "pk": 7,
+  "fields": {
+    "organization": 1,
+    "title": "Documents & Training",
+    "code": "documents_training",
+    "description": "",
+    "order": 70,
+    "color": "primary",
+    "is_active": true,
+    "created_at": "2026-06-22T00:41:04.180Z",
+    "updated_at": "2026-06-22T00:41:04.181Z"
+  }
+},
+{
+  "model": "attendance.onboardingstage",
+  "pk": 8,
+  "fields": {
+    "organization": 1,
+    "title": "Completed",
+    "code": "completed",
+    "description": "",
+    "order": 80,
+    "color": "success",
+    "is_active": true,
+    "created_at": "2026-06-22T00:41:05.037Z",
+    "updated_at": "2026-06-22T00:41:05.037Z"
+  }
+},
+{
+  "model": "attendance.onboardingstage",
+  "pk": 9,
+  "fields": {
+    "organization": 1,
+    "title": "Rejected",
+    "code": "rejected",
+    "description": "",
+    "order": 90,
+    "color": "danger",
+    "is_active": true,
+    "created_at": "2026-06-22T00:41:05.832Z",
+    "updated_at": "2026-06-22T00:41:05.833Z"
+  }
+},
+{
+  "model": "attendance.onboardinginvitation",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "invitation_type": "employee_setup",
+    "applicant": null,
+    "employee": 9,
+    "email": "covenant@digi02.org",
+    "token": "4GMhavhcNyQyrHQvRwOWmvFHMNkxBo6krJ4FkCIKkzQBlGOU",
+    "status": "sent",
+    "message": "",
+    "invited_by": [
+      "hr"
+    ],
+    "sent_at": "2026-06-06T11:29:34.548Z",
+    "opened_at": null,
+    "submitted_at": null,
+    "expires_at": "2026-06-20T11:29:34.302Z",
+    "created_at": "2026-06-06T11:29:34.302Z",
+    "updated_at": "2026-06-06T11:29:34.548Z"
+  }
+},
+{
+  "model": "attendance.onboardingparticipant",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "stage": 4,
+    "applicant": null,
+    "employee": 9,
+    "invitation": 1,
+    "participant_type": "employee",
+    "joining_date": "2025-06-16",
+    "note": "",
+    "status": "active",
+    "moved_at": "2026-06-22T00:41:08.592Z",
+    "completed_at": null,
+    "created_at": "2026-06-22T00:41:08.593Z",
+    "updated_at": "2026-06-22T00:41:08.593Z"
+  }
+},
+{
+  "model": "attendance.adminreport",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "title": "Docummentation",
+    "report_type": "general",
+    "tone": "neutral",
+    "status": "closed",
+    "event_date": "2026-06-21",
+    "related_employee": 9,
+    "related_department": 5,
+    "body": "documentation status",
+    "action_taken": "",
+    "created_by": [
+      "hr"
+    ],
+    "reviewed_by": [
+      "hr"
+    ],
+    "reviewed_at": "2026-06-22T09:43:38.794Z",
+    "created_at": "2026-06-21T22:29:12.694Z",
+    "updated_at": "2026-06-22T09:43:38.794Z"
+  }
+},
+{
+  "model": "attendance.attendanceexceptiontype",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "code": "authorized_absence",
+    "name": "Authorized Absence",
+    "description": "Approved time away from work.",
+    "color": "info",
+    "is_active": true,
+    "created_at": "2026-05-28T07:30:49.880Z"
+  }
+},
+{
+  "model": "attendance.attendanceexceptiontype",
+  "pk": 2,
+  "fields": {
+    "organization": 1,
+    "code": "compassionate_leave",
+    "name": "Compassionate Leave",
+    "description": "Approved leave for bereavement or urgent family matters.",
+    "color": "secondary",
+    "is_active": true,
+    "created_at": "2026-05-28T07:30:50.657Z"
+  }
+},
+{
+  "model": "attendance.attendanceexceptiontype",
+  "pk": 3,
+  "fields": {
+    "organization": 1,
+    "code": "half_day",
+    "name": "Half Day",
+    "description": "Approved half-day exception.",
+    "color": "warning",
+    "is_active": true,
+    "created_at": "2026-05-28T07:30:51.591Z"
+  }
+},
+{
+  "model": "attendance.attendanceexceptiontype",
+  "pk": 4,
+  "fields": {
+    "organization": 1,
+    "code": "leave",
+    "name": "Leave",
+    "description": "Approved leave day or leave period.",
+    "color": "success",
+    "is_active": true,
+    "created_at": "2026-05-28T07:30:52.841Z"
+  }
+},
+{
+  "model": "attendance.attendanceexceptiontype",
+  "pk": 5,
+  "fields": {
+    "organization": 1,
+    "code": "maternity_leave",
+    "name": "Maternity Leave",
+    "description": "Approved maternity leave period.",
+    "color": "danger",
+    "is_active": true,
+    "created_at": "2026-05-28T07:30:53.626Z"
+  }
+},
+{
+  "model": "attendance.attendanceexceptiontype",
+  "pk": 6,
+  "fields": {
+    "organization": 1,
+    "code": "paternity_leave",
+    "name": "Paternity Leave",
+    "description": "Approved paternity leave period.",
+    "color": "primary",
+    "is_active": true,
+    "created_at": "2026-05-28T07:30:54.684Z"
+  }
+},
+{
+  "model": "attendance.attendanceexceptiontype",
+  "pk": 7,
+  "fields": {
+    "organization": 1,
+    "code": "public_holiday",
+    "name": "Public Holiday",
+    "description": "Company-recognized public holiday.",
+    "color": "info",
+    "is_active": true,
+    "created_at": "2026-05-28T07:30:55.538Z"
+  }
+},
+{
+  "model": "attendance.attendanceexceptiontype",
+  "pk": 8,
+  "fields": {
+    "organization": 1,
+    "code": "remote",
+    "name": "Remote Work",
+    "description": "Approved remote work day.",
+    "color": "primary",
+    "is_active": true,
+    "created_at": "2026-05-28T07:30:56.786Z"
+  }
+},
+{
+  "model": "attendance.attendanceexceptiontype",
+  "pk": 9,
+  "fields": {
+    "organization": 1,
+    "code": "sick",
+    "name": "Sick Day",
+    "description": "Employee is unavailable due to illness.",
+    "color": "danger",
+    "is_active": true,
+    "created_at": "2026-05-28T07:30:58.055Z"
+  }
+},
+{
+  "model": "attendance.attendanceexceptiontype",
+  "pk": 10,
+  "fields": {
+    "organization": 1,
+    "code": "study_leave",
+    "name": "Study Leave",
+    "description": "Approved leave for exams, study, or professional learning.",
+    "color": "warning",
+    "is_active": true,
+    "created_at": "2026-05-28T07:30:59.131Z"
+  }
+},
+{
+  "model": "attendance.attendanceexceptiontype",
+  "pk": 11,
+  "fields": {
+    "organization": 1,
+    "code": "training",
+    "name": "Training",
+    "description": "Employee is away for training or development.",
+    "color": "info",
+    "is_active": true,
+    "created_at": "2026-05-28T07:31:00.011Z"
+  }
+},
+{
+  "model": "attendance.attendanceexception",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "employee": 7,
+    "exception_type": "authorized_absence",
+    "start_date": "2026-05-29",
+    "end_date": "2026-05-31",
+    "notes": "Business trip with the Chairman",
+    "created_at": "2026-05-29T13:57:08.555Z"
+  }
+},
+{
+  "model": "attendance.attendanceexception",
+  "pk": 2,
+  "fields": {
+    "organization": 1,
+    "employee": 6,
+    "exception_type": "sick",
+    "start_date": "2026-06-05",
+    "end_date": "2026-06-05",
+    "notes": "Sick and approved for rest.",
+    "created_at": "2026-06-05T16:43:17.057Z"
+  }
+},
+{
+  "model": "attendance.attendanceexception",
+  "pk": 3,
+  "fields": {
+    "organization": 1,
+    "employee": 13,
+    "exception_type": "authorized_absence",
+    "start_date": "2026-06-05",
+    "end_date": "2026-06-05",
+    "notes": "Mother's eye surgery schedule.",
+    "created_at": "2026-06-05T16:44:58.783Z"
+  }
+},
+{
+  "model": "attendance.attendanceexception",
+  "pk": 4,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "exception_type": "sick",
+    "start_date": "2026-06-22",
+    "end_date": "2026-06-23",
+    "notes": "Called in sick",
+    "created_at": "2026-06-22T09:28:25.908Z"
+  }
+},
+{
+  "model": "attendance.attendanceexception",
+  "pk": 5,
+  "fields": {
+    "organization": 1,
+    "employee": 2,
+    "exception_type": "authorized_absence",
+    "start_date": "2026-06-22",
+    "end_date": "2026-06-23",
+    "notes": "Excused for the day",
+    "created_at": "2026-06-22T09:32:33.628Z"
+  }
+},
+{
+  "model": "attendance.attendanceexception",
+  "pk": 6,
+  "fields": {
+    "organization": 1,
+    "employee": 3,
+    "exception_type": "sick",
+    "start_date": "2026-06-22",
+    "end_date": "2026-06-23",
+    "notes": "Medical check-up",
+    "created_at": "2026-06-22T09:40:30.378Z"
+  }
+},
+{
+  "model": "attendance.leavetype",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "name": "Annual Leave",
+    "code": "annual_leave",
+    "annual_entitlement_days": 16,
+    "color": "success",
+    "requires_attachment": false,
+    "is_paid": true,
+    "is_active": true,
+    "created_at": "2026-05-28T08:03:04.498Z"
+  }
+},
+{
+  "model": "attendance.leavetype",
+  "pk": 2,
+  "fields": {
+    "organization": 1,
+    "name": "Sick Leave",
+    "code": "sick_leave",
+    "annual_entitlement_days": 10,
+    "color": "danger",
+    "requires_attachment": true,
+    "is_paid": true,
+    "is_active": true,
+    "created_at": "2026-05-28T08:03:05.140Z"
+  }
+},
+{
+  "model": "attendance.leavetype",
+  "pk": 3,
+  "fields": {
+    "organization": 1,
+    "name": "Study Leave",
+    "code": "study_leave",
+    "annual_entitlement_days": 5,
+    "color": "warning",
+    "requires_attachment": false,
+    "is_paid": true,
+    "is_active": true,
+    "created_at": "2026-05-28T08:03:05.776Z"
+  }
+},
+{
+  "model": "attendance.leavetype",
+  "pk": 4,
+  "fields": {
+    "organization": 1,
+    "name": "Compassionate Leave",
+    "code": "compassionate_leave",
+    "annual_entitlement_days": 5,
+    "color": "secondary",
+    "requires_attachment": false,
+    "is_paid": true,
+    "is_active": true,
+    "created_at": "2026-05-28T08:03:06.396Z"
+  }
+},
+{
+  "model": "attendance.leavetype",
+  "pk": 5,
+  "fields": {
+    "organization": 1,
+    "name": "Maternity Leave",
+    "code": "maternity_leave",
+    "annual_entitlement_days": 90,
+    "color": "danger",
+    "requires_attachment": true,
+    "is_paid": true,
+    "is_active": true,
+    "created_at": "2026-05-28T08:03:07.012Z"
+  }
+},
+{
+  "model": "attendance.leavetype",
+  "pk": 6,
+  "fields": {
+    "organization": 1,
+    "name": "Paternity Leave",
+    "code": "paternity_leave",
+    "annual_entitlement_days": 14,
+    "color": "primary",
+    "requires_attachment": false,
+    "is_paid": true,
+    "is_active": true,
+    "created_at": "2026-05-28T08:03:07.664Z"
+  }
+},
+{
+  "model": "attendance.leavetype",
+  "pk": 7,
+  "fields": {
+    "organization": 1,
+    "name": "Unpaid Leave",
+    "code": "unpaid_leave",
+    "annual_entitlement_days": 0,
+    "color": "secondary",
+    "requires_attachment": false,
+    "is_paid": false,
+    "is_active": true,
+    "created_at": "2026-05-28T08:03:08.307Z"
+  }
+},
+{
+  "model": "attendance.payrollrun",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "title": "June 2026 Payroll",
+    "payroll_month": "2026-06-01",
+    "status": "processed",
+    "created_by": [
+      "hr"
+    ],
+    "approved_by": null,
+    "approved_at": null,
+    "notes": "",
+    "created_at": "2026-06-04T17:24:44.966Z",
+    "updated_at": "2026-06-04T17:25:04.235Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 21,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 20,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:00.744Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 22,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 6,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:00.903Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 23,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 21,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:01.059Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 24,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 2,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:01.261Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 25,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 19,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:01.427Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 26,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 3,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:01.627Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 27,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 5,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:01.783Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 28,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 1,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:01.988Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 29,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 4,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:02.140Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 30,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 8,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:02.308Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 31,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 11,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:02.479Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 32,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 9,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:02.644Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 33,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 18,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:02.832Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 34,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 15,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:02.971Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 35,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 10,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:03.127Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 36,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 7,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:03.356Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 37,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 13,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:03.618Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 38,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 16,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:03.774Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 39,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 12,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:03.931Z"
+  }
+},
+{
+  "model": "attendance.payslip",
+  "pk": 40,
+  "fields": {
+    "payroll_run": 1,
+    "employee": 17,
+    "basic_salary": "0.00",
+    "housing_allowance": "0.00",
+    "transport_allowance": "0.00",
+    "other_allowances": "0.00",
+    "tax_deduction": "0.00",
+    "pension_deduction": "0.00",
+    "other_deductions": "0.00",
+    "bank_name": "",
+    "bank_account_name": "",
+    "bank_account_number": "",
+    "pension_rsa_pin": "",
+    "generated_at": "2026-06-04T17:25:04.083Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "employee": 1,
+    "check_in_time": "2026-04-24T06:40:28.224Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 2,
+  "fields": {
+    "organization": 1,
+    "employee": 2,
+    "check_in_time": "2026-04-24T06:50:50.607Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 3,
+  "fields": {
+    "organization": 1,
+    "employee": 9,
+    "check_in_time": "2026-04-24T06:51:02.735Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 4,
+  "fields": {
+    "organization": 1,
+    "employee": 6,
+    "check_in_time": "2026-04-24T06:54:41.226Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 5,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-04-24T06:55:28.587Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 6,
+  "fields": {
+    "organization": 1,
+    "employee": 3,
+    "check_in_time": "2026-04-24T06:55:38.882Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 7,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-04-24T06:59:48.350Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 8,
+  "fields": {
+    "organization": 1,
+    "employee": 8,
+    "check_in_time": "2026-04-24T07:00:47.688Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 9,
+  "fields": {
+    "organization": 1,
+    "employee": 8,
+    "check_in_time": "2026-04-27T06:25:54.719Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 10,
+  "fields": {
+    "organization": 1,
+    "employee": 13,
+    "check_in_time": "2026-04-27T06:28:04.347Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 11,
+  "fields": {
+    "organization": 1,
+    "employee": 2,
+    "check_in_time": "2026-04-27T06:44:34.247Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 12,
+  "fields": {
+    "organization": 1,
+    "employee": 9,
+    "check_in_time": "2026-04-27T06:51:22.153Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 13,
+  "fields": {
+    "organization": 1,
+    "employee": 1,
+    "check_in_time": "2026-04-27T06:51:43.942Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 14,
+  "fields": {
+    "organization": 1,
+    "employee": 6,
+    "check_in_time": "2026-04-27T06:57:52.953Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 15,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-04-27T06:58:50.892Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 16,
+  "fields": {
+    "organization": 1,
+    "employee": 3,
+    "check_in_time": "2026-04-27T06:59:48.952Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 17,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-04-27T07:00:06.380Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 18,
+  "fields": {
+    "organization": 1,
+    "employee": 11,
+    "check_in_time": "2026-04-27T09:00:07.174Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 19,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-05-06T06:21:20.824Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 20,
+  "fields": {
+    "organization": 1,
+    "employee": 6,
+    "check_in_time": "2026-05-06T07:12:14.624Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 21,
+  "fields": {
+    "organization": 1,
+    "employee": 11,
+    "check_in_time": "2026-05-06T07:14:09.794Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 22,
+  "fields": {
+    "organization": 1,
+    "employee": 3,
+    "check_in_time": "2026-05-06T07:53:26.797Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 23,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-05-06T07:55:25.465Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 24,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-05-06T07:59:09.721Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 25,
+  "fields": {
+    "organization": 1,
+    "employee": 1,
+    "check_in_time": "2026-05-06T08:07:07.927Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 26,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-05-06T08:12:17.239Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 27,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-05-07T06:16:04.991Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 28,
+  "fields": {
+    "organization": 1,
+    "employee": 11,
+    "check_in_time": "2026-05-07T06:47:08.375Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 29,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-05-07T07:02:10.126Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 30,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-05-07T07:33:23.637Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 31,
+  "fields": {
+    "organization": 1,
+    "employee": 3,
+    "check_in_time": "2026-05-07T07:34:42.957Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 32,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-05-08T07:26:17.926Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 33,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-05-08T07:48:26.995Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 34,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-05-26T06:19:06.519Z",
+    "check_out_time": "2026-05-26T17:05:10.945Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 35,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-05-26T06:29:13.682Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 36,
+  "fields": {
+    "organization": 1,
+    "employee": 2,
+    "check_in_time": "2026-05-26T07:02:30.832Z",
+    "check_out_time": "2026-05-26T17:28:42.813Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 37,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-05-26T07:05:43.303Z",
+    "check_out_time": "2026-05-26T17:29:19.030Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 38,
+  "fields": {
+    "organization": 1,
+    "employee": 3,
+    "check_in_time": "2026-05-26T07:05:56.972Z",
+    "check_out_time": "2026-05-26T16:50:30.294Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 39,
+  "fields": {
+    "organization": 1,
+    "employee": 13,
+    "check_in_time": "2026-05-26T07:15:37.775Z",
+    "check_out_time": "2026-05-26T16:30:23.955Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 40,
+  "fields": {
+    "organization": 1,
+    "employee": 6,
+    "check_in_time": "2026-05-26T07:18:19.437Z",
+    "check_out_time": "2026-05-26T17:05:59.894Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 41,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-05-26T07:18:35.271Z",
+    "check_out_time": "2026-05-26T17:11:55.509Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 42,
+  "fields": {
+    "organization": 1,
+    "employee": 1,
+    "check_in_time": "2026-05-26T07:19:05.075Z",
+    "check_out_time": "2026-05-26T16:48:30.463Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 43,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-05-26T07:25:03.327Z",
+    "check_out_time": "2026-05-26T16:02:40.449Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 44,
+  "fields": {
+    "organization": 1,
+    "employee": 8,
+    "check_in_time": "2026-05-26T07:54:05.525Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 45,
+  "fields": {
+    "organization": 1,
+    "employee": 9,
+    "check_in_time": "2026-05-26T08:07:02.516Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 46,
+  "fields": {
+    "organization": 1,
+    "employee": 7,
+    "check_in_time": "2026-05-26T09:42:47.873Z",
+    "check_out_time": "2026-05-26T17:28:13.840Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 47,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-05-29T07:04:00Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 48,
+  "fields": {
+    "organization": 1,
+    "employee": 1,
+    "check_in_time": "2026-05-17T07:25:00Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 49,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-05-08T07:30:00Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 50,
+  "fields": {
+    "organization": 1,
+    "employee": 1,
+    "check_in_time": "2026-05-29T07:25:00Z",
+    "check_out_time": "2026-05-29T16:13:04.183Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 51,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-05-29T07:30:00Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 52,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-05-29T07:45:00Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 53,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-05-29T07:02:00Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 54,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-05-29T07:50:00Z",
+    "check_out_time": "2026-05-29T16:10:09.825Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 55,
+  "fields": {
+    "organization": 1,
+    "employee": 3,
+    "check_in_time": "2026-05-29T08:09:00Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 56,
+  "fields": {
+    "organization": 1,
+    "employee": 8,
+    "check_in_time": "2026-05-29T06:40:00Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 57,
+  "fields": {
+    "organization": 1,
+    "employee": 9,
+    "check_in_time": "2026-05-29T09:07:00Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 58,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-06-01T06:49:27.727Z",
+    "check_out_time": "2026-06-01T16:38:46.132Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 59,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-06-01T06:57:32.748Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 60,
+  "fields": {
+    "organization": 1,
+    "employee": 6,
+    "check_in_time": "2026-06-01T07:05:51.759Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 61,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-06-01T07:06:21.775Z",
+    "check_out_time": "2026-06-01T16:55:44.693Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 62,
+  "fields": {
+    "organization": 1,
+    "employee": 3,
+    "check_in_time": "2026-06-01T07:06:51.484Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 63,
+  "fields": {
+    "organization": 1,
+    "employee": 2,
+    "check_in_time": "2026-06-01T07:29:55.510Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 64,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-06-01T07:33:57.142Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 65,
+  "fields": {
+    "organization": 1,
+    "employee": 13,
+    "check_in_time": "2026-06-01T07:34:43.775Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 66,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-06-01T07:34:58.149Z",
+    "check_out_time": "2026-06-01T17:01:45.689Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 67,
+  "fields": {
+    "organization": 1,
+    "employee": 12,
+    "check_in_time": "2026-06-01T07:43:19.843Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 68,
+  "fields": {
+    "organization": 1,
+    "employee": 11,
+    "check_in_time": "2026-06-01T08:30:10.796Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 69,
+  "fields": {
+    "organization": 1,
+    "employee": 9,
+    "check_in_time": "2026-06-01T11:57:07.970Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 70,
+  "fields": {
+    "organization": 1,
+    "employee": 1,
+    "check_in_time": "2026-06-01T16:35:28.207Z",
+    "check_out_time": "2026-06-01T16:35:57.077Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 71,
+  "fields": {
+    "organization": 1,
+    "employee": 9,
+    "check_in_time": "2026-06-02T06:54:02.796Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 72,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-06-02T06:58:08.106Z",
+    "check_out_time": "2026-06-02T16:23:07.671Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 73,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-06-02T06:58:23.775Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 74,
+  "fields": {
+    "organization": 1,
+    "employee": 8,
+    "check_in_time": "2026-06-02T06:58:46.811Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 75,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-06-02T06:59:06.587Z",
+    "check_out_time": "2026-06-02T17:09:42.657Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 76,
+  "fields": {
+    "organization": 1,
+    "employee": 6,
+    "check_in_time": "2026-06-02T07:19:59.285Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 77,
+  "fields": {
+    "organization": 1,
+    "employee": 2,
+    "check_in_time": "2026-06-02T07:49:31.140Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 78,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-06-03T06:53:15.684Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 79,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-06-03T06:54:34.098Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 80,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-06-03T06:57:42.292Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 81,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-06-03T07:07:35.901Z",
+    "check_out_time": "2026-06-03T20:05:16.766Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 82,
+  "fields": {
+    "organization": 1,
+    "employee": 3,
+    "check_in_time": "2026-06-03T07:12:53.115Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 83,
+  "fields": {
+    "organization": 1,
+    "employee": 1,
+    "check_in_time": "2026-06-03T07:27:20.742Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 84,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-06-03T07:28:47.949Z",
+    "check_out_time": "2026-06-03T17:58:38.062Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 85,
+  "fields": {
+    "organization": 1,
+    "employee": 2,
+    "check_in_time": "2026-06-03T08:24:04.891Z",
+    "check_out_time": "2026-06-03T20:05:04.442Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 86,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-06-04T06:21:50.432Z",
+    "check_out_time": "2026-06-04T16:48:17.026Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 87,
+  "fields": {
+    "organization": 1,
+    "employee": 2,
+    "check_in_time": "2026-06-04T06:39:19.968Z",
+    "check_out_time": "2026-06-04T17:16:29.402Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 88,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-06-04T06:56:19.891Z",
+    "check_out_time": "2026-06-04T16:47:53.122Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 89,
+  "fields": {
+    "organization": 1,
+    "employee": 1,
+    "check_in_time": "2026-06-04T06:56:42.031Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 90,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-06-04T06:59:19.354Z",
+    "check_out_time": "2026-06-04T16:47:42.551Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 91,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-06-04T07:00:16.572Z",
+    "check_out_time": "2026-06-04T17:10:05.378Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 92,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-06-04T07:00:41.832Z",
+    "check_out_time": "2026-06-04T17:17:18.013Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 93,
+  "fields": {
+    "organization": 1,
+    "employee": 2,
+    "check_in_time": "2026-06-05T06:25:15.917Z",
+    "check_out_time": "2026-06-05T16:50:01.260Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 94,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-06-05T06:40:07.968Z",
+    "check_out_time": "2026-06-05T16:11:37.853Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 95,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-06-05T06:40:19.614Z",
+    "check_out_time": "2026-06-05T16:50:14.672Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 96,
+  "fields": {
+    "organization": 1,
+    "employee": 7,
+    "check_in_time": "2026-06-05T06:41:53.626Z",
+    "check_out_time": "2026-06-05T16:49:58.466Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 97,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-06-05T06:49:34.897Z",
+    "check_out_time": "2026-06-05T16:50:35.924Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 98,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-06-05T06:55:40.445Z",
+    "check_out_time": "2026-06-05T16:40:41.677Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 99,
+  "fields": {
+    "organization": 1,
+    "employee": 3,
+    "check_in_time": "2026-06-05T07:00:16.267Z",
+    "check_out_time": "2026-06-05T16:12:32.124Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 100,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-06-05T07:00:57.786Z",
+    "check_out_time": "2026-06-05T16:16:41.300Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 101,
+  "fields": {
+    "organization": 1,
+    "employee": 8,
+    "check_in_time": "2026-06-05T07:03:25.656Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 102,
+  "fields": {
+    "organization": 1,
+    "employee": 9,
+    "check_in_time": "2026-06-05T07:20:02.411Z",
+    "check_out_time": "2026-06-05T16:40:38.820Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 103,
+  "fields": {
+    "organization": 1,
+    "employee": 12,
+    "check_in_time": "2026-06-05T07:25:30.120Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 104,
+  "fields": {
+    "organization": 1,
+    "employee": 1,
+    "check_in_time": "2026-06-05T07:33:48.242Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 105,
+  "fields": {
+    "organization": 1,
+    "employee": 13,
+    "check_in_time": "2026-06-08T06:18:07.155Z",
+    "check_out_time": "2026-06-08T16:25:14.778Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 106,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-06-08T06:36:08.818Z",
+    "check_out_time": "2026-06-08T16:19:28.646Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 107,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-06-08T06:36:24.257Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 108,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-06-08T06:50:07.394Z",
+    "check_out_time": "2026-06-08T16:24:17.270Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 109,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-06-08T06:50:47.466Z",
+    "check_out_time": "2026-06-08T16:25:14.069Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 110,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-06-08T06:51:05.316Z",
+    "check_out_time": "2026-06-08T16:24:05.886Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 111,
+  "fields": {
+    "organization": 1,
+    "employee": 3,
+    "check_in_time": "2026-06-08T06:55:29.426Z",
+    "check_out_time": "2026-06-08T16:24:39.476Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 112,
+  "fields": {
+    "organization": 1,
+    "employee": 2,
+    "check_in_time": "2026-06-08T07:02:05.108Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 113,
+  "fields": {
+    "organization": 1,
+    "employee": 13,
+    "check_in_time": "2026-06-09T06:40:50.641Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 114,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-06-09T06:48:01.759Z",
+    "check_out_time": "2026-06-09T16:39:57.605Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 115,
+  "fields": {
+    "organization": 1,
+    "employee": 2,
+    "check_in_time": "2026-06-09T07:05:53.767Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 116,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-06-09T07:13:51.659Z",
+    "check_out_time": "2026-06-09T16:40:43.096Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 117,
+  "fields": {
+    "organization": 1,
+    "employee": 3,
+    "check_in_time": "2026-06-09T07:14:15.255Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 118,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-06-09T07:20:35.604Z",
+    "check_out_time": "2026-06-09T16:12:19.190Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 119,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-06-09T07:20:44.699Z",
+    "check_out_time": "2026-06-09T16:12:00.402Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 120,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-06-10T06:32:25.939Z",
+    "check_out_time": "2026-06-10T16:06:11.532Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 121,
+  "fields": {
+    "organization": 1,
+    "employee": 13,
+    "check_in_time": "2026-06-10T06:32:39.060Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 122,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-06-10T06:44:46.378Z",
+    "check_out_time": "2026-06-10T16:21:39.455Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 123,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-06-10T06:57:58.588Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 124,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-06-10T07:08:05.834Z",
+    "check_out_time": "2026-06-10T16:46:31.204Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 125,
+  "fields": {
+    "organization": 1,
+    "employee": 3,
+    "check_in_time": "2026-06-10T07:27:56.228Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 126,
+  "fields": {
+    "organization": 1,
+    "employee": 2,
+    "check_in_time": "2026-06-10T07:36:38.032Z",
+    "check_out_time": "2026-06-10T16:40:58.037Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 127,
+  "fields": {
+    "organization": 1,
+    "employee": 13,
+    "check_in_time": "2026-06-11T06:33:38.935Z",
+    "check_out_time": "2026-06-11T16:01:29.896Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 128,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-06-11T06:40:35.971Z",
+    "check_out_time": "2026-06-11T16:12:25.906Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 129,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-06-11T06:42:08.091Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 130,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-06-11T06:45:29.409Z",
+    "check_out_time": "2026-06-11T16:22:06.281Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 131,
+  "fields": {
+    "organization": 1,
+    "employee": 2,
+    "check_in_time": "2026-06-11T06:56:02.787Z",
+    "check_out_time": "2026-06-11T16:34:26.376Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 132,
+  "fields": {
+    "organization": 1,
+    "employee": 1,
+    "check_in_time": "2026-06-11T06:56:10.103Z",
+    "check_out_time": "2026-06-11T16:34:21.176Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 133,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-06-11T07:04:04.804Z",
+    "check_out_time": "2026-06-11T18:17:58.315Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 134,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-06-11T07:04:38.850Z",
+    "check_out_time": "2026-06-11T16:02:15.415Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 135,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-06-12T06:33:35.992Z",
+    "check_out_time": "2026-06-12T16:33:47.025Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 136,
+  "fields": {
+    "organization": 1,
+    "employee": 2,
+    "check_in_time": "2026-06-12T06:37:40.543Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 137,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-06-12T06:56:21.091Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 138,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-06-12T07:27:14.377Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 139,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-06-12T07:27:23.053Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 140,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-06-15T07:07:28.019Z",
+    "check_out_time": "2026-06-15T17:12:35.904Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 141,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-06-15T07:09:05.525Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 142,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-06-15T07:09:44.928Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 143,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-06-15T07:16:43.572Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 144,
+  "fields": {
+    "organization": 1,
+    "employee": 8,
+    "check_in_time": "2026-06-15T07:17:01.355Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 145,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-06-16T09:18:14.360Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 146,
+  "fields": {
+    "organization": 1,
+    "employee": 13,
+    "check_in_time": "2026-06-16T10:05:36.593Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 147,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-06-16T10:09:12.761Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 148,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-06-17T06:43:35.960Z",
+    "check_out_time": "2026-06-17T16:11:54.266Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 149,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-06-17T07:08:58.226Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 150,
+  "fields": {
+    "organization": 1,
+    "employee": 13,
+    "check_in_time": "2026-06-17T07:10:55.609Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 151,
+  "fields": {
+    "organization": 1,
+    "employee": 19,
+    "check_in_time": "2026-06-17T07:11:35.235Z",
+    "check_out_time": "2026-06-17T16:17:14.566Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 152,
+  "fields": {
+    "organization": 1,
+    "employee": 20,
+    "check_in_time": "2026-06-17T07:19:50.605Z",
+    "check_out_time": "2026-06-17T16:11:16.533Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 153,
+  "fields": {
+    "organization": 1,
+    "employee": 3,
+    "check_in_time": "2026-06-17T07:22:29.425Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 154,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-06-17T08:06:14.368Z",
+    "check_out_time": "2026-06-17T16:25:14.538Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 155,
+  "fields": {
+    "organization": 1,
+    "employee": 13,
+    "check_in_time": "2026-06-18T06:38:37.474Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 156,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-06-18T07:38:47.233Z",
+    "check_out_time": "2026-06-18T15:59:06.058Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 157,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-06-18T07:40:23.062Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 158,
+  "fields": {
+    "organization": 1,
+    "employee": 6,
+    "check_in_time": "2026-06-18T07:40:31.992Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 159,
+  "fields": {
+    "organization": 1,
+    "employee": 4,
+    "check_in_time": "2026-06-18T08:08:09.405Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 160,
+  "fields": {
+    "organization": 1,
+    "employee": 13,
+    "check_in_time": "2026-06-22T06:58:21.539Z",
+    "check_out_time": "2026-06-22T17:01:47.892Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 161,
+  "fields": {
+    "organization": 1,
+    "employee": 5,
+    "check_in_time": "2026-06-22T07:03:07.830Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 162,
+  "fields": {
+    "organization": 1,
+    "employee": 8,
+    "check_in_time": "2026-06-22T08:04:38.919Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 163,
+  "fields": {
+    "organization": 1,
+    "employee": 9,
+    "check_in_time": "2026-06-22T07:45:00Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 164,
+  "fields": {
+    "organization": 1,
+    "employee": 21,
+    "check_in_time": "2026-06-22T09:00:23.651Z",
+    "check_out_time": "2026-06-22T16:01:59.989Z"
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 165,
+  "fields": {
+    "organization": 1,
+    "employee": 6,
+    "check_in_time": "2026-06-22T09:01:59.729Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancerecord",
+  "pk": 166,
+  "fields": {
+    "organization": 1,
+    "employee": 22,
+    "check_in_time": "2026-06-22T09:33:08.114Z",
+    "check_out_time": null
+  }
+},
+{
+  "model": "attendance.attendancesettings",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "workday_start": "08:00:00",
+    "late_threshold": "08:15:00",
+    "birthday_reminder_days": 7,
+    "internship_reminder_days": 14,
+    "updated_at": "2026-06-22T12:11:31.928Z"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 1,
+  "fields": {
+    "action_time": "2026-04-20T09:22:19.656Z",
+    "user": [
+      "hr"
+    ],
+    "content_type": [
+      "attendance",
+      "department"
+    ],
+    "object_id": "1",
+    "object_repr": "Human Resource",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 2,
+  "fields": {
+    "action_time": "2026-04-20T09:22:53.276Z",
+    "user": [
+      "hr"
+    ],
+    "content_type": [
+      "attendance",
+      "department"
+    ],
+    "object_id": "2",
+    "object_repr": "Managemnet",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 3,
+  "fields": {
+    "action_time": "2026-04-20T10:09:25.821Z",
+    "user": [
+      "hr"
+    ],
+    "content_type": [
+      "attendance",
+      "employee"
+    ],
+    "object_id": "14",
+    "object_repr": "[STAFF] ANTHONY OGBU",
+    "action_flag": 3,
+    "change_message": ""
+  }
+}
+]

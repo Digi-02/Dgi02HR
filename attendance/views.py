@@ -10,7 +10,6 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.db import transaction
-from django.db.models.functions import TruncDate
 from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail, EmailMessage
@@ -21,7 +20,7 @@ from django.db.models.deletion import ProtectedError
 from email.header import decode_header
 from email.utils import parseaddr
 from html.parser import HTMLParser
-from datetime import timedelta, date
+from datetime import datetime, time, timedelta, date
 from functools import wraps
 import csv
 import imaplib
@@ -971,7 +970,7 @@ def dashboard_view(request):
     
     todays_records = AttendanceRecord.objects.filter(
         organization=organization,
-        check_in_time__date=today
+        **local_date_range_filter('check_in_time', today),
     ).select_related('employee__category', 'employee__department')
     
     present_count = todays_records.values('employee_id').distinct().count()
@@ -1074,7 +1073,7 @@ def category_dashboard(request, code):
     """Dashboard view scoped to a single employee category."""
 
     organization = get_active_organization(request)
-    today = timezone.now().date()
+    today = timezone.localdate()
     category = get_object_or_404(Category, organization=organization, code=code.upper())
 
     category_employees = Employee.objects.filter(
@@ -1108,7 +1107,7 @@ def category_dashboard(request, code):
     todays_records = AttendanceRecord.objects.filter(
         organization=organization,
         employee__category=category,
-        check_in_time__date=today,
+        **local_date_range_filter('check_in_time', today),
     ).select_related('employee__category', 'employee__department')
 
     total_employees = active_category_employees.count()
@@ -2772,7 +2771,7 @@ def manager_dashboard(request):
     todays_records = AttendanceRecord.objects.filter(
         organization=organization,
         employee_id__in=team_member_ids,
-        check_in_time__date=today,
+        **local_date_range_filter('check_in_time', today),
     ).select_related('employee')
     present_today = todays_records.values('employee_id').distinct().count()
     late_today = count_distinct_late_employees(todays_records)
@@ -2825,7 +2824,7 @@ def manager_team(request):
     todays_records = AttendanceRecord.objects.filter(
         organization=organization,
         employee_id__in=team_member_ids,
-        check_in_time__date=today,
+        **local_date_range_filter('check_in_time', today),
     ).select_related('employee').order_by('employee_id', '-check_in_time')
     todays_record_by_employee = {}
     for record in todays_records:
@@ -3007,17 +3006,42 @@ def attendance_reports(request):
         per_page=20,
         page_param='exceptions_page',
     )
-    recent_attendance_days_qs = (
-        AttendanceRecord.objects.filter(organization=organization, employee__is_active=True)
-        .annotate(attendance_date=TruncDate('check_in_time'))
-        .values('attendance_date')
-        .annotate(
-            people_count=Count('employee_id', distinct=True),
-            total_records=Count('id'),
-            completed_records=Count('id', filter=Q(check_out_time__isnull=False)),
-        )
-        .order_by('-attendance_date')
+    recent_attendance_by_date = {}
+    recent_records = (
+        AttendanceRecord.objects
+        .filter(organization=organization, employee__is_active=True)
+        .only('id', 'employee_id', 'check_in_time', 'check_out_time')
+        .order_by('-check_in_time')
     )
+    for record in recent_records:
+        attendance_date = timezone.localtime(record.check_in_time).date()
+        day_stats = recent_attendance_by_date.setdefault(
+            attendance_date,
+            {
+                'attendance_date': attendance_date,
+                'employee_ids': set(),
+                'total_records': 0,
+                'completed_records': 0,
+            },
+        )
+        day_stats['employee_ids'].add(record.employee_id)
+        day_stats['total_records'] += 1
+        if record.check_out_time is not None:
+            day_stats['completed_records'] += 1
+
+    recent_attendance_days_qs = [
+        {
+            'attendance_date': attendance_date,
+            'people_count': len(day_stats['employee_ids']),
+            'total_records': day_stats['total_records'],
+            'completed_records': day_stats['completed_records'],
+        }
+        for attendance_date, day_stats in sorted(
+            recent_attendance_by_date.items(),
+            key=lambda item: item[0],
+            reverse=True,
+        )
+    ]
     recent_attendance_days_page, recent_attendance_days_pagination_query = paginate_queryset(
         request,
         recent_attendance_days_qs,
@@ -3697,7 +3721,7 @@ def payroll_run_create(request):
             messages.success(request, f'{payroll_run.title} has been created.')
             return redirect('payroll_run_detail', pk=payroll_run.pk)
     else:
-        today = timezone.now().date()
+        today = timezone.localdate()
         form = PayrollRunForm(
             initial={
                 'title': f'{today:%B %Y} Payroll',
@@ -4076,7 +4100,7 @@ def reports_view(request):
     """Generate and export reports"""
     
     organization = get_active_organization(request)
-    today = timezone.now().date()
+    today = timezone.localdate()
     date_form = DateFilterForm(request.GET or None, organization=organization)
     records = build_filtered_attendance_queryset(date_form, organization).order_by('-check_in_time')
     exceptions = build_filtered_exception_queryset(date_form, organization).order_by('-start_date')
@@ -4402,6 +4426,21 @@ def build_employee_scope(cleaned_data=None, organization=None):
     return employees
 
 
+
+def local_date_range_filter(field_name, start_date, end_date=None):
+    end_date = end_date or start_date
+    current_tz = timezone.get_current_timezone()
+    start_at = timezone.make_aware(datetime.combine(start_date, time.min), current_tz)
+    end_at = timezone.make_aware(datetime.combine(end_date + timedelta(days=1), time.min), current_tz)
+    return {
+        f'{field_name}__gte': start_at,
+        f'{field_name}__lt': end_at,
+    }
+
+
+def local_date_range_q(field_name, start_date, end_date=None):
+    return Q(**local_date_range_filter(field_name, start_date, end_date))
+
 def build_filtered_attendance_queryset(date_form, organization=None, default_to_today=False, default_to_current_month=False):
     cleaned_data = date_form.cleaned_data if date_form.is_valid() else {}
     records = AttendanceRecord.objects.select_related('employee__department', 'employee__category').all()
@@ -4411,14 +4450,14 @@ def build_filtered_attendance_queryset(date_form, organization=None, default_to_
     records = records.filter(employee__in=employees)
 
     if cleaned_data.get('date'):
-        records = records.filter(check_in_time__date=cleaned_data['date'])
+        records = records.filter(**local_date_range_filter('check_in_time', cleaned_data['date']))
     elif cleaned_data.get('start_date') and cleaned_data.get('end_date'):
-        records = records.filter(check_in_time__date__range=[cleaned_data['start_date'], cleaned_data['end_date']])
+        records = records.filter(**local_date_range_filter('check_in_time', cleaned_data['start_date'], cleaned_data['end_date']))
     elif default_to_current_month:
-        today = timezone.now().date()
-        records = records.filter(check_in_time__date__gte=today.replace(day=1))
+        today = timezone.localdate()
+        records = records.filter(**local_date_range_filter('check_in_time', today.replace(day=1), today))
     elif default_to_today:
-        records = records.filter(check_in_time__date=timezone.now().date())
+        records = records.filter(**local_date_range_filter('check_in_time', timezone.localdate()))
 
     return records
 
@@ -4439,11 +4478,11 @@ def build_filtered_exception_queryset(date_form, organization=None, default_to_t
             end_date__gte=cleaned_data['start_date'],
         )
     elif default_to_current_month:
-        today = timezone.now().date()
+        today = timezone.localdate()
         month_start = today.replace(day=1)
         exceptions = exceptions.filter(end_date__gte=month_start, start_date__lte=today)
     elif default_to_today:
-        today = timezone.now().date()
+        today = timezone.localdate()
         exceptions = exceptions.filter(start_date__lte=today, end_date__gte=today)
 
     return exceptions
@@ -4455,14 +4494,16 @@ def build_covered_employee_count(employee_scope, cleaned_data=None):
     exception_filters = Q()
 
     if cleaned_data.get('date'):
-        attendance_filters &= Q(attendance_records__check_in_time__date=cleaned_data['date'])
+        attendance_filters &= local_date_range_q('attendance_records__check_in_time', cleaned_data['date'])
         exception_filters &= Q(
             attendance_exceptions__start_date__lte=cleaned_data['date'],
             attendance_exceptions__end_date__gte=cleaned_data['date'],
         )
     elif cleaned_data.get('start_date') and cleaned_data.get('end_date'):
-        attendance_filters &= Q(
-            attendance_records__check_in_time__date__range=[cleaned_data['start_date'], cleaned_data['end_date']]
+        attendance_filters &= local_date_range_q(
+            'attendance_records__check_in_time',
+            cleaned_data['start_date'],
+            cleaned_data['end_date'],
         )
         exception_filters &= Q(
             attendance_exceptions__start_date__lte=cleaned_data['end_date'],
